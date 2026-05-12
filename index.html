@@ -17,7 +17,8 @@
   --r:12px;--rsm:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+html{overflow-x:hidden;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;max-width:100vw;}
 
 /* ── HEADER ── */
 .hdr{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
@@ -67,9 +68,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .loc-banner-inner strong{font-weight:700;}
 
 /* ── STORY BAR ── */
-.story-bar{background:#fff;border-bottom:1px solid var(--border);padding:12px 0;overflow-x:auto;scrollbar-width:none;}
+.story-bar{background:#fff;border-bottom:1px solid var(--border);padding:12px 0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;max-width:100vw;}
 .story-bar::-webkit-scrollbar{display:none;}
-.story-list{display:flex;gap:14px;padding:0 16px;max-width:1180px;margin:0 auto;}
+.story-list{display:flex;gap:14px;padding:0 16px;max-width:1180px;margin:0 auto;min-width:0;}
 .story-item{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0;}
 .story-ring{width:62px;height:62px;border-radius:50%;padding:2.5px;background:linear-gradient(135deg,#c13520,#e8a020);transition:transform .15s;}
 .story-ring:hover{transform:scale(1.06);}
@@ -81,7 +82,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .story-dist{font-size:10px;color:var(--green);font-weight:700;}
 
 /* ── PAGE LAYOUT ── */
-.page-wrap{max-width:1180px;margin:0 auto;padding:0 0 100px;display:grid;grid-template-columns:1fr 300px;gap:0;align-items:start;}
+.page-wrap{max-width:1180px;margin:0 auto;padding:0 0 100px;display:grid;grid-template-columns:1fr 300px;gap:0;align-items:start;overflow-x:hidden;}
 @media(max-width:860px){.page-wrap{grid-template-columns:1fr;}.sidebar{display:none;}}
 .feed-col{max-width:480px;width:100%;margin:0 auto;}
 .main{min-width:0;}
@@ -119,6 +120,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   background:#1a1510;
   position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
+  max-width:100%;
 }
 .gi-photo-bg{
   position:absolute;inset:0;
