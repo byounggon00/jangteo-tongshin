@@ -1164,6 +1164,15 @@ const REGIONS = ['서울','경기','인천','부산','대구','광주','대전',
 // ── PHOTO / SEED DATA ─────────────────────────────────────────────
 const PLIB = ['🐟','🥩','🍲','🥟','🍢','🥬','🦑','🍣','🥐','🧆','🍺','🦐','🍊','🌶️','🧅','🍱','🫙','🌊','🏮','🛒','🦀','🥚','🍜','🥘','🫓','🍵','🧁','🍋','🐙','🦞'];
 
+// ── 숫자 포맷 유틸 ──────────────────────────────────────────────
+function fmtNum(n){ return Number(n||0).toLocaleString('ko-KR'); }
+function fmtWon(n){ return Number(n||0).toLocaleString('ko-KR')+'원'; }
+function fmtWonShort(n){
+  n = Number(n||0);
+  if(n>=10000) return (n/10000).toFixed(1).replace('.0','')+'만원';
+  return n.toLocaleString('ko-KR')+'원';
+}
+
 const SEEDS = [
   {id:1,author:'마켓러버_지은',avatar:'👩',market:'광장시장',shop:'육회골목',star:5,
    photos:['🥩','🍶','🥬'],
@@ -2169,7 +2178,7 @@ function renderSavingTab(el){
     if(!m) return 0;
     return parseInt(m[1].replace(/,/g,'')) - parseInt(m[2].replace(/,/g,''));
   }
-  const fmt = n => n>=10000 ? (n/10000).toFixed(1).replace('.0','')+'만원' : n.toLocaleString()+'원';
+  const fmt = fmtWonShort;
 
   const totalSaved = savedSales.reduce((s,p)=>s+calcSaved(p),0);
   const now = new Date();
@@ -2681,15 +2690,15 @@ function selCat(id){ clSelCat = clSelCat===id?'':id; renderCLCatChips(); }
 function renderCLBudget(){
   const spent = CL.filter(i=>i.done).reduce((s,i)=>s+(i.price||0),0);
   const planned = CL.reduce((s,i)=>s+(i.price||0),0);
-  document.getElementById('clBudgetSpent').textContent = spent.toLocaleString()+'원 사용';
-  document.getElementById('clBudgetTotal').textContent = clBudget ? `/ 예산 ${clBudget.toLocaleString()}원` : `/ 계획 ${planned.toLocaleString()}원`;
+  document.getElementById('clBudgetSpent').textContent = fmtWon(spent)+' 사용';
+  document.getElementById('clBudgetTotal').textContent = clBudget ? `/ 예산 ${fmtWon(clBudget)}` : `/ 계획 ${fmtWon(planned)}`;
   const pct = clBudget ? Math.min(100,Math.round(spent/clBudget*100)) : (planned?Math.round(spent/planned*100):0);
   document.getElementById('clBudgetFill').style.width = pct+'%';
 }
 function setBudget(){
   const v = prompt('오늘 장보기 예산을 입력하세요 (원)', clBudget||'');
   if(v===null) return;
-  clBudget = parseInt(v.replace(/,/g,''))||0;
+  clBudget = parseInt((v||'').replace(/,/g,'').replace(/[^0-9]/g,''))||0;
   localStorage.setItem('jtt4_cl_budget', clBudget);
   renderCLBudget();
 }
@@ -2734,7 +2743,7 @@ function addFavItem(text, cat){
 function shareCL(){
   const todo = CL.filter(i=>!i.done);
   if(!todo.length){ toast('살 것이 없어요!'); return; }
-  const text = ['📋 장보기 목록', ...todo.map(i=>`• ${i.text}${i.qty?' ('+i.qty+')':''}${i.price?' ~'+i.price.toLocaleString()+'원':''}`)].join('\n');
+  const text = ['📋 장보기 목록', ...todo.map(i=>`• ${i.text}${i.qty?' ('+i.qty+')':''}${i.price?' ~'+fmtWon(i.price):''}`)].join('\n');
   if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>toast('클립보드에 복사됐어요!')); }
   else { toast('공유 기능을 지원하지 않는 브라우저예요'); }
 }
@@ -2755,7 +2764,7 @@ function renderCLBody(){
   const budgetLbl = document.getElementById('clProgBudget');
   if(budgetLbl){
     const planned = CL.reduce((s,i)=>s+(i.price||0),0);
-    budgetLbl.textContent = planned ? `계획 ${planned.toLocaleString()}원` : '';
+    budgetLbl.textContent = planned ? `계획 ${fmtWon(planned)}` : '';
   }
 
   const el = document.getElementById('clBody');
@@ -2789,7 +2798,7 @@ function renderCLBody(){
           <div class="cl-item-text${i.done?' done':''}">${i.text}</div>
           <div class="cl-item-sub">
             ${i.qty?`<span class="cl-item-qty">📦 ${i.qty}</span>`:''}
-            ${i.price?`<span class="cl-item-budget">💰 ~${i.price.toLocaleString()}원</span>`:''}
+            ${i.price?`<span class="cl-item-budget">💰 ~${fmtWon(i.price)}</span>`:''}
             ${i.market?`<span class="cl-item-mkt">📍 ${i.market}</span>`:''}
           </div>
         </div>
