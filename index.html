@@ -217,10 +217,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .gi-tag{font-size:12px;color:var(--blue);}
 
 /* 마감세일 배너 */
-.gi-sale-banner{
-  background:linear-gradient(90deg,#f0b030,#e85c00);
-  padding:7px 14px;display:flex;align-items:center;gap:8px;
-}
+/* 마감세일 전용 카드 헤더 */
+.gi-sale-card-head{background:linear-gradient(135deg,#f0b030,#e85c00);padding:14px;}
+.gi-sale-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.gi-sale-card-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.8px;text-transform:uppercase;}
+.gi-sale-card-timer-wrap{display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.22);border-radius:20px;padding:3px 10px;}
+.gi-sale-card-clock{font-size:12px;}
+.gi-sale-card-timer{font-size:13px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
+.gi-sale-card-item{font-size:22px;font-weight:700;color:#fff;margin-bottom:3px;line-height:1.3;}
+.gi-sale-card-discount{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;color:#fff;font-weight:700;}
+.gi-sale-card-info{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.gi-sale-card-shop{font-size:12px;color:rgba(255,255,255,.9);background:rgba(0,0,0,.18);border-radius:12px;padding:3px 10px;font-weight:500;}
+.gi-sale-card-market{font-size:12px;color:rgba(255,255,255,.75);}
+.gi-sale-card-expired{background:rgba(0,0,0,.35);font-size:12px;color:rgba(255,255,255,.7);border-radius:12px;padding:3px 10px;}
+/* 일반 배너 (기존 호환) */
+.gi-sale-banner{background:linear-gradient(90deg,#f0b030,#e85c00);padding:7px 14px;display:flex;align-items:center;gap:8px;}
 .gi-sale-item{font-size:13px;font-weight:700;color:#fff;flex:1;}
 .gi-sale-timer{font-size:13px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
 
@@ -447,6 +458,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .bnav-label{font-size:10px;font-weight:500;}
 .bnav-badge{position:absolute;top:6px;right:calc(50% - 14px);min-width:16px;height:16px;background:var(--red);color:#fff;border-radius:8px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px;display:none;}
 .bnav-badge.show{display:flex;}
+.bnav-sale{color:var(--gold)!important;}
+.bnav-sale.on{color:#e85c00!important;}
+.bnav-sale .bnav-icon{font-size:22px;}
 
 /* ── CHECKLIST MODAL ── */
 .cloverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
@@ -787,8 +801,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         <div>
           <div class="pflabel">할인 정보</div>
           <div class="sale-discount-row">
-            <input type="text" id="saleItem" placeholder="예: 생동태, 녹두빈대떡, 광어회">
-            <input type="text" id="saleDiscount" placeholder="예: 50% 할인, 1만원 → 5천원">
+            <input type="text" id="saleItem" placeholder="예: 광어회 500g, 동태탕 1인분, 녹두빈대떡 2장">
+            <input type="text" id="saleDiscount" placeholder="예: 50% 할인 · 12,000원 → 6,000원">
           </div>
         </div>
         <div>
@@ -817,6 +831,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <span class="bnav-icon">🏠</span>
     <span class="bnav-label">홈</span>
   </button>
+  <button class="bnav-btn bnav-sale" id="bnav-sale" onclick="bnavClick('sale',this)">
+    <span class="bnav-icon">⚡</span>
+    <span class="bnav-label">마감세일</span>
+    <span class="bnav-badge" id="sale-badge"></span>
+  </button>
   <button class="bnav-btn" id="bnav-checklist" onclick="bnavClick('checklist',this)">
     <span class="bnav-icon">📋</span>
     <span class="bnav-label">장보기</span>
@@ -826,10 +845,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <span class="bnav-icon">🔔</span>
     <span class="bnav-label">팔로우</span>
     <span class="bnav-badge" id="fw-badge"></span>
-  </button>
-  <button class="bnav-btn" id="bnav-badge" onclick="bnavClick('badge',this)">
-    <span class="bnav-icon">🏅</span>
-    <span class="bnav-label">뱃지</span>
   </button>
   <button class="bnav-btn" id="bnav-profile" onclick="openProfile()">
     <span class="bnav-icon" id="bnavProfileIcon">😊</span>
@@ -1283,11 +1298,24 @@ function renderFeedCard(p){
     ? `${capFirst} <span class="gi-caption-more" onclick="expandCap(this)" data-rest="${capRest.replace(/"/g,'&quot;')}">더 보기</span>`
     : capFirst;
 
-  // 마감세일 배너
+  // 마감세일 카드 헤더 (풍부한 정보)
+  const mdata2 = getMktData(p.market);
   const saleBanner = isSale ? `
-    <div class="gi-sale-banner">
-      <span class="gi-sale-item">⚡ ${p.saleItem||'마감세일'}${p.saleDiscount?' · '+p.saleDiscount:''}</span>
-      <span class="gi-sale-timer" id="gsaletime-${p.id}">${active?(rem||'마감임박'):'마감됨'}</span>
+    <div class="gi-sale-card-head">
+      <div class="gi-sale-card-top">
+        <span class="gi-sale-card-label">⚡ 마감 세일</span>
+        <div class="gi-sale-card-timer-wrap">
+          <span class="gi-sale-card-clock">⏰</span>
+          <span class="gi-sale-card-timer" id="gsaletime-${p.id}">${active?(rem||'마감임박'):'마감됨'}</span>
+        </div>
+      </div>
+      <div class="gi-sale-card-item">${p.saleItem||'특가 상품'}</div>
+      ${p.saleDiscount?`<div class="gi-sale-card-discount">🏷️ ${p.saleDiscount}</div>`:''}
+      <div class="gi-sale-card-info">
+        <span class="gi-sale-card-shop">${mdata2?mdata2.icon:''} ${p.market}${p.shop?' · '+p.shop:''}</span>
+        ${dist!==null?`<span class="gi-sale-card-market">📍 ${distLabel(dist)}</span>`:''}
+        ${!active?'<span class="gi-sale-card-expired">마감됨</span>':''}
+      </div>
     </div>` : '';
 
   // 뱃지
@@ -1303,7 +1331,16 @@ function renderFeedCard(p){
 
   return `
   <div class="gitem${isSale?' sale-item':''}" id="gcard-${p.id}">
-    <!-- 헤더 -->
+    <!-- 헤더: 마감세일은 카드 헤드가 대신하므로 작게 -->
+    ${isSale ? `
+    <div class="gi-head" style="padding:8px 14px">
+      <div class="gi-av" style="width:28px;height:28px;font-size:14px">${p.avatar||'😊'}</div>
+      <div>
+        <div class="gi-author" style="font-size:12px">${p.author}</div>
+        <div class="gi-meta">${p.time}</div>
+      </div>
+      ${badges.length ? `<div style="margin-left:auto;display:flex;gap:4px">${badges.join('')}</div>` : ''}
+    </div>` : `
     <div class="gi-head">
       <div class="gi-av">${p.avatar||'😊'}</div>
       <div>
@@ -1311,8 +1348,8 @@ function renderFeedCard(p){
         <div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${dist!==null?' · 📍'+distLabel(dist):''}</div>
       </div>
       ${badges.length ? `<div style="margin-left:auto;display:flex;gap:4px">${badges.join('')}</div>` : ''}
-    </div>
-    <!-- 마감세일 배너 -->
+    </div>`}
+    <!-- 마감세일 카드 헤더 -->
     ${saleBanner}
     <!-- 사진 -->
     ${photoHtml}
@@ -1717,6 +1754,7 @@ function submitPost(){
   renderChips();renderStories();renderGrid();renderSidebar();
   notifyFollowers(newMkt);
   checkBadge('post');
+  updateSaleBadge();
   toast('올라갔어요! 🎉');
 }
 
@@ -2033,7 +2071,7 @@ function updateDetailSaleBanner(p){
 }
 
 // 1분마다 배너/그리드 갱신
-setInterval(()=>{ renderSaleFeedBar(); renderGrid(); }, 30000);
+setInterval(()=>{ renderSaleFeedBar(); renderGrid(); updateSaleBadge(); }, 30000);
 
 // ── FEED SORT ────────────────────────────────────────────────────
 function setSort(type){
@@ -2054,14 +2092,39 @@ function setSort(type){
   renderGrid();
 }
 
+// ── SALE TAB ─────────────────────────────────────────────────────
+function openSaleTab(){
+  // 마감세일 필터 ON + 피드 최신순
+  saleOnly = true;
+  S.sortBy = 'latest';
+  // 정렬 탭 업데이트
+  ['latest','likes','near'].forEach(t=>{
+    const el=document.getElementById('sortTab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el) el.classList.toggle('on',t==='latest');
+  });
+  renderGrid();
+  // 피드 상단으로 스크롤
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateSaleBadge(){
+  const cnt = getActiveSales().length;
+  const el = document.getElementById('sale-badge');
+  if(el){ el.textContent=cnt||''; el.classList.toggle('show', cnt>0); }
+}
+
 // ── BOTTOM NAV ──────────────────────────────────────────────────
 function bnavClick(id, btn){
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  if(id==='home'){ /* 이미 메인 */ return; }
+  if(id==='home'){
+    saleOnly=false; setSort('latest');
+    return;
+  }
   if(id==='checklist') openCL();
   if(id==='follow')    openFW();
   if(id==='badge')     openBD();
+  if(id==='sale')      openSaleTab();
 }
 
 // ── CHECKLIST ────────────────────────────────────────────────────
@@ -2427,26 +2490,32 @@ getEarnedBadges(); // 기존 조건 재계산
 setSort('latest');
 // 마감세일 배너 초기화
 renderSaleFeedBar();
+updateSaleBadge();
 // 시드 데이터에 샘플 마감세일 추가 (처음 한 번만)
-if(!localStorage.getItem('jtt4_sale_seeded')){
+if(!localStorage.getItem('jtt4_sale_seeded')||localStorage.getItem('jtt4_sale_seeded')==='1'){
   const now = new Date();
   const e1 = new Date(now); e1.setHours(e1.getHours()+1, e1.getMinutes(), 0, 0);
   const e2 = new Date(now); e2.setHours(e2.getHours()+2, e2.getMinutes()+30, 0, 0);
   const salePosts = [
     {id:Date.now()+1, type:'sale', author:'시장지킴이', avatar:'🏮',
      market:'광장시장', shop:'은성횟집',
-     photos:['🐟','🍲'], caption:'오늘 동태 재고 소진 임박! 지금 반값에 드립니다 🎣',
-     saleItem:'동태탕 1인분', saleDiscount:'50% 할인 (6,000원→3,000원)', saleEndMs:e1.getTime(),
-     tags:['광장시장','마감세일','동태탕'], likes:14, comments:[], time:'10분 전', hot:false, pick:false},
-    {id:Date.now()+2, type:'sale', author:'망원탐험가', avatar:'🛒',
-     market:'망원시장', shop:'',
-     photos:['🥬','🫙'], caption:'오늘 입고된 제철 채소 마감 세일! 내일은 없어요.',
-     saleItem:'제철 채소 모둠', saleDiscount:'30% 할인', saleEndMs:e2.getTime(),
-     tags:['망원시장','마감세일','채소'], likes:8, comments:[], time:'20분 전', hot:false, pick:false},
+     photos:['🐟','🍲','🥢'], caption:'오늘 아침 속초 직송 생동태 입고했어요! 오늘 재고 소진 시 마감 🎣\n살이 탱탱하고 국물이 시원합니다. 마감 전 꼭 들러주세요!',
+     saleItem:'동태탕 1인분 (속초산 생동태)', saleDiscount:'50% 할인 · 6,000원 → 3,000원', saleEndMs:e1.getTime(),
+     tags:['광장시장','마감세일','동태탕','은성횟집'], likes:14, comments:[
+       {author:'단골손님', avatar:'🧡', text:'오늘 꼭 갑니다!', time:'5분 전'}
+     ], time:'10분 전', hot:false, pick:false},
+    {id:Date.now()+2, type:'sale', author:'망원채소가게', avatar:'🌿',
+     market:'망원시장', shop:'이모네 채소가게',
+     photos:['🥬','🌾','🥦'], caption:'새벽 4시 가락시장 직송 채소 오늘 마감 세일! 🌿\n시금치 500g · 쑥갓 한 단 · 열무 한 단 · 얼갈이 한 단 모두 포함. 아삭아삭 신선도 보장!',
+     saleItem:'시금치·쑥갓·열무·얼갈이 모둠 (각 한 단)', saleDiscount:'30% 할인 · 세트 7,000원 → 4,900원', saleEndMs:e2.getTime(),
+     tags:['망원시장','마감세일','시금치','쑥갓','열무','채소'], likes:8, comments:[
+       {author:'망원주부', avatar:'👩', text:'얼갈이 많이 남았나요?', time:'8분 전'},
+       {author:'망원채소가게', avatar:'🌿', text:'네! 아직 10단 남아있어요 😊', time:'6분 전'}
+     ], time:'20분 전', hot:false, pick:false},
   ];
   S.posts = [...salePosts, ...S.posts];
   save();
-  localStorage.setItem('jtt4_sale_seeded','1');
+  localStorage.setItem('jtt4_sale_seeded','2'); // v2
   renderSaleFeedBar(); renderGrid(); renderSidebar(); renderStories();
 }
 
