@@ -1,0 +1,2479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>장터통신</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf8f4;--bg2:#f0ece4;--bg3:#e4dfd5;
+  --text:#1a1510;--text2:#6a5c4a;--text3:#a09080;
+  --border:#ddd5c2;--border2:#c8baa4;
+  --red:#c13520;--redbg:#fdf0eb;--redbdr:#e8a070;
+  --gold:#9a6f0a;--goldbg:#fdf4dc;--goldbdr:#e8ca70;
+  --green:#1a6e3c;--greenbg:#e8f5ee;--greenbdr:#7ecb9f;
+  --r:12px;--rsm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+.hdr{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
+.hdr-inner{max-width:1180px;margin:0 auto;padding:0 16px;display:flex;align-items:center;height:54px;gap:10px;}
+.logo{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:700;color:var(--text);letter-spacing:-0.5px;flex-shrink:0;display:flex;align-items:center;gap:4px;}
+.logo-dot{width:7px;height:7px;background:var(--red);border-radius:50%;margin-bottom:6px;flex-shrink:0;}
+
+/* 위치 버튼 */
+.loc-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;
+  border:1px solid var(--border);background:#fff;color:var(--text2);
+  cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;font-family:inherit;
+}
+.loc-btn:hover{border-color:var(--red);color:var(--red);}
+.loc-btn.locating{border-color:var(--red);color:var(--red);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.loc-dot{width:7px;height:7px;border-radius:50%;background:var(--bg3);flex-shrink:0;}
+.loc-dot.active{background:#22c55e;}
+
+/* 지역 드롭다운 */
+.region-select{
+  padding:5px 10px;border-radius:20px;font-size:12px;font-weight:500;
+  border:1px solid var(--border);background:#fff;color:var(--text2);
+  cursor:pointer;font-family:inherit;outline:none;flex-shrink:0;
+}
+.region-select:focus{border-color:var(--red);}
+
+/* 시장 칩 */
+.mkt-bar{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;}
+.mkt-bar::-webkit-scrollbar{display:none;}
+.mchip{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.mchip.on{background:var(--text);color:#fff;border-color:var(--text);}
+.mchip:hover:not(.on){background:var(--bg2);}
+.mchip .dist{font-size:10px;opacity:.7;margin-left:3px;}
+
+.upload-btn{width:36px;height:36px;border-radius:50%;background:var(--red);border:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;transition:background .2s,transform .1s;}
+.upload-btn:hover{background:#a02a18;}
+.upload-btn:active{transform:scale(.93);}
+.profile-btn{width:36px;height:36px;border-radius:50%;background:var(--bg2);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;}
+.profile-btn:hover{border-color:var(--red);background:var(--redbg);}
+
+/* ── 위치 배너 ── */
+.loc-banner{background:var(--greenbg);border-bottom:1px solid var(--greenbdr);padding:8px 16px;display:none;}
+.loc-banner.show{display:block;}
+.loc-banner-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green);}
+.loc-banner-inner strong{font-weight:700;}
+
+/* ── STORY BAR ── */
+.story-bar{background:#fff;border-bottom:1px solid var(--border);padding:12px 0;overflow-x:auto;scrollbar-width:none;}
+.story-bar::-webkit-scrollbar{display:none;}
+.story-list{display:flex;gap:14px;padding:0 16px;max-width:1180px;margin:0 auto;}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0;}
+.story-ring{width:62px;height:62px;border-radius:50%;padding:2.5px;background:linear-gradient(135deg,#c13520,#e8a020);transition:transform .15s;}
+.story-ring:hover{transform:scale(1.06);}
+.story-ring.seen{background:var(--bg3);}
+.story-ring.add-ring{background:var(--bg3);}
+.story-ring.near-ring{background:linear-gradient(135deg,#22c55e,#16a34a);}
+.story-inner{width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--bg2);overflow:hidden;}
+.story-label{font-size:11px;color:var(--text2);max-width:62px;text-align:center;line-height:1.3;}
+.story-dist{font-size:10px;color:var(--green);font-weight:700;}
+
+/* ── PAGE LAYOUT ── */
+.page-wrap{max-width:1180px;margin:0 auto;padding:0 0 100px;display:grid;grid-template-columns:1fr 300px;gap:0;align-items:start;}
+@media(max-width:860px){.page-wrap{grid-template-columns:1fr;}.sidebar{display:none;}}
+.feed-col{max-width:480px;width:100%;margin:0 auto;}
+.main{min-width:0;}
+
+/* ── GRID ── */
+/* ── FEED CARDS (인스타 스타일 세로 피드) ── */
+.grid{display:flex;flex-direction:column;gap:0;}
+
+/* 피드 카드 */
+.gitem{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  cursor:default;
+}
+.gitem.sale-item{border-top:2px solid #f0b030;}
+
+/* 카드 헤더 (프로필 영역) */
+.gi-head{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;
+}
+.gi-av{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--bg2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.gi-author{font-size:13px;font-weight:700;color:var(--text);}
+.gi-meta{font-size:11px;color:var(--text3);}
+.gi-more{margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);padding:0 4px;}
+
+/* 사진 영역 — 1:1 정사각형 꽉 채움 */
+.gi-photo{
+  width:100%;aspect-ratio:1;
+  background:#1a1510;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.gi-photo-bg{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:min(60vw,380px);
+  opacity:.22;filter:blur(6px);transform:scale(1.2);
+  pointer-events:none;user-select:none;line-height:1;
+}
+.gi-photo-main{
+  position:relative;z-index:1;
+  font-size:min(36vw,220px);line-height:1;
+  user-select:none;
+}
+/* 사진 여러 장 슬라이더 */
+.gi-photos-strip{
+  display:flex;width:100%;height:100%;
+  overflow:hidden;position:relative;
+}
+.gi-photo-slide{
+  min-width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;flex-shrink:0;
+  transition:transform .3s ease;
+}
+.gi-photo-dots{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:4px;z-index:2;
+}
+.gi-pdot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.5);}
+.gi-pdot.on{background:#fff;}
+
+/* 별점 */
+.gi-stars{font-size:12px;color:#e8b020;letter-spacing:1px;}
+
+/* 액션 버튼 */
+.gi-actions{
+  display:flex;align-items:center;gap:0;
+  padding:6px 8px 0;
+}
+.gi-btn{
+  display:flex;align-items:center;gap:4px;
+  background:none;border:none;cursor:pointer;
+  font-size:13px;color:var(--text2);
+  padding:6px 8px;border-radius:var(--rsm);
+  transition:all .15s;font-family:inherit;
+}
+.gi-btn:hover{background:var(--bg2);}
+.gi-btn.liked{color:var(--red);}
+.gi-save{margin-left:auto;}
+
+/* 좋아요 수 */
+.gi-likes{
+  padding:0 14px 4px;
+  font-size:13px;font-weight:700;color:var(--text);
+}
+
+/* 캡션 */
+.gi-caption{
+  padding:2px 14px 8px;
+  font-size:13px;color:var(--text);line-height:1.65;
+}
+.gi-caption strong{font-weight:700;}
+.gi-caption-more{
+  color:var(--text3);cursor:pointer;font-size:13px;
+}
+.gi-caption-more:hover{color:var(--text2);}
+
+/* 댓글 미리보기 */
+.gi-comment-preview{
+  padding:0 14px 4px;
+  font-size:13px;color:var(--text2);line-height:1.5;
+}
+.gi-comment-preview .cname{font-weight:700;margin-right:4px;}
+
+/* 댓글 입력 */
+.gi-comment-input{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 14px 12px;border-top:1px solid var(--bg2);margin-top:4px;
+}
+.gi-cinput{
+  flex:1;border:none;outline:none;font-size:13px;
+  font-family:inherit;color:var(--text);background:transparent;
+  padding:4px 0;
+}
+.gi-csubmit{
+  background:none;border:none;cursor:pointer;
+  font-size:12px;font-weight:700;color:var(--red);
+  font-family:inherit;padding:0;flex-shrink:0;
+}
+
+/* 시간 */
+.gi-time{padding:0 14px 10px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;}
+
+/* 태그 */
+.gi-tags{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 6px;}
+.gi-tag{font-size:12px;color:var(--blue);}
+
+/* 마감세일 배너 */
+.gi-sale-banner{
+  background:linear-gradient(90deg,#f0b030,#e85c00);
+  padding:7px 14px;display:flex;align-items:center;gap:8px;
+}
+.gi-sale-item{font-size:13px;font-weight:700;color:#fff;flex:1;}
+.gi-sale-timer{font-size:13px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
+
+/* near/section 헤더 */
+.section-hdr{display:flex;align-items:center;gap:8px;padding:14px 14px 8px;background:#fff;border-bottom:1px solid var(--border);}
+.section-hdr-title{font-size:14px;font-weight:700;color:var(--text);}
+.section-hdr-sub{font-size:12px;color:var(--text3);}
+.goverlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;gap:18px;transition:background .2s;}
+.gitem:hover .goverlay{background:rgba(0,0,0,.38);}
+.gstat{display:flex;align-items:center;gap:5px;color:#fff;font-size:13px;font-weight:700;opacity:0;transition:opacity .2s;}
+.gitem:hover .gstat{opacity:1;}
+.gbadge{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border-radius:10px;padding:2px 7px;font-size:10px;color:#fff;font-weight:500;}
+.gmkt{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.65),transparent);padding:18px 8px 6px;font-size:10px;color:#fff;}
+.gmkt-name{font-weight:700;font-size:11px;}
+.gmkt-dist{font-size:10px;opacity:.85;}
+.multi-icon{position:absolute;top:6px;left:6px;font-size:13px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));}
+
+/* ── NEAR SECTION HEADER ── */
+.section-hdr{display:flex;align-items:center;gap:8px;padding:12px 0 8px;margin-bottom:0;}
+.section-hdr-title{font-size:13px;font-weight:700;color:var(--text);}
+.section-hdr-sub{font-size:11px;color:var(--text3);}
+.section-divider{height:1px;background:var(--border);margin:16px 0 12px;}
+
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:14px;position:sticky;top:54px;border-left:1px solid var(--border);padding:16px 16px 100px;}
+.sc{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.sc-head{padding:12px 14px 0;}
+.sc-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;}
+.sc-tab-row{display:flex;padding:10px 14px 0;}
+.sc-tab{font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;padding:5px 0;margin-right:14px;font-family:inherit;font-weight:500;border-bottom:2px solid transparent;transition:all .15s;}
+.sc-tab.on{color:var(--red);border-bottom-color:var(--red);}
+.rank-list{padding:10px 0 4px;}
+.rank-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:background .15s;}
+.rank-item:hover{background:var(--bg2);}
+.rank-num{font-size:16px;font-weight:700;color:var(--bg3);min-width:22px;text-align:center;flex-shrink:0;}
+.rank-num.top{color:var(--red);}
+.rank-thumb{width:44px;height:44px;border-radius:var(--rsm);background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.rank-info{flex:1;min-width:0;}
+.rank-title{font-size:12px;font-weight:500;color:var(--text);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rank-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.rank-likes{font-size:12px;font-weight:700;color:var(--red);flex-shrink:0;}
+
+/* 근처 시장 사이드바 */
+.near-mkt-list{padding:8px 0 4px;}
+.near-mkt-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:background .15s;}
+.near-mkt-item:hover{background:var(--bg2);}
+.near-mkt-icon{width:36px;height:36px;border-radius:var(--rsm);background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.near-mkt-info{flex:1;min-width:0;}
+.near-mkt-name{font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.near-mkt-addr{font-size:11px;color:var(--text3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.near-mkt-dist{font-size:11px;font-weight:700;color:var(--green);flex-shrink:0;}
+
+.notice-box{background:var(--goldbg);border:1px solid var(--goldbdr);border-radius:var(--r);padding:14px;}
+.notice-title{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:5px;}
+.notice-body{font-size:12px;color:var(--text2);line-height:1.65;}
+
+/* ── DETAIL MODAL ── */
+.doverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s;}
+.doverlay.open{opacity:1;pointer-events:all;}
+.dmodal{background:#fff;width:100%;max-width:880px;max-height:90vh;display:flex;overflow:hidden;transform:scale(.96);transition:transform .22s;}
+.doverlay.open .dmodal{transform:scale(1);}
+@media(max-width:640px){.doverlay{padding:0;align-items:flex-end;}.dmodal{flex-direction:column;max-height:94vh;border-radius:20px 20px 0 0;}}
+.dphoto{flex:1;background:#111;display:flex;align-items:center;justify-content:center;min-height:360px;position:relative;flex-shrink:0;overflow:hidden;}
+@media(max-width:640px){.dphoto{min-height:220px;flex:none;}}
+.dprev,.dnext{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.85);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;z-index:2;}
+.dprev{left:10px;}.dnext{right:10px;}
+.pdots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;}
+.pdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;}
+.pdot.on{background:#fff;}
+.dinfo{width:320px;display:flex;flex-direction:column;flex-shrink:0;border-left:1px solid var(--border);}
+@media(max-width:640px){.dinfo{width:100%;border-left:none;border-top:1px solid var(--border);flex:1;min-height:0;}}
+.dinfo-top{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.dav{width:36px;height:36px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.dauthor{font-size:13px;font-weight:700;}
+.dmeta{font-size:11px;color:var(--text3);margin-top:2px;}
+.dclose{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dclose:hover{background:var(--bg3);}
+.dinfo-scroll{flex:1;overflow-y:auto;padding:12px 14px;}
+.dstars{font-size:14px;color:#e8b020;letter-spacing:1px;margin-bottom:8px;}
+.dcap{font-size:13px;line-height:1.72;margin-bottom:10px;}
+.dcap strong{font-weight:700;}
+.dtags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.dtag{font-size:12px;color:var(--red);}
+.dcomments{border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:9px;}
+.dcmt{display:flex;gap:8px;}
+.dcmtav{width:24px;height:24px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.dcmtb{flex:1;}
+.dcmtname{font-size:11px;font-weight:700;color:var(--text2);}
+.dcmttxt{font-size:12px;color:var(--text2);line-height:1.5;}
+.dcmttime{font-size:10px;color:var(--text3);margin-top:2px;}
+.dinfo-foot{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;}
+.dactions{display:flex;align-items:center;gap:2px;margin-bottom:6px;}
+.dact{display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--text2);padding:5px 8px;border-radius:var(--rsm);transition:all .15s;font-family:inherit;}
+.dact:hover{background:var(--bg2);}
+.dact.liked{color:var(--red);}
+.dlikecount{font-size:12px;font-weight:700;margin-bottom:4px;}
+.dtime{font-size:11px;color:var(--text3);margin-bottom:8px;}
+.dcmt-row{display:flex;gap:8px;align-items:center;}
+.dcinput{flex:1;border:none;outline:none;font-size:13px;font-family:inherit;color:var(--text);background:transparent;border-bottom:1px solid var(--border);padding:5px 2px;}
+.dcinput:focus{border-color:var(--red);}
+.dcsubmit{background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--red);font-family:inherit;padding:0 2px;flex-shrink:0;}
+
+/* ── UPLOAD MODAL ── */
+.uoverlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.uoverlay.open{opacity:1;pointer-events:all;}
+.umodal{background:#fff;border-radius:20px;width:100%;max-width:480px;transform:translateY(20px);transition:transform .25s;overflow:hidden;max-height:90vh;display:flex;flex-direction:column;}
+.uoverlay.open .umodal{transform:translateY(0);}
+.uhdr{padding:15px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.utitle{font-size:15px;font-weight:700;}
+.uclose{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.ubody{padding:16px 18px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;}
+.ppicker{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;}
+.ppick{aspect-ratio:1;border-radius:var(--rsm);background:var(--bg2);border:2px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:all .15s;position:relative;}
+.ppick:hover{border-color:var(--border2);}
+.ppick.sel{border-color:var(--red);}
+.ppick.sel::after{content:'✓';position:absolute;top:3px;right:3px;width:16px;height:16px;background:var(--red);color:#fff;border-radius:50%;font-size:10px;font-weight:700;line-height:16px;text-align:center;}
+.pflabel{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px;}
+.pfrow{display:flex;gap:8px;}
+.pfrow>*{flex:1;}
+.ubody select,.ubody input[type=text],.ubody textarea{width:100%;padding:9px 12px;border-radius:var(--rsm);border:1px solid var(--border);font-size:13px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;}
+.ubody select:focus,.ubody input:focus,.ubody textarea:focus{border-color:var(--red);}
+.ubody textarea{height:72px;resize:none;line-height:1.6;}
+.ustars{display:flex;gap:4px;margin-top:2px;}
+.ustar{font-size:24px;cursor:pointer;color:var(--bg3);transition:color .1s,transform .1s;}
+.ustar.on{color:#e8b020;}
+.ufoot{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--border);flex-shrink:0;}
+.ubtn-c{padding:9px 18px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--text2);font-family:inherit;}
+.ubtn-s{padding:9px 22px;border-radius:20px;font-size:13px;font-weight:700;border:none;background:var(--red);color:#fff;cursor:pointer;font-family:inherit;}
+.ubtn-s:hover{background:#a02a18;}
+
+/* 시장 검색 */
+.mkt-search{width:100%;padding:8px 12px;border-radius:var(--rsm);border:1px solid var(--border);font-size:13px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;margin-bottom:6px;}
+.mkt-search:focus{border-color:var(--red);}
+.mkt-dropdown{max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--rsm);background:#fff;display:none;}
+.mkt-dropdown.open{display:block;}
+.mkt-opt{padding:8px 12px;font-size:13px;cursor:pointer;color:var(--text2);}
+.mkt-opt:hover{background:var(--bg2);}
+.mkt-opt .opt-dist{font-size:11px;color:var(--green);float:right;}
+.mkt-selected{padding:8px 12px;font-size:13px;background:var(--redbg);border:1px solid var(--redbdr);border-radius:var(--rsm);color:var(--red);font-weight:500;}
+
+/* PROFILE MODAL */
+.poverlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.poverlay.open{opacity:1;pointer-events:all;}
+.pmodal{background:var(--bg);border-radius:20px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;transform:translateY(20px);transition:transform .25s;}
+.poverlay.open .pmodal{transform:translateY(0);}
+
+/* 프로필 헤더 */
+.pmhdr{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;gap:12px;flex-shrink:0;}
+.pmhdr-title{font-size:15px;font-weight:700;flex:1;}
+.pmclose{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.pmclose:hover{background:var(--bg3);}
+
+/* 프로필 카드 */
+.pm-profile{background:#fff;padding:20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.pm-av{width:72px;height:72px;border-radius:50%;background:var(--bg2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;cursor:pointer;transition:all .15s;}
+.pm-av:hover{border-color:var(--red);}
+.pm-name{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.pm-name-input{font-size:16px;font-weight:700;border:none;border-bottom:2px solid var(--red);outline:none;background:transparent;font-family:inherit;color:var(--text);padding:2px 4px;width:160px;}
+.pm-bio{font-size:13px;color:var(--text2);margin-bottom:2px;}
+.pm-edit-btn{margin-left:auto;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .15s;flex-shrink:0;}
+.pm-edit-btn:hover{border-color:var(--red);color:var(--red);}
+.pm-edit-btn.saving{background:var(--red);color:#fff;border-color:var(--red);}
+
+/* 통계 바 */
+.pm-stats{background:#fff;border-bottom:1px solid var(--border);padding:12px 20px;display:flex;gap:28px;flex-shrink:0;}
+.pm-stat{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.pm-stat-num{font-size:20px;font-weight:700;color:var(--text);}
+.pm-stat-label{font-size:11px;color:var(--text3);}
+
+/* 탭 */
+.pm-tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;flex-shrink:0;}
+.pm-tab{flex:1;padding:11px 0;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--text3);font-family:inherit;border-bottom:2px solid transparent;transition:all .15s;}
+.pm-tab.on{color:var(--text);border-bottom-color:var(--red);}
+
+/* 게시글 그리드 */
+.pm-grid-wrap{overflow-y:auto;flex:1;}
+.pm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;padding:1px;}
+.pm-item{aspect-ratio:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:all .15s;}
+.pm-item:hover .pm-overlay{opacity:1;}
+.pm-overlay{position:absolute;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity .2s;}
+.pm-ostat{color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;gap:4px;}
+.pm-item-mkt{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.65),transparent);padding:14px 6px 5px;font-size:10px;color:#fff;font-weight:500;}
+.pm-del{position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(0,0,0,.6);border:none;border-radius:50%;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
+.pm-item:hover .pm-del{opacity:1;}
+
+/* 좋아요 탭 */
+.pm-liked-list{display:flex;flex-direction:column;gap:0;overflow-y:auto;flex:1;}
+.pm-liked-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.pm-liked-item:hover{background:var(--bg2);}
+.pm-liked-thumb{width:54px;height:54px;border-radius:var(--rsm);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.pm-liked-info{flex:1;min-width:0;}
+.pm-liked-cap{font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pm-liked-meta{font-size:11px;color:var(--text3);margin-top:3px;}
+.pm-liked-likes{font-size:12px;font-weight:700;color:var(--red);flex-shrink:0;}
+
+/* 방문 시장 탭 */
+.pm-mkt-list{display:flex;flex-direction:column;overflow-y:auto;flex:1;}
+.pm-mkt-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.pm-mkt-item:hover{background:var(--bg2);}
+.pm-mkt-icon-box{width:44px;height:44px;border-radius:var(--rsm);background:var(--redbg);border:1px solid var(--redbdr);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.pm-mkt-info{flex:1;}
+.pm-mkt-name{font-size:13px;font-weight:700;color:var(--text);}
+.pm-mkt-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.pm-mkt-cnt{font-size:12px;font-weight:700;color:var(--red);}
+
+/* 아바타 선택기 */
+.av-picker{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0;}
+.av-opt{width:38px;height:38px;border-radius:50%;border:2px solid transparent;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.av-opt:hover{border-color:var(--border2);}
+.av-opt.on{border-color:var(--red);background:var(--redbg);}
+
+/* 빈 상태 */
+.pm-empty{padding:48px 20px;text-align:center;color:var(--text3);}
+.pm-empty .ei{font-size:40px;margin-bottom:10px;}
+.pm-empty .et{font-size:14px;line-height:1.6;}
+
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:150;height:56px;}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;cursor:pointer;font-family:inherit;color:var(--text3);transition:color .15s;position:relative;}
+.bnav-btn.on{color:var(--red);}
+.bnav-btn:hover{color:var(--text2);}
+.bnav-icon{font-size:20px;line-height:1;}
+.bnav-label{font-size:10px;font-weight:500;}
+.bnav-badge{position:absolute;top:6px;right:calc(50% - 14px);min-width:16px;height:16px;background:var(--red);color:#fff;border-radius:8px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px;display:none;}
+.bnav-badge.show{display:flex;}
+
+/* ── CHECKLIST MODAL ── */
+.cloverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.cloverlay.open{opacity:1;pointer-events:all;}
+.clmodal{background:var(--bg);width:100%;max-width:680px;max-height:85vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);}
+.cloverlay.open .clmodal{transform:translateY(0);}
+.cl-hdr{background:#fff;border-bottom:1px solid var(--border);padding:0 18px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-radius:20px 20px 0 0;}
+.cl-hdr-title{font-size:15px;font-weight:700;flex:1;}
+.cl-close{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+/* 시장 선택 탭 */
+.cl-mkt-tabs{background:#fff;border-bottom:1px solid var(--border);padding:0 18px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;height:44px;align-items:center;}
+.cl-mkt-tabs::-webkit-scrollbar{display:none;}
+.cl-mkt-tab{padding:4px 12px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s;font-family:inherit;flex-shrink:0;}
+.cl-mkt-tab.on{background:var(--text);color:#fff;border-color:var(--text);}
+/* 입력 */
+.cl-input-row{padding:12px 18px;display:flex;gap:8px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;}
+.cl-input{flex:1;padding:9px 14px;border:1.5px solid var(--border);border-radius:22px;font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s;}
+.cl-input:focus{border-color:var(--red);}
+.cl-add-btn{padding:9px 16px;border-radius:22px;background:var(--red);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .2s;}
+.cl-add-btn:hover{background:#a02a18;}
+/* 리스트 */
+.cl-body{flex:1;overflow-y:auto;padding:8px 18px 80px;}
+.cl-section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px;padding:10px 0 6px;}
+.cl-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg2);}
+.cl-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cl-check.done{background:var(--red);border-color:var(--red);}
+.cl-check.done::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
+.cl-item-text{flex:1;font-size:14px;color:var(--text);transition:all .2s;}
+.cl-item-text.done{text-decoration:line-through;color:var(--text3);}
+.cl-item-mkt{font-size:11px;color:var(--text3);}
+.cl-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;line-height:1;}
+.cl-del:hover{color:var(--red);}
+.cl-empty{padding:40px 20px;text-align:center;color:var(--text3);font-size:14px;}
+.cl-progress{padding:10px 18px 0;background:#fff;flex-shrink:0;}
+.cl-prog-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.cl-prog-fill{height:100%;background:var(--red);border-radius:2px;transition:width .4s ease;}
+.cl-prog-label{font-size:11px;color:var(--text3);padding-bottom:8px;}
+
+/* ── FOLLOW MODAL ── */
+.fwoverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.fwoverlay.open{opacity:1;pointer-events:all;}
+.fwmodal{background:var(--bg);width:100%;max-width:680px;max-height:85vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);}
+.fwoverlay.open .fwmodal{transform:translateY(0);}
+.fw-hdr{background:#fff;border-bottom:1px solid var(--border);padding:0 18px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-radius:20px 20px 0 0;}
+.fw-hdr-title{font-size:15px;font-weight:700;flex:1;}
+.fw-close{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.fw-body{flex:1;overflow-y:auto;padding:8px 0 80px;}
+.fw-section{padding:12px 18px 4px;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px;}
+.fw-item{display:flex;align-items:center;gap:12px;padding:12px 18px;transition:background .15s;}
+.fw-item:hover{background:var(--bg2);}
+.fw-icon{width:48px;height:48px;border-radius:var(--rsm);background:var(--redbg);border:1px solid var(--redbdr);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.fw-info{flex:1;min-width:0;}
+.fw-name{font-size:14px;font-weight:700;color:var(--text);}
+.fw-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.fw-new-badge{font-size:10px;background:var(--red);color:#fff;border-radius:8px;padding:2px 7px;font-weight:700;flex-shrink:0;display:none;}
+.fw-new-badge.show{display:block;}
+.fw-follow-btn{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .2s;flex-shrink:0;}
+.fw-follow-btn.following{background:var(--red);color:#fff;border-color:var(--red);}
+.fw-follow-btn:hover:not(.following){border-color:var(--red);color:var(--red);}
+.fw-alert-row{padding:12px 18px;background:var(--goldbg);border-top:1px solid var(--goldbdr);border-bottom:1px solid var(--goldbdr);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.fw-alert-txt{font-size:12px;color:var(--gold);flex:1;line-height:1.5;}
+.fw-alert-toggle{width:40px;height:22px;border-radius:11px;background:var(--bg3);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.fw-alert-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;}
+.fw-alert-toggle.on{background:var(--gold);}
+.fw-alert-toggle.on::after{transform:translateX(18px);}
+
+/* ── BADGE MODAL ── */
+.bdoverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.bdoverlay.open{opacity:1;pointer-events:all;}
+.bdmodal{background:var(--bg);width:100%;max-width:680px;max-height:85vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);}
+.bdoverlay.open .bdmodal{transform:translateY(0);}
+.bd-hdr{background:#fff;border-bottom:1px solid var(--border);padding:0 18px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-radius:20px 20px 0 0;}
+.bd-hdr-title{font-size:15px;font-weight:700;flex:1;}
+.bd-close{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.bd-summary{background:#fff;border-bottom:1px solid var(--border);padding:16px 18px;display:flex;align-items:center;gap:16px;flex-shrink:0;}
+.bd-level-ring{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8ca20);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.bd-level-num{font-size:22px;font-weight:700;color:#fff;line-height:1;}
+.bd-level-lbl{font-size:10px;color:rgba(255,255,255,.85);font-weight:500;}
+.bd-summary-info{flex:1;}
+.bd-level-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.bd-xp-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.bd-xp-fill{height:100%;background:linear-gradient(90deg,var(--gold),#e8ca20);border-radius:3px;transition:width .6s ease;}
+.bd-xp-label{font-size:11px;color:var(--text3);}
+.bd-body{flex:1;overflow-y:auto;padding:12px 18px 80px;}
+.bd-section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px;padding:10px 0 10px;}
+.bd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.bd-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;transition:all .2s;}
+.bd-card.earned{border-color:var(--goldbdr);background:var(--goldbg);}
+.bd-card.locked{opacity:.45;filter:grayscale(.6);}
+.bd-card-icon{font-size:32px;line-height:1;}
+.bd-card-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.3;}
+.bd-card-desc{font-size:10px;color:var(--text3);line-height:1.4;}
+.bd-card-earned-tag{font-size:10px;color:var(--gold);font-weight:700;}
+.bd-card-prog{width:100%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:2px;}
+.bd-card-prog-fill{height:100%;background:var(--gold);border-radius:2px;}
+
+
+/* ── SALE ── */
+/* 글쓰기 타입 탭 */
+.utype-tabs{display:flex;gap:6px;padding:14px 18px 0;flex-shrink:0;}
+.utype-btn{flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .18s;text-align:center;}
+.utype-btn.on-review{background:var(--redbg);color:var(--red);border-color:var(--redbdr);}
+.utype-btn.on-sale{background:#fff8e6;color:#b35f00;border-color:#f0b030;}
+/* 마감세일 전용 입력 */
+.sale-fields{display:flex;flex-direction:column;gap:10px;}
+.sale-time-row{display:flex;gap:8px;align-items:center;}
+.sale-time-row input[type=time]{flex:1;padding:9px 12px;border-radius:var(--rsm);border:1px solid var(--border);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;}
+.sale-time-row input[type=time]:focus{border-color:#f0b030;}
+.sale-discount-row{display:flex;gap:8px;}
+.sale-discount-row input{flex:1;}
+.sale-price-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:10px;background:#fff8e6;border:1px solid #f0b030;font-size:12px;color:#b35f00;font-weight:700;}
+
+/* 그리드 마감세일 카드 */
+.gitem.sale-item{border:2px solid #f0b030;}
+.sale-overlay-badge{position:absolute;top:0;left:0;right:0;background:linear-gradient(135deg,#f0b030,#e85c00);padding:5px 8px;display:flex;align-items:center;justify-content:space-between;}
+.sale-badge-label{font-size:11px;font-weight:700;color:#fff;}
+.sale-timer{font-size:11px;color:rgba(255,255,255,.9);font-weight:500;font-variant-numeric:tabular-nums;}
+.sale-expired-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
+
+/* 상세 모달 마감세일 배너 */
+.sale-detail-banner{background:linear-gradient(135deg,#f0b030,#e85c00);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sale-detail-label{font-size:13px;font-weight:700;color:#fff;flex:1;}
+.sale-detail-timer{font-size:18px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
+
+/* 피드 상단 마감세일 배너 */
+.sale-feed-bar{background:linear-gradient(90deg,#f0b030,#e87020);padding:8px 16px;display:none;cursor:pointer;}
+.sale-feed-bar.show{display:block;}
+.sale-feed-bar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:500;}
+.sale-feed-bar-inner strong{font-weight:700;}
+.sale-feed-scroll{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:4px 0;}
+.sale-feed-scroll::-webkit-scrollbar{display:none;}
+.sale-feed-chip{background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);border-radius:20px;padding:3px 12px;font-size:12px;color:#fff;white-space:nowrap;flex-shrink:0;}
+.sale-feed-chip .sale-chip-timer{font-size:10px;opacity:.85;}
+
+
+/* ── FEED SORT BAR ── */
+.feed-sort-bar{
+  display:flex;align-items:center;
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:0;position:sticky;top:54px;z-index:100;
+}
+.sort-tab{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:11px 0;font-size:13px;font-weight:500;color:var(--text3);
+  border:none;background:none;cursor:pointer;font-family:inherit;
+  border-bottom:2px solid transparent;transition:all .18s;
+}
+.sort-tab.on{color:var(--text);border-bottom-color:var(--red);}
+.sort-tab:hover:not(.on){color:var(--text2);}
+.sort-tab .sort-icon{font-size:15px;}
+.sort-divider{width:1px;height:20px;background:var(--border);flex-shrink:0;}
+
+/* TOAST / EMPTY */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.gempty{grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--text3);}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="logo">장터통신<div class="logo-dot"></div></div>
+    <button class="loc-btn" id="locBtn" onclick="getLocation()">
+      <div class="loc-dot" id="locDot"></div>
+      <span id="locLabel">내 위치</span>
+    </button>
+    <select class="region-select" id="regionSelect" onchange="filterRegion(this.value)">
+      <option value="all">전국</option>
+    </select>
+    <div class="mkt-bar" id="mktBar"></div>
+    <button class="upload-btn" onclick="openUpload()" title="사진 올리기">＋</button>
+    <button class="profile-btn" onclick="openProfile()" id="profileBtn" title="내 페이지">😊</button>
+  </div>
+</header>
+
+<div class="loc-banner" id="locBanner">
+  <div class="loc-banner-inner">
+    <span>📍</span>
+    <span id="locBannerText"></span>
+  </div>
+</div>
+
+<div class="story-bar">
+  <div class="story-list" id="storyList"></div>
+</div>
+
+<!-- SALE FEED BAR -->
+<div class="sale-feed-bar" id="saleFeedBar" onclick="filterSaleOnly()">
+  <div class="sale-feed-bar-inner">
+    <span>⚡</span>
+    <strong>지금 마감세일 중!</strong>
+    <div class="sale-feed-scroll" id="saleFeedScroll"></div>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <main class="main">
+    <div class="feed-col">
+    <!-- 정렬 토글 바 -->
+    <div class="feed-sort-bar">
+      <button class="sort-tab on" id="sortTabLatest" onclick="setSort('latest')">
+        <span class="sort-icon">🕐</span> 최신순
+      </button>
+      <div class="sort-divider"></div>
+      <button class="sort-tab" id="sortTabLikes" onclick="setSort('likes')">
+        <span class="sort-icon">🔥</span> 인기순
+      </button>
+      <div class="sort-divider"></div>
+      <button class="sort-tab" id="sortTabNear" onclick="setSort('near')">
+        <span class="sort-icon">📍</span> 거리순
+      </button>
+    </div>
+    <div id="nearSection" style="display:none">
+      <div class="section-hdr">
+        <span class="section-hdr-title">📍 근처 시장 후기</span>
+        <span class="section-hdr-sub" id="nearSubtitle"></span>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    </div><!-- /feed-col -->
+  </main>
+  <aside class="sidebar" id="sidebar"></aside>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="doverlay" id="doverlay" onclick="closeDOut(event)">
+  <div class="dmodal">
+    <div class="dphoto" id="dphoto">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(40vw,260px);opacity:.2;filter:blur(4px);transform:scale(1.2);pointer-events:none" id="dphotoMainBg"></div>
+      <span id="dphotoMain" style="position:relative;font-size:min(28vw,180px);line-height:1;z-index:1"></span>
+      <button class="dprev" id="dprev" onclick="slide(-1)">‹</button>
+      <button class="dnext" id="dnext" onclick="slide(1)">›</button>
+      <div class="pdots" id="pdots"></div>
+    </div>
+    <div class="dinfo">
+      <div class="dinfo-top">
+        <div class="dav" id="dav"></div>
+        <div><div class="dauthor" id="dauthor"></div><div class="dmeta" id="dmeta"></div></div>
+        <button class="dclose" onclick="closeDetail()">✕</button>
+      </div>
+      <div id="dSaleBanner" style="display:none" class="sale-detail-banner">
+        <div class="sale-detail-label" id="dSaleLabel"></div>
+        <div class="sale-detail-timer" id="dSaleTimer"></div>
+      </div>
+      <div class="dinfo-scroll">
+        <div class="dstars" id="dstars"></div>
+        <div class="dcap" id="dcap"></div>
+        <div class="dtags" id="dtags"></div>
+        <div class="dcomments" id="dcomments"></div>
+      </div>
+      <div class="dinfo-foot">
+        <div class="dactions">
+          <button class="dact" id="dlikeBtn" onclick="detailLike()">🤍 좋아요</button>
+          <button class="dact" onclick="focusDCmt()">💬 댓글</button>
+          <button class="dact" onclick="toast('링크 복사됨!')">🔗</button>
+        </div>
+        <div class="dlikecount" id="dlikeCount"></div>
+        <div class="dtime" id="dtime"></div>
+        <div class="dcmt-row">
+          <input class="dcinput" id="dcinput" placeholder="댓글 달기..." onkeydown="dcEnter(event)">
+          <button class="dcsubmit" onclick="addDCmt()">게시</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="poverlay" id="poverlay" onclick="closePOut(event)">
+  <div class="pmodal" id="pmodal">
+    <div class="pmhdr">
+      <div class="pmhdr-title" id="pmTitle">내 페이지</div>
+      <button class="pmclose" onclick="closeProfile()">✕</button>
+    </div>
+    <!-- 아바타 선택기 (접혔다 펼쳐짐) -->
+    <div class="av-picker" id="avPicker" style="display:none"></div>
+    <!-- 프로필 카드 -->
+    <div class="pm-profile">
+      <div class="pm-av" id="pmAv" onclick="toggleAvPicker()"></div>
+      <div>
+        <div id="pmNameWrap"></div>
+        <div class="pm-bio" id="pmBio"></div>
+      </div>
+      <button class="pm-edit-btn" id="pmEditBtn" onclick="toggleEdit()">수정</button>
+    </div>
+    <!-- 통계 -->
+    <div class="pm-stats" id="pmStats"></div>
+    <!-- 탭 -->
+    <div class="pm-tabs">
+      <button class="pm-tab on" onclick="switchPTab(this,'posts')">📸 게시물</button>
+      <button class="pm-tab" onclick="switchPTab(this,'liked')">❤️ 좋아요</button>
+      <button class="pm-tab" onclick="switchPTab(this,'markets')">🏮 방문 시장</button>
+    </div>
+    <!-- 콘텐츠 영역 -->
+    <div id="pmContent" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;"></div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="uoverlay" id="uoverlay" onclick="closeUOut(event)">
+  <div class="umodal">
+    <div class="uhdr">
+      <div class="utitle">📷 사진 올리기</div>
+      <button class="uclose" onclick="closeUpload()">✕</button>
+    </div>
+    <div class="utype-tabs">
+      <button class="utype-btn on-review" id="uTypeReview" onclick="setUType('review')">📝 방문 후기</button>
+      <button class="utype-btn" id="uTypeSale" onclick="setUType('sale')">⚡ 마감 세일</button>
+    </div>
+    <div class="ubody">
+      <div>
+        <div class="pflabel">사진 고르기 (최대 4장)</div>
+        <div class="ppicker" id="ppicker"></div>
+      </div>
+      <div>
+        <div class="pflabel">시장 선택</div>
+        <input class="mkt-search" id="mktSearch" placeholder="시장 이름 검색..." oninput="searchMkt(this.value)" autocomplete="off">
+        <div class="mkt-dropdown" id="mktDropdown"></div>
+        <div class="mkt-selected" id="mktSelected" style="display:none"></div>
+      </div>
+      <div>
+        <div class="pflabel">가게 이름 (선택)</div>
+        <input type="text" id="uShop" placeholder="예: 은성횟집, 순희네 빈대떡">
+      </div>
+      <div>
+        <div class="pflabel">별점</div>
+        <div class="ustars" id="ustars">
+          <span class="ustar on" data-v="1" onclick="setStar(1)">★</span>
+          <span class="ustar on" data-v="2" onclick="setStar(2)">★</span>
+          <span class="ustar on" data-v="3" onclick="setStar(3)">★</span>
+          <span class="ustar on" data-v="4" onclick="setStar(4)">★</span>
+          <span class="ustar on" data-v="5" onclick="setStar(5)">★</span>
+        </div>
+      </div>
+      <!-- 마감세일 전용 필드 -->
+      <div id="saleFields" style="display:none" class="sale-fields">
+        <div>
+          <div class="pflabel">할인 정보</div>
+          <div class="sale-discount-row">
+            <input type="text" id="saleItem" placeholder="예: 생동태, 녹두빈대떡, 광어회">
+            <input type="text" id="saleDiscount" placeholder="예: 50% 할인, 1만원 → 5천원">
+          </div>
+        </div>
+        <div>
+          <div class="pflabel">⏰ 마감 시간</div>
+          <div class="sale-time-row">
+            <input type="time" id="saleEndTime">
+            <span style="font-size:13px;color:var(--text3)">까지</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="pflabel" id="uCapLabel">한마디</div>
+        <textarea id="uCap" placeholder="어떤 시장, 어떤 맛이었나요? 솔직하게 남겨주세요 🏮"></textarea>
+      </div>
+    </div>
+    <div class="ufoot">
+      <button class="ubtn-c" onclick="closeUpload()">취소</button>
+      <button class="ubtn-s" onclick="submitPost()">올리기</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-btn on" id="bnav-home" onclick="bnavClick('home',this)">
+    <span class="bnav-icon">🏠</span>
+    <span class="bnav-label">홈</span>
+  </button>
+  <button class="bnav-btn" id="bnav-checklist" onclick="bnavClick('checklist',this)">
+    <span class="bnav-icon">📋</span>
+    <span class="bnav-label">장보기</span>
+    <span class="bnav-badge" id="cl-badge"></span>
+  </button>
+  <button class="bnav-btn" id="bnav-follow" onclick="bnavClick('follow',this)">
+    <span class="bnav-icon">🔔</span>
+    <span class="bnav-label">팔로우</span>
+    <span class="bnav-badge" id="fw-badge"></span>
+  </button>
+  <button class="bnav-btn" id="bnav-badge" onclick="bnavClick('badge',this)">
+    <span class="bnav-icon">🏅</span>
+    <span class="bnav-label">뱃지</span>
+  </button>
+  <button class="bnav-btn" id="bnav-profile" onclick="openProfile()">
+    <span class="bnav-icon" id="bnavProfileIcon">😊</span>
+    <span class="bnav-label">내 페이지</span>
+  </button>
+</nav>
+
+<!-- CHECKLIST MODAL -->
+<div class="cloverlay" id="cloverlay" onclick="closeCLOut(event)">
+  <div class="clmodal">
+    <div class="cl-hdr">
+      <span style="font-size:18px">📋</span>
+      <div class="cl-hdr-title">장보기 체크리스트</div>
+      <button class="cl-close" onclick="closeCL()">✕</button>
+    </div>
+    <div class="cl-mkt-tabs" id="clMktTabs"></div>
+    <div class="cl-progress">
+      <div class="cl-prog-bar"><div class="cl-prog-fill" id="clProgFill" style="width:0%"></div></div>
+      <div class="cl-prog-label" id="clProgLabel">0 / 0 완료</div>
+    </div>
+    <div class="cl-input-row">
+      <input class="cl-input" id="clInput" placeholder="살 것 입력... (예: 동태탕 1인분, 녹두빈대떡)" onkeydown="clEnter(event)">
+      <button class="cl-add-btn" onclick="addClItem()">추가</button>
+    </div>
+    <div class="cl-body" id="clBody"></div>
+  </div>
+</div>
+
+<!-- FOLLOW MODAL -->
+<div class="fwoverlay" id="fwoverlay" onclick="closeFWOut(event)">
+  <div class="fwmodal">
+    <div class="fw-hdr">
+      <span style="font-size:18px">🔔</span>
+      <div class="fw-hdr-title">시장 팔로우</div>
+      <button class="fw-close" onclick="closeFW()">✕</button>
+    </div>
+    <div class="fw-alert-row">
+      <div class="fw-alert-txt">팔로우한 시장에 새 후기가 올라오면<br><strong>알림</strong>을 받아요.</div>
+      <button class="fw-alert-toggle" id="fwAlertToggle" onclick="toggleFwAlert()"></button>
+    </div>
+    <div class="fw-body" id="fwBody"></div>
+  </div>
+</div>
+
+<!-- BADGE MODAL -->
+<div class="bdoverlay" id="bdoverlay" onclick="closeBDOut(event)">
+  <div class="bdmodal">
+    <div class="bd-hdr">
+      <span style="font-size:18px">🏅</span>
+      <div class="bd-hdr-title">뱃지 & 레벨</div>
+      <button class="bd-close" onclick="closeBD()">✕</button>
+    </div>
+    <div class="bd-summary" id="bdSummary"></div>
+    <div class="bd-body" id="bdBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 전국 전통시장 데이터 (위경도 포함) ────────────────────────────
+const ALL_MKTS = [
+  // 서울
+  {name:'광장시장',    region:'서울',icon:'🥟',lat:37.5699,lng:126.9988,addr:'서울 종로구 종로 266'},
+  {name:'통인시장',    region:'서울',icon:'🪙',lat:37.5796,lng:126.9697,addr:'서울 종로구 통인동 10-1'},
+  {name:'남대문시장',  region:'서울',icon:'🧥',lat:37.5591,lng:126.9756,addr:'서울 중구 남대문시장4길 21'},
+  {name:'망원시장',    region:'서울',icon:'🛒',lat:37.5551,lng:126.9100,addr:'서울 마포구 포은로8길 14'},
+  {name:'노량진수산시장',region:'서울',icon:'🦑',lat:37.5142,lng:126.9426,addr:'서울 동작구 노들로 674'},
+  {name:'경동시장',    region:'서울',icon:'🌿',lat:37.5826,lng:127.0421,addr:'서울 동대문구 고산자로36길 20'},
+  {name:'마장축산물시장',region:'서울',icon:'🥩',lat:37.5678,lng:127.0340,addr:'서울 성동구 마장로 210'},
+  {name:'가락시장',    region:'서울',icon:'🍅',lat:37.4916,lng:127.1227,addr:'서울 송파구 양재대로 932'},
+  {name:'동대문종합시장',region:'서울',icon:'🧵',lat:37.5686,lng:127.0095,addr:'서울 중구 을지로 258'},
+  {name:'중부시장',    region:'서울',icon:'🫙',lat:37.5659,lng:126.9958,addr:'서울 중구 을지로 68'},
+
+  // 경기
+  {name:'수원남문시장',region:'경기',icon:'🍖',lat:37.2756,lng:127.0124,addr:'경기 수원시 팔달구 팔달문로 1'},
+  {name:'안양중앙시장',region:'경기',icon:'🥬',lat:37.3944,lng:126.9568,addr:'경기 안양시 만안구 안양로 279'},
+  {name:'부천자유시장',region:'경기',icon:'🛍️',lat:37.5033,lng:126.7858,addr:'경기 부천시 소사구 소사로'},
+  {name:'의정부제일시장',region:'경기',icon:'🍜',lat:37.7377,lng:127.0444,addr:'경기 의정부시 의정부동'},
+  {name:'일산서구시장',region:'경기',icon:'🍱',lat:37.6762,lng:126.7637,addr:'경기 고양시 일산서구'},
+  {name:'분당정자시장',region:'경기',icon:'🥗',lat:37.3596,lng:127.1051,addr:'경기 성남시 분당구 정자동'},
+
+  // 인천
+  {name:'인천종합어시장',region:'인천',icon:'🐠',lat:37.4685,lng:126.6215,addr:'인천 중구 항동7가 1-1'},
+  {name:'소래포구시장',region:'인천',icon:'🦀',lat:37.3856,lng:126.7309,addr:'인천 남동구 소래역로 14'},
+  {name:'신포국제시장',region:'인천',icon:'🌍',lat:37.4748,lng:126.6212,addr:'인천 중구 신포로27번길 1'},
+
+  // 부산
+  {name:'자갈치시장',  region:'부산',icon:'🐟',lat:35.0966,lng:129.0287,addr:'부산 중구 자갈치해안로 52'},
+  {name:'부산국제시장',region:'부산',icon:'🏮',lat:35.1004,lng:129.0293,addr:'부산 중구 신창동4가 14'},
+  {name:'깡통시장',    region:'부산',icon:'🥫',lat:35.1008,lng:129.0279,addr:'부산 중구 부평동2가'},
+  {name:'부전시장',    region:'부산',icon:'🍊',lat:35.1576,lng:129.0577,addr:'부산 부산진구 전포대로 209'},
+  {name:'기장시장',    region:'부산',icon:'🦞',lat:35.2446,lng:129.2222,addr:'부산 기장군 기장읍 기장해안로 20'},
+
+  // 대구
+  {name:'서문시장',    region:'대구',icon:'🧶',lat:35.8699,lng:128.5791,addr:'대구 중구 큰장로26길 45'},
+  {name:'칠성시장',    region:'대구',icon:'🐓',lat:35.8740,lng:128.6063,addr:'대구 북구 칠성1가 144'},
+  {name:'달성공원시장',region:'대구',icon:'🌳',lat:35.8759,lng:128.5796,addr:'대구 중구 달성로 35'},
+
+  // 광주
+  {name:'양동시장',    region:'광주',icon:'🍋',lat:35.1472,lng:126.9010,addr:'광주 서구 천변좌로 268'},
+  {name:'대인시장',    region:'광주',icon:'🎨',lat:35.1483,lng:126.9188,addr:'광주 동구 대인로 30'},
+
+  // 대전
+  {name:'중앙시장',    region:'대전',icon:'🥐',lat:36.3281,lng:127.4275,addr:'대전 중구 중앙로 155'},
+  {name:'유천시장',    region:'대전',icon:'🌽',lat:36.3178,lng:127.4051,addr:'대전 중구 유천동'},
+
+  // 울산
+  {name:'울산중앙시장',region:'울산',icon:'🐋',lat:35.5442,lng:129.3119,addr:'울산 중구 번영로 70'},
+
+  // 강원
+  {name:'강릉중앙시장',region:'강원',icon:'🌊',lat:37.7522,lng:128.8782,addr:'강원 강릉시 금성로 21'},
+  {name:'속초관광수산시장',region:'강원',icon:'🦐',lat:38.2087,lng:128.5923,addr:'강원 속초시 중앙로 147'},
+  {name:'춘천중앙시장',region:'강원',icon:'🍗',lat:37.8806,lng:127.7298,addr:'강원 춘천시 중앙로 18'},
+  {name:'원주중앙시장',region:'강원',icon:'🥜',lat:37.3424,lng:127.9212,addr:'강원 원주시 중앙로 43'},
+
+  // 충청
+  {name:'청주육거리시장',region:'충청',icon:'🌶️',lat:36.6373,lng:127.4897,addr:'충북 청주시 상당구 육거리 4'},
+  {name:'천안중앙시장',region:'충청',icon:'🍑',lat:36.8069,lng:127.1531,addr:'충남 천안시 동남구 중앙로'},
+  {name:'아산온양시장',region:'충청',icon:'♨️',lat:36.7892,lng:127.0044,addr:'충남 아산시 온양6동'},
+
+  // 전라
+  {name:'전주남부시장',region:'전라',icon:'🍚',lat:35.8173,lng:127.1498,addr:'전북 전주시 완산구 풍남문3길 1'},
+  {name:'군산공설시장',region:'전라',icon:'🚢',lat:35.9678,lng:126.7360,addr:'전북 군산시 비응도동'},
+  {name:'목포공설시장',region:'전라',icon:'🐙',lat:34.8118,lng:126.3922,addr:'전남 목포시 영산로 43'},
+  {name:'여수서시장',  region:'전라',icon:'🦞',lat:34.7635,lng:127.6622,addr:'전남 여수시 중앙로 19'},
+  {name:'순천웃장',    region:'전라',icon:'🌾',lat:34.9506,lng:127.4874,addr:'전남 순천시 향동 1'},
+
+  // 경상
+  {name:'안동구시장',  region:'경상',icon:'🥟',lat:36.5697,lng:128.7233,addr:'경북 안동시 번영길 45'},
+  {name:'포항죽도시장',region:'경상',icon:'🐟',lat:36.0274,lng:129.3659,addr:'경북 포항시 북구 죽도동'},
+  {name:'경주성동시장',region:'경상',icon:'🏛️',lat:35.8459,lng:129.2090,addr:'경북 경주시 성동동'},
+  {name:'창원마산어시장',region:'경상',icon:'🦑',lat:35.2040,lng:128.5730,addr:'경남 창원시 마산합포구'},
+  {name:'진주중앙시장',region:'경상',icon:'🎏',lat:35.1948,lng:128.1080,addr:'경남 진주시 장대동'},
+
+  // 제주
+  {name:'제주동문시장',region:'제주',icon:'🍊',lat:33.5136,lng:126.5295,addr:'제주 제주시 관덕로14길 20'},
+  {name:'서귀포매일올레시장',region:'제주',icon:'🌺',lat:33.2497,lng:126.5626,addr:'제주 서귀포시 중정로 22'},
+];
+
+// 지역 목록
+const REGIONS = ['서울','경기','인천','부산','대구','광주','대전','울산','강원','충청','전라','경상','제주'];
+
+// ── PHOTO / SEED DATA ─────────────────────────────────────────────
+const PLIB = ['🐟','🥩','🍲','🥟','🍢','🥬','🦑','🍣','🥐','🧆','🍺','🦐','🍊','🌶️','🧅','🍱','🫙','🌊','🏮','🛒','🦀','🥚','🍜','🥘','🫓','🍵','🧁','🍋','🐙','🦞'];
+
+const SEEDS = [
+  {id:1,author:'마켓러버_지은',avatar:'👩',market:'광장시장',shop:'육회골목',star:5,
+   photos:['🥩','🍶','🥬'],
+   caption:'광장시장 육회골목 첫 방문 대성공 🥩\n한우육회가 이렇게 신선할 수 있구나 싶었어요. 겨자 소스에 찍어먹으면 진짜 별미!',
+   tags:['광장시장','육회','한우','시장맛집'],likes:128,
+   comments:[{author:'육회마니아',avatar:'🥩',text:'진짜 맛있죠!',time:'3시간 전'}],
+   time:'6시간 전',hot:true,pick:true},
+  {id:2,author:'동태탕헌터_범수',avatar:'🧔',market:'광장시장',shop:'은성횟집',star:5,
+   photos:['🐟','🍲'],
+   caption:'은성횟집 동태탕 🐟\n겨울마다 생각나는 그 맛. 국물이 맑은데 시원하고 깊어요.',
+   tags:['광장시장','은성횟집','동태탕'],likes:87,
+   comments:[{author:'광장단골',avatar:'🧡',text:'매주 가는 단골인데 최고에요',time:'2일 전'}],
+   time:'1일 전',hot:false,pick:true},
+  {id:3,author:'골목탐방_민준',avatar:'🚶',market:'통인시장',shop:'기름떡볶이 원조',star:5,
+   photos:['🍢','🥢','🏮'],
+   caption:'통인시장 기름떡볶이 완전 빠짐 🍢\n달달하고 고소한 맛이 완전 다른 세계예요.',
+   tags:['통인시장','기름떡볶이','서촌'],likes:74,
+   comments:[{author:'분식마니아',avatar:'🍜',text:'처음 먹고 충격받았어요!',time:'어제'}],
+   time:'2일 전',hot:false,pick:false},
+  {id:4,author:'수산시장덕후_태영',avatar:'🦑',market:'노량진수산시장',shop:'대광활어센터',star:5,
+   photos:['🐟','🍣','🌊','🦑'],
+   caption:'노량진 대광활어센터 ❤️\n30년 단골집 이유 있더라고요. 광어+우럭 신선도가 달라요.',
+   tags:['노량진','활어회','대광'],likes:62,
+   comments:[{author:'노량진단골',avatar:'🌊',text:'토요일 오전 일찍 가세요',time:'어제'}],
+   time:'2일 전',hot:false,pick:true},
+  {id:5,author:'막걸리여행_종민',avatar:'🍺',market:'광장시장',shop:'순희네 빈대떡',star:5,
+   photos:['🧆','🍺'],
+   caption:'순희네 빈대떡 + 막걸리 🫓\n3대째 이어온 집, 녹두를 직접 갈아서 바삭하고 고소해요.',
+   tags:['광장시장','순희네','빈대떡','막걸리'],likes:98,
+   comments:[{author:'광장단골2',avatar:'🧡',text:'순희네 빼고 광장시장 못 가요',time:'2일 전'}],
+   time:'4일 전',hot:true,pick:false},
+  {id:6,author:'속초여행자_민지',avatar:'🌊',market:'속초관광수산시장',shop:'',star:5,
+   photos:['🦐','🌊','🦀'],
+   caption:'속초 수산시장 새벽 경매 후 🦐\n갓 잡은 대하구이가 이 맛이구나... 다음에 또 올게요.',
+   tags:['속초','수산시장','대하','여행'],likes:54,
+   comments:[{author:'속초단골',avatar:'🐟',text:'새벽 5시에 가면 진짜 경매 볼 수 있어요!',time:'3일 전'}],
+   time:'3일 전',hot:false,pick:false},
+  {id:7,author:'부산갈매기_진호',avatar:'🐟',market:'자갈치시장',shop:'',star:5,
+   photos:['🐟','🍣','🌊'],
+   caption:'자갈치 아지매들의 손맛 🐟\n활어회 한 접시에 바다 냄새가 물씬. 부산 올 때마다 꼭 들러요.',
+   tags:['부산','자갈치','활어회','부산여행'],likes:112,
+   comments:[{author:'부산토박이',avatar:'🦞',text:'아지매들 흥정 잘 해야 해요 ㅎㅎ',time:'4일 전'}],
+   time:'5일 전',hot:true,pick:true},
+  {id:8,author:'전주한옥마을_혜미',avatar:'🍚',market:'전주남부시장',shop:'',star:5,
+   photos:['🍚','🌶️','🥬'],
+   caption:'전주남부시장 새벽 콩나물국밥 🍚\n해장에는 이게 최고. 뚝배기에서 보글보글 끓는 소리...',
+   tags:['전주','남부시장','콩나물국밥','새벽'],likes:76,
+   comments:[{author:'전주단골',avatar:'🥬',text:'새벽 6시부터 열어요! 줄 서야 해요',time:'5일 전'}],
+   time:'6일 전',hot:false,pick:false},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────
+let S = {
+  posts: JSON.parse(localStorage.getItem('jtt4')||'null') || SEEDS,
+  market: 'all',
+  region: 'all',
+  userLat: null,
+  userLng: null,
+  userAddr: '',
+  cur: null,
+  pidx: 0,
+  uStar: 5,
+  uPics: [],
+  uMarket: null,
+  sortBy: 'latest', // 'latest' | 'likes' | 'near'
+  sideTab: 'likes',
+};
+function save(){ localStorage.setItem('jtt4', JSON.stringify(S.posts)); }
+
+// ── 거리 계산 (Haversine) ─────────────────────────────────────────
+function haversine(lat1,lng1,lat2,lng2){
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function distLabel(km){
+  if(km<1) return Math.round(km*1000)+'m';
+  return km<10 ? km.toFixed(1)+'km' : Math.round(km)+'km';
+}
+
+function getMktData(name){ return ALL_MKTS.find(m=>m.name===name); }
+
+function distTo(mktName){
+  if(!S.userLat) return null;
+  const m = getMktData(mktName);
+  if(!m) return null;
+  return haversine(S.userLat,S.userLng,m.lat,m.lng);
+}
+
+// ── 위치 취득 ────────────────────────────────────────────────────
+function getLocation(){
+  const btn = document.getElementById('locBtn');
+  const label = document.getElementById('locLabel');
+  btn.classList.add('locating');
+  label.textContent = '위치 찾는 중...';
+
+  if(!navigator.geolocation){
+    toast('이 브라우저는 위치 기능을 지원하지 않아요');
+    btn.classList.remove('locating');
+    label.textContent = '내 위치';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      S.userLat = pos.coords.latitude;
+      S.userLng = pos.coords.longitude;
+      btn.classList.remove('locating');
+      document.getElementById('locDot').classList.add('active');
+
+      // 가장 가까운 시장 찾기
+      const nearest = [...ALL_MKTS]
+        .map(m=>({...m, dist: haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+        .sort((a,b)=>a.dist-b.dist)[0];
+
+      label.textContent = distLabel(nearest.dist)+' '+nearest.name;
+
+      // 배너
+      const banner = document.getElementById('locBanner');
+      banner.classList.add('show');
+      document.getElementById('locBannerText').innerHTML =
+        `현재 위치에서 <strong>${nearest.name}</strong>까지 <strong>${distLabel(nearest.dist)}</strong> — 주변 시장 후기를 먼저 보여드릴게요`;
+
+      // 주소 추정 (위경도 기반 지역 추정)
+      const nearRegion = ALL_MKTS
+        .map(m=>({region:m.region,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+        .sort((a,b)=>a.dist-b.dist)[0].region;
+      S.userAddr = nearRegion+'권';
+
+      renderChips();
+      renderStories();
+      renderGrid();
+      renderSidebar();
+    },
+    err => {
+      btn.classList.remove('locating');
+      label.textContent = '내 위치';
+      const msgs = {1:'위치 권한이 필요해요',2:'위치를 찾을 수 없어요',3:'시간이 초과됐어요'};
+      toast(msgs[err.code]||'위치 오류');
+    },
+    { timeout:10000, maximumAge:60000 }
+  );
+}
+
+// ── 지역 필터 ──────────────────────────────────────────────────────
+function buildRegionSelect(){
+  const el = document.getElementById('regionSelect');
+  el.innerHTML = '<option value="all">전국</option>' +
+    REGIONS.map(r=>`<option value="${r}">${r}</option>`).join('');
+}
+
+function filterRegion(region){
+  S.region = region;
+  S.market = 'all';
+  renderChips();
+  renderGrid();
+  renderSidebar();
+}
+
+// ── 시장 칩 ───────────────────────────────────────────────────────
+function renderChips(){
+  const el = document.getElementById('mktBar');
+  // 해당 지역 시장만
+  let mkts = S.region==='all' ? ALL_MKTS : ALL_MKTS.filter(m=>m.region===S.region);
+
+  // 위치 있으면 거리순 정렬, 없으면 그냥 나열
+  if(S.userLat){
+    mkts = mkts.map(m=>({...m,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+               .sort((a,b)=>a.dist-b.dist);
+  }
+
+  // 후기 있는 시장만 앞으로
+  const hasPost = new Set(S.posts.map(p=>p.market));
+  const withPost = mkts.filter(m=>hasPost.has(m.name));
+  const rest = mkts.filter(m=>!hasPost.has(m.name));
+  const sorted = [...withPost, ...rest];
+
+  el.innerHTML = `<div class="mchip${S.market==='all'?' on':''}" onclick="filterMkt('all',this)">전체</div>` +
+    sorted.map(m=>{
+      const dist = S.userLat ? haversine(S.userLat,S.userLng,m.lat,m.lng) : null;
+      return `<div class="mchip${S.market===m.name?' on':''}" onclick="filterMkt('${m.name}',this)">
+        ${m.icon} ${m.name.replace('시장','').replace('수산','').replace('공설','').replace('관광','')}
+        ${dist!==null?`<span class="dist">${distLabel(dist)}</span>`:''}
+      </div>`;
+    }).join('');
+}
+
+// ── 스토리 바 ─────────────────────────────────────────────────────
+function renderStories(){
+  const seen = new Set(JSON.parse(localStorage.getItem('jtt4_seen')||'[]'));
+  let mkts = S.region==='all' ? ALL_MKTS : ALL_MKTS.filter(m=>m.region===S.region);
+
+  let withPost = mkts.filter(m=>S.posts.some(p=>p.market===m.name));
+
+  if(S.userLat){
+    withPost = withPost.map(m=>({...m,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+                       .sort((a,b)=>a.dist-b.dist);
+  }
+
+  let html = `<div class="story-item" onclick="openUpload()">
+    <div class="story-ring add-ring"><div class="story-inner" style="font-size:22px">＋</div></div>
+    <div class="story-label">내 사진</div>
+  </div>`;
+
+  withPost.forEach(m=>{
+    const isNear = S.userLat && m.dist < 5;
+    const isSeen = seen.has(m.name);
+    const dist = S.userLat && m.dist != null ? m.dist : null;
+    html+=`<div class="story-item" onclick="storyCk('${m.name}')">
+      <div class="story-ring${isSeen?' seen':''}${isNear?' near-ring':''}">
+        <div class="story-inner">${m.icon}</div>
+      </div>
+      <div class="story-label">${m.name.replace('시장','').replace('수산','').replace('관광','')}</div>
+      ${dist!==null?`<div class="story-dist">${distLabel(dist)}</div>`:''}
+    </div>`;
+  });
+  document.getElementById('storyList').innerHTML = html;
+}
+
+function storyCk(name){
+  const seen = JSON.parse(localStorage.getItem('jtt4_seen')||'[]');
+  if(!seen.includes(name)){ seen.push(name); localStorage.setItem('jtt4_seen',JSON.stringify(seen)); }
+  filterMkt(name, null);
+  renderStories();
+  // 첫 번째 카드로 스크롤
+  setTimeout(()=>{
+    const first = document.querySelector('.gitem');
+    if(first) first.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 100);
+}
+
+// ── GRID ─────────────────────────────────────────────────────────
+function filtered(){
+  let list = S.posts.filter(p=>{
+    if(S.market!=='all' && p.market!==S.market) return false;
+    if(S.region!=='all'){
+      const m = getMktData(p.market);
+      if(!m || m.region!==S.region) return false;
+    }
+    if(saleOnly && p.type!=='sale') return false;
+    return true;
+  });
+
+  // 마감세일은 항상 최상단 고정
+  const sales   = list.filter(p=>p.type==='sale' && isSaleActive(p));
+  const regular = list.filter(p=>!(p.type==='sale' && isSaleActive(p)));
+
+  // 정렬
+  if(S.sortBy === 'likes'){
+    regular.sort((a,b)=> b.likes - a.likes);
+  } else if(S.sortBy === 'near'){
+    regular.sort((a,b)=>{
+      const da = distTo(a.market) ?? 9999;
+      const db = distTo(b.market) ?? 9999;
+      return da - db;
+    });
+  } else {
+    // 최신순 (기본) — id 내림차순
+    regular.sort((a,b)=> b.id - a.id);
+  }
+
+  return [...sales, ...regular];
+}
+
+function renderFeedCard(p){
+  const mdata = getMktData(p.market);
+  const dist  = distTo(p.market);
+  const isSale = p.type === 'sale';
+  const active = isSale ? isSaleActive(p) : false;
+  const rem    = active ? saleRemaining(p.saleEndMs) : null;
+
+  // 사진 슬라이더 (여러 장)
+  let photoHtml = '';
+  if(p.photos.length <= 1){
+    const ph = p.photos[0]||'🏮';
+    photoHtml = `
+      <div class="gi-photo">
+        <div class="gi-photo-bg">${ph}</div>
+        <div class="gi-photo-main">${ph}</div>
+      </div>`;
+  } else {
+    const slides = p.photos.map((ph,i)=>`
+      <div class="gi-photo-slide" style="background:#1a1510">
+        <div class="gi-photo-bg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(60vw,380px);opacity:.22;filter:blur(6px);transform:scale(1.2);pointer-events:none">${ph}</div>
+        <div class="gi-photo-main" style="position:relative;z-index:1">${ph}</div>
+      </div>`).join('');
+    const dots = p.photos.map((_,i)=>`<div class="gi-pdot${i===0?' on':''}"></div>`).join('');
+    photoHtml = `
+      <div class="gi-photo" id="giphoto-${p.id}" style="overflow:hidden">
+        <div class="gi-photos-strip" id="gistrip-${p.id}" style="display:flex;width:${p.photos.length*100}%;transition:transform .3s ease">
+          ${slides}
+        </div>
+        <button onclick="feedSlide(${p.id},-1,event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.8);border:none;cursor:pointer;font-size:14px;z-index:2;display:flex;align-items:center;justify-content:center" id="giprev-${p.id}">‹</button>
+        <button onclick="feedSlide(${p.id},1,event)"  style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.8);border:none;cursor:pointer;font-size:14px;z-index:2;display:flex;align-items:center;justify-content:center" id="ginext-${p.id}">›</button>
+        <div class="gi-photo-dots" id="gidots-${p.id}">${dots}</div>
+      </div>`;
+  }
+
+  // 캡션 (2줄 이상이면 접기)
+  const lines = (p.caption||'').split('\n');
+  const capFirst = `<strong>${lines[0]}</strong>`;
+  const capRest  = lines.slice(1).join(' ');
+  const capHtml  = capRest
+    ? `${capFirst} <span class="gi-caption-more" onclick="expandCap(this)" data-rest="${capRest.replace(/"/g,'&quot;')}">더 보기</span>`
+    : capFirst;
+
+  // 마감세일 배너
+  const saleBanner = isSale ? `
+    <div class="gi-sale-banner">
+      <span class="gi-sale-item">⚡ ${p.saleItem||'마감세일'}${p.saleDiscount?' · '+p.saleDiscount:''}</span>
+      <span class="gi-sale-timer" id="gsaletime-${p.id}">${active?(rem||'마감임박'):'마감됨'}</span>
+    </div>` : '';
+
+  // 뱃지
+  const badges = [];
+  if(p.hot)  badges.push('<span style="font-size:11px;background:var(--redbg);color:var(--red);border:1px solid var(--redbdr);border-radius:10px;padding:1px 7px">🔥 인기</span>');
+  if(p.pick) badges.push('<span style="font-size:11px;background:var(--goldbg);color:var(--gold);border:1px solid var(--goldbdr);border-radius:10px;padding:1px 7px">⭐ 에디터픽</span>');
+
+  // 댓글 미리보기 (최신 1개)
+  const lastCmt = (p.comments||[]).slice(-1)[0];
+  const cmtPreview = lastCmt
+    ? `<div class="gi-comment-preview"><span class="cname">${lastCmt.author}</span>${lastCmt.text}</div>` : '';
+  const cmtCount = (p.comments||[]).length;
+
+  return `
+  <div class="gitem${isSale?' sale-item':''}" id="gcard-${p.id}">
+    <!-- 헤더 -->
+    <div class="gi-head">
+      <div class="gi-av">${p.avatar||'😊'}</div>
+      <div>
+        <div class="gi-author">${p.author}</div>
+        <div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${dist!==null?' · 📍'+distLabel(dist):''}</div>
+      </div>
+      ${badges.length ? `<div style="margin-left:auto;display:flex;gap:4px">${badges.join('')}</div>` : ''}
+    </div>
+    <!-- 마감세일 배너 -->
+    ${saleBanner}
+    <!-- 사진 -->
+    ${photoHtml}
+    <!-- 액션 -->
+    <div class="gi-actions">
+      <button class="gi-btn${p.liked?' liked':''}" id="glike-${p.id}" onclick="feedLike(${p.id})">
+        ${p.liked?'❤️':'🤍'} <span id="glikenum-${p.id}">${p.likes}</span>
+      </button>
+      <button class="gi-btn" onclick="focusFeedCmt(${p.id})">💬 <span>${cmtCount}</span></button>
+      <button class="gi-btn" onclick="toast('링크 복사됨!')">🔗</button>
+      <button class="gi-btn gi-save" onclick="toast('저장됨!')">🔖</button>
+    </div>
+    <!-- 별점 -->
+    ${p.star>0?`<div style="padding:0 14px 4px"><span class="gi-stars">${'★'.repeat(p.star)}${'☆'.repeat(5-p.star)}</span></div>`:''}
+    <!-- 좋아요 수 -->
+    <div class="gi-likes">좋아요 <span id="glikecnt-${p.id}">${p.likes}</span>개</div>
+    <!-- 캡션 -->
+    <div class="gi-caption">${capHtml}</div>
+    <!-- 태그 -->
+    ${p.tags&&p.tags.length?`<div class="gi-tags">${p.tags.map(t=>`<span class="gi-tag">#${t}</span>`).join('')}</div>`:''}
+    <!-- 댓글 미리보기 -->
+    ${cmtCount>1?`<div style="padding:0 14px 2px;font-size:12px;color:var(--text3);cursor:pointer" onclick="focusFeedCmt(${p.id})">댓글 ${cmtCount}개 모두 보기</div>`:''}
+    ${cmtPreview}
+    <!-- 댓글 펼침 영역 -->
+    <div id="gcmts-${p.id}" style="display:none;padding:0 14px 8px;"></div>
+    <!-- 댓글 입력 -->
+    <div class="gi-comment-input">
+      <div class="gi-av" style="width:28px;height:28px;font-size:14px;flex-shrink:0">${P.avatar||'😊'}</div>
+      <input class="gi-cinput" id="gcinput-${p.id}" placeholder="댓글 달기..." onkeydown="gCmtEnter(event,${p.id})">
+      <button class="gi-csubmit" onclick="addFeedCmt(${p.id})">게시</button>
+    </div>
+    <!-- 시간 -->
+    <div class="gi-time">${p.time}</div>
+  </div>`;
+}
+
+// 피드 사진 슬라이더
+const feedSlideIdx = {};
+function feedSlide(id, dir, e){
+  e.stopPropagation();
+  const p = S.posts.find(x=>x.id===id); if(!p) return;
+  if(!feedSlideIdx[id]) feedSlideIdx[id]=0;
+  feedSlideIdx[id] = Math.max(0, Math.min(p.photos.length-1, feedSlideIdx[id]+dir));
+  const i = feedSlideIdx[id];
+  const strip = document.getElementById('gistrip-'+id);
+  if(strip){ strip.style.transform=`translateX(-${i*(100/p.photos.length)}%)`; }
+  const dots = document.querySelectorAll(`#gidots-${id} .gi-pdot`);
+  dots.forEach((d,di)=>d.classList.toggle('on',di===i));
+  const prev = document.getElementById('giprev-'+id);
+  const next = document.getElementById('ginext-'+id);
+  if(prev) prev.style.display = i>0?'flex':'none';
+  if(next) next.style.display = i<p.photos.length-1?'flex':'none';
+}
+
+// 피드 캡션 펼치기
+function expandCap(el){
+  el.previousSibling && (el.previousSibling.textContent='');
+  el.textContent = ' ' + el.dataset.rest;
+  el.onclick = null; el.style.color='var(--text)';
+}
+
+// 피드 좋아요
+function feedLike(id){
+  const p=S.posts.find(x=>x.id===id); if(!p) return;
+  p.liked=!p.liked; p.likes+=p.liked?1:-1;
+  save();
+  const btn=document.getElementById('glike-'+id);
+  if(btn){ btn.innerHTML=(p.liked?'❤️':'🤍')+' <span id="glikenum-'+id+'">'+p.likes+'</span>'; btn.className='gi-btn'+(p.liked?' liked':''); }
+  const cnt=document.getElementById('glikecnt-'+id);
+  if(cnt) cnt.textContent=p.likes;
+  renderSidebar();
+}
+
+// 피드 댓글
+function focusFeedCmt(id){
+  const inp=document.getElementById('gcinput-'+id);
+  if(inp){ inp.focus(); }
+  // 댓글 전체 펼치기
+  const p=S.posts.find(x=>x.id===id); if(!p) return;
+  const el=document.getElementById('gcmts-'+id);
+  if(el&&el.style.display==='none'){
+    el.style.display='block';
+    el.innerHTML=(p.comments||[]).map(c=>`
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:700;color:var(--text2)">${c.author}</span>
+        <span style="font-size:12px;color:var(--text2)">${c.text}</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">${c.time}</span>
+      </div>`).join('');
+  }
+}
+function gCmtEnter(e,id){ if(e.key==='Enter') addFeedCmt(id); }
+function addFeedCmt(id){
+  const inp=document.getElementById('gcinput-'+id);
+  if(!inp||!inp.value.trim()) return;
+  const p=S.posts.find(x=>x.id===id); if(!p) return;
+  p.comments=p.comments||[];
+  p.comments.push({author:P.name||'나',avatar:P.avatar||'😊',text:inp.value.trim(),time:'방금 전'});
+  inp.value=''; save(); checkBadge('comment');
+  // 댓글 영역 갱신
+  const el=document.getElementById('gcmts-'+id);
+  if(el){
+    el.style.display='block';
+    el.innerHTML=(p.comments||[]).map(c=>`
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:700;color:var(--text2)">${c.author}</span>
+        <span style="font-size:12px;color:var(--text2)">${c.text}</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">${c.time}</span>
+      </div>`).join('');
+  }
+  renderSidebar();
+}
+
+// 마감세일 타이머 인터벌 (피드 카드용)
+setInterval(()=>{
+  S.posts.filter(p=>p.type==='sale'&&p.saleEndMs).forEach(p=>{
+    const el=document.getElementById('gsaletime-'+p.id);
+    if(!el) return;
+    const rem=saleRemaining(p.saleEndMs);
+    el.textContent = rem||'마감됨';
+  });
+},1000);
+
+function renderGrid(){
+  const list = filtered();
+  const nearSection = document.getElementById('nearSection');
+  const sub = document.getElementById('nearSubtitle');
+
+  if(S.userLat && S.sortBy==='near'){
+    nearSection.style.display='block';
+    const nearCount = list.filter(p=>(distTo(p.market)??9999)<5).length;
+    sub.textContent = nearCount>0 ? `내 주변 5km 이내 후기 ${nearCount}개가 먼저 보여요` : '거리순으로 정렬됐어요';
+  } else {
+    nearSection.style.display='none';
+  }
+
+  const el = document.getElementById('grid');
+  if(!list.length){
+    el.innerHTML=`<div class="gempty" style="padding:60px 20px;text-align:center;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px">📷</div><div style="font-size:14px">아직 후기가 없어요.<br>첫 번째 사진을 올려보세요!</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(p => renderFeedCard(p)).join('');
+
+  // 마감세일 초기 슬라이더 버튼 상태
+  list.forEach(p=>{
+    if(p.photos.length>1){
+      const prev=document.getElementById('giprev-'+p.id);
+      if(prev) prev.style.display='none'; // 첫 장엔 이전 버튼 없음
+    }
+  });
+}
+
+function filterMkt(mkt, el){
+  S.market = mkt;
+  if(el){ document.querySelectorAll('.mchip').forEach(c=>c.classList.toggle('on',c===el)); }
+  else renderChips();
+  renderGrid(); renderSidebar();
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────
+function renderSidebar(){
+  const el = document.getElementById('sidebar');
+  if(!el) return;
+
+  const sorted = [...S.posts].sort((a,b)=>
+    S.sideTab==='likes' ? b.likes-a.likes : b.id-a.id
+  ).slice(0,7);
+
+  const rankRows = sorted.map((p,i)=>{
+    const dist = distTo(p.market);
+    return `<div class="rank-item" onclick="openDetail(${p.id})">
+      <div class="rank-num${i<3?' top':''}">${i+1}</div>
+      <div class="rank-thumb">${p.photos[0]||'🏮'}</div>
+      <div class="rank-info">
+        <div class="rank-title">${(p.caption||'').split('\n')[0]}</div>
+        <div class="rank-meta">${p.market}${dist!==null?' · 📍'+distLabel(dist):''}</div>
+      </div>
+      <div class="rank-likes">❤️${p.likes}</div>
+    </div>`;
+  }).join('');
+
+  // 근처 시장 (위치 있을 때)
+  let nearMktHtml = '';
+  if(S.userLat){
+    const nearMkts = ALL_MKTS
+      .map(m=>({...m,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+      .sort((a,b)=>a.dist-b.dist)
+      .slice(0,6);
+    nearMktHtml = `
+    <div class="sc">
+      <div class="sc-head" style="padding-bottom:8px">
+        <span class="sc-title">📍 내 주변 시장</span>
+      </div>
+      <div class="near-mkt-list">
+        ${nearMkts.map(m=>`
+          <div class="near-mkt-item" onclick="filterMkt('${m.name}',null)">
+            <div class="near-mkt-icon">${m.icon}</div>
+            <div class="near-mkt-info">
+              <div class="near-mkt-name">${m.name}</div>
+              <div class="near-mkt-addr">${m.addr}</div>
+            </div>
+            <div class="near-mkt-dist">${distLabel(m.dist)}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = `
+    ${nearMktHtml}
+    <div class="sc">
+      <div class="sc-head"><span class="sc-title">인기 후기</span></div>
+      <div class="sc-tab-row">
+        <button class="sc-tab${S.sideTab==='likes'?' on':''}" onclick="switchSideTab('likes')">❤️ 좋아요순</button>
+        <button class="sc-tab${S.sideTab==='recent'?' on':''}" onclick="switchSideTab('recent')">🕐 최신순</button>
+      </div>
+      <div class="rank-list">${rankRows}</div>
+    </div>
+    <div class="notice-box">
+      <div class="notice-title">📣 장터통신</div>
+      <div class="notice-body">전통시장을 직접 다녀온 사람들의 솔직한 사진 후기 커뮤니티. 광고 없는 진짜 이야기만 나눠요.</div>
+    </div>`;
+}
+
+function switchSideTab(tab){ S.sideTab=tab; renderSidebar(); }
+
+// ── DETAIL MODAL ──────────────────────────────────────────────────
+function openDetail(id){
+  const p=S.posts.find(x=>x.id===id); if(!p) return;
+  S.cur=p; S.pidx=0; fillDetail(p);
+  document.getElementById('doverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function fillDetail(p){
+  document.getElementById('dav').textContent=p.avatar;
+  document.getElementById('dauthor').textContent=p.author;
+  const dist=distTo(p.market);
+  document.getElementById('dmeta').textContent=`📍 ${p.market}${p.shop?' · '+p.shop:''}${dist!==null?' · '+distLabel(dist):''}`;
+  document.getElementById('dstars').textContent=p.star?'★'.repeat(p.star)+'☆'.repeat(5-p.star):'';
+  document.getElementById('dtime').textContent=p.time;
+  const lines=(p.caption||'').split('\n');
+  document.getElementById('dcap').innerHTML=`<strong>${lines[0]}</strong>`+(lines.length>1?'<br>'+lines.slice(1).join('<br>'):'');
+  document.getElementById('dtags').innerHTML=(p.tags||[]).map(t=>`<span class="dtag">#${t}</span>`).join('');
+  updateSlide(p); updateLike(p); updateDetailSaleBanner(p);
+  document.getElementById('dlikeCount').textContent=`좋아요 ${p.likes}개`;
+  renderDCmts(p);
+}
+function updateSlide(p){
+  const ph = p.photos[S.pidx]||'🏮';
+  document.getElementById('dphotoMain').textContent = ph;
+  const bg = document.getElementById('dphotoMainBg'); if(bg) bg.textContent = ph;
+  const dots=document.getElementById('pdots'),prev=document.getElementById('dprev'),next=document.getElementById('dnext');
+  if(p.photos.length<=1){ dots.innerHTML='';prev.style.display='none';next.style.display='none'; }
+  else{
+    dots.innerHTML=p.photos.map((_,i)=>`<div class="pdot${i===S.pidx?' on':''}" onclick="jumpSlide(${i})"></div>`).join('');
+    prev.style.display=S.pidx>0?'flex':'none';
+    next.style.display=S.pidx<p.photos.length-1?'flex':'none';
+  }
+}
+function slide(d){ const p=S.cur;if(!p)return;S.pidx=Math.max(0,Math.min(p.photos.length-1,S.pidx+d));updateSlide(p); }
+function jumpSlide(i){ S.pidx=i;updateSlide(S.cur); }
+function updateLike(p){
+  const btn=document.getElementById('dlikeBtn');
+  btn.innerHTML=(p.liked?'❤️':'🤍')+' 좋아요';
+  btn.classList.toggle('liked',!!p.liked);
+}
+function detailLike(){
+  const p=S.cur;if(!p)return;
+  p.liked=!p.liked;p.likes+=p.liked?1:-1;
+  save();updateLike(p);
+  document.getElementById('dlikeCount').textContent=`좋아요 ${p.likes}개`;
+  // 피드 카드 좋아요도 동기화
+  const fb=document.getElementById('glike-'+p.id);
+  if(fb){ fb.innerHTML=(p.liked?'❤️':'🤍')+' <span>'+p.likes+'</span>'; fb.className='gi-btn'+(p.liked?' liked':''); }
+  const fc=document.getElementById('glikecnt-'+p.id); if(fc) fc.textContent=p.likes;
+  renderSidebar();
+}
+function renderDCmts(p){
+  document.getElementById('dcomments').innerHTML=(p.comments||[]).map(c=>`
+    <div class="dcmt">
+      <div class="dcmtav">${c.avatar}</div>
+      <div class="dcmtb">
+        <span class="dcmtname">${c.author}</span>
+        <span class="dcmttxt"> ${c.text}</span>
+        <div class="dcmttime">${c.time}</div>
+      </div>
+    </div>`).join('');
+}
+function focusDCmt(){ document.getElementById('dcinput').focus(); }
+function dcEnter(e){ if(e.key==='Enter') addDCmt(); }
+function addDCmt(){
+  const inp=document.getElementById('dcinput');
+  if(!inp.value.trim()) return;
+  const p=S.cur;if(!p)return;
+  p.comments=p.comments||[];
+  p.comments.push({author:'나',avatar:'😊',text:inp.value.trim(),time:'방금 전'});
+  inp.value='';save();renderDCmts(p);renderGrid();renderSidebar();
+  checkBadge('comment');
+}
+function closeDetail(){ document.getElementById('doverlay').classList.remove('open');document.body.style.overflow='';S.cur=null; }
+function closeDOut(e){ if(e.target===document.getElementById('doverlay')) closeDetail(); }
+
+// ── UPLOAD MODAL ──────────────────────────────────────────────────
+function openUpload(){
+  S.uStar=5;S.uPics=[];S.uMarket=null;
+  uType='review';
+  // 타입탭 초기화
+  const tr=document.getElementById('uTypeReview'), ts=document.getElementById('uTypeSale');
+  if(tr) tr.className='utype-btn on-review';
+  if(ts) ts.className='utype-btn';
+  const sf=document.getElementById('saleFields'); if(sf) sf.style.display='none';
+  const starDiv=document.getElementById('ustars'); if(starDiv) starDiv.parentElement.style.display='block';
+  const cl=document.getElementById('uCapLabel'); if(cl) cl.textContent='한마디';
+  const cap=document.getElementById('uCap'); if(cap) cap.placeholder='어떤 시장, 어떤 맛이었나요? 솔직하게 남겨주세요 🏮';
+  document.getElementById('uCap').value='';
+  document.getElementById('uShop').value='';
+  document.getElementById('mktSearch').value='';
+  document.getElementById('mktDropdown').classList.remove('open');
+  document.getElementById('mktSelected').style.display='none';
+  document.querySelectorAll('.ustar').forEach(s=>s.classList.add('on'));
+  document.getElementById('ppicker').innerHTML=PLIB.map((e,i)=>`<div class="ppick" data-i="${i}" onclick="togglePic(${i})">${e}</div>`).join('');
+
+  // 기본으로 가장 가까운 시장 자동 선택
+  if(S.userLat){
+    const near = [...ALL_MKTS]
+      .map(m=>({...m,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+      .sort((a,b)=>a.dist-b.dist)[0];
+    S.uMarket = near.name;
+    const selEl = document.getElementById('mktSelected');
+    selEl.style.display='block';
+    selEl.textContent=`${near.icon} ${near.name}  (📍${distLabel(near.dist)} — 위치 기반 자동 선택)`;
+    document.getElementById('mktSearch').value=near.name;
+  }
+
+  document.getElementById('uoverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeUpload(){ document.getElementById('uoverlay').classList.remove('open');document.body.style.overflow=''; }
+function closeUOut(e){ if(e.target===document.getElementById('uoverlay')) closeUpload(); }
+
+function searchMkt(q){
+  const dd = document.getElementById('mktDropdown');
+  S.uMarket = null;
+  document.getElementById('mktSelected').style.display='none';
+  if(!q.trim()){ dd.classList.remove('open');return; }
+  let results = ALL_MKTS.filter(m=>m.name.includes(q)||m.region.includes(q)||m.addr.includes(q));
+  if(S.userLat) results=results.map(m=>({...m,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)})).sort((a,b)=>a.dist-b.dist);
+  if(!results.length){ dd.innerHTML='<div class="mkt-opt" style="color:var(--text3)">검색 결과 없음</div>';dd.classList.add('open');return; }
+  dd.innerHTML=results.slice(0,8).map(m=>`
+    <div class="mkt-opt" onclick="selectMkt('${m.name}')">
+      ${m.icon} ${m.name} <small style="color:var(--text3)">${m.region}</small>
+      ${S.userLat&&m.dist!=null?`<span class="opt-dist">${distLabel(m.dist)}</span>`:''}
+    </div>`).join('');
+  dd.classList.add('open');
+}
+
+function selectMkt(name){
+  S.uMarket=name;
+  const m=getMktData(name);
+  const dist=S.userLat&&m?haversine(S.userLat,S.userLng,m.lat,m.lng):null;
+  const selEl=document.getElementById('mktSelected');
+  selEl.style.display='block';
+  selEl.textContent=`${m?m.icon:''} ${name}${dist!==null?' · 📍'+distLabel(dist):''}`;
+  document.getElementById('mktSearch').value=name;
+  document.getElementById('mktDropdown').classList.remove('open');
+}
+
+function togglePic(i){
+  const el=document.querySelectorAll('.ppick')[i];
+  const emoji=PLIB[i];
+  const idx=S.uPics.indexOf(emoji);
+  if(idx===-1){
+    if(S.uPics.length>=4){toast('최대 4장까지');return;}
+    S.uPics.push(emoji);el.classList.add('sel');
+  } else { S.uPics.splice(idx,1);el.classList.remove('sel'); }
+}
+function setStar(v){
+  S.uStar=v;
+  document.querySelectorAll('.ustar').forEach(s=>s.classList.toggle('on',+s.dataset.v<=v));
+}
+
+function submitPost(){
+  const isSalePost = uType === 'sale';
+  if(!S.uPics.length){toast('사진을 골라주세요 📷');return;}
+  if(!S.uMarket){toast('시장을 선택해주세요');return;}
+  const cap=document.getElementById('uCap').value.trim();
+  if(!cap){toast('한 줄이라도 써주세요 😊');return;}
+  const shop=document.getElementById('uShop').value.trim();
+  const m=getMktData(S.uMarket);
+  const saleItem     = isSalePost ? document.getElementById('saleItem').value.trim() : '';
+  const saleDiscount = isSalePost ? document.getElementById('saleDiscount').value.trim() : '';
+  const saleEndTime  = isSalePost ? document.getElementById('saleEndTime').value : '';
+  const saleEndMs    = isSalePost ? getSaleEndMs(saleEndTime) : null;
+  if(isSalePost && !saleItem){ toast('할인 품목을 입력해주세요'); return; }
+  if(isSalePost && !saleEndTime){ toast('마감 시간을 입력해주세요'); return; }
+  S.posts.unshift({
+    id:Date.now(), type: isSalePost ? 'sale' : 'review',
+    author:P.name||'나', avatar:P.avatar||'😊',
+    market:S.uMarket, shop, star: isSalePost ? 0 : S.uStar,
+    photos:[...S.uPics], caption:cap,
+    saleItem, saleDiscount, saleEndMs,
+    tags:[S.uMarket.replace('시장',''),...(shop?[shop]:[]),...(saleItem?[saleItem]:[])],
+    likes:0, comments:[], time:'방금 전', hot:false, pick:false
+  });
+  const newMkt = S.uMarket;
+  save();closeUpload();
+  renderChips();renderStories();renderGrid();renderSidebar();
+  notifyFollowers(newMkt);
+  checkBadge('post');
+  toast('올라갔어요! 🎉');
+}
+
+// ── PROFILE ──────────────────────────────────────────────────────
+const AV_OPTS = ['😊','👩','🧔','🚶','🌿','🍺','🦑','🧁','🍊','👨‍🍳','👩‍🍳','🎒','📸','🏮','🌊','🎏'];
+let P = JSON.parse(localStorage.getItem('jtt4_profile') || 'null') || {
+  name: '나', avatar: '😊', bio: '전통시장 탐험가 🏮', editing: false
+};
+let pTab = 'posts';
+function saveProfile(){ localStorage.setItem('jtt4_profile', JSON.stringify(P)); }
+
+function openProfile(){
+  renderProfileModal();
+  document.getElementById('poverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProfile(){
+  document.getElementById('poverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  P.editing = false;
+}
+function closePOut(e){ if(e.target===document.getElementById('poverlay')) closeProfile(); }
+
+function renderProfileModal(){
+  const myPosts = S.posts.filter(p => p.author === P.name || p.author === '나');
+  const likedPosts = S.posts.filter(p => p.liked);
+  const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
+  const totalLikes = myPosts.reduce((s,p)=>s+p.likes,0);
+
+  // 아바타
+  document.getElementById('pmAv').textContent = P.avatar;
+
+  // 이름 영역
+  const nameWrap = document.getElementById('pmNameWrap');
+  if(P.editing){
+    nameWrap.innerHTML = `<input class="pm-name-input" id="pmNameInput" value="${P.name}" maxlength="12" oninput="P.name=this.value">`;
+    setTimeout(()=>{ const i=document.getElementById('pmNameInput'); if(i)i.focus(); },50);
+  } else {
+    nameWrap.innerHTML = `<div class="pm-name">${P.name}</div>`;
+  }
+  document.getElementById('pmBio').textContent = P.bio;
+  const editBtn = document.getElementById('pmEditBtn');
+  editBtn.textContent = P.editing ? '저장' : '수정';
+  editBtn.classList.toggle('saving', P.editing);
+
+  // 통계
+  document.getElementById('pmStats').innerHTML = `
+    <div class="pm-stat"><div class="pm-stat-num">${myPosts.length}</div><div class="pm-stat-label">게시물</div></div>
+    <div class="pm-stat"><div class="pm-stat-num">${totalLikes}</div><div class="pm-stat-label">받은 좋아요</div></div>
+    <div class="pm-stat"><div class="pm-stat-num">${likedPosts.length}</div><div class="pm-stat-label">좋아요함</div></div>
+    <div class="pm-stat"><div class="pm-stat-num">${visitedMkts.length}</div><div class="pm-stat-label">방문 시장</div></div>`;
+
+  // 아바타 선택기
+  document.getElementById('avPicker').innerHTML = AV_OPTS.map(a=>
+    `<div class="av-opt${a===P.avatar?' on':''}" onclick="setAvatar('${a}')">${a}</div>`
+  ).join('');
+
+  // 탭 콘텐츠
+  renderPTab(pTab, myPosts, likedPosts, visitedMkts);
+
+  // 헤더 프로필 버튼 아바타 동기화
+  document.getElementById('profileBtn').textContent = P.avatar;
+}
+
+function renderPTab(tab, myPosts, likedPosts, visitedMkts){
+  const el = document.getElementById('pmContent');
+  if(tab === 'posts'){
+    if(!myPosts.length){
+      el.innerHTML = `<div class="pm-empty"><div class="ei">📷</div><div class="et">아직 올린 사진이 없어요.<br>첫 번째 시장 후기를 남겨보세요!</div></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="pm-grid">${myPosts.map(p=>`
+      <div class="pm-item" onclick="openDetailFromProfile(${p.id})">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(20vw,130px);opacity:.18;filter:blur(2px);transform:scale(1.15);pointer-events:none">${p.photos[0]||'🏮'}</div>
+        <span style="position:relative;font-size:min(14vw,80px);line-height:1">${p.photos[0]||'🏮'}</span>
+        <div class="pm-overlay">
+          <span class="pm-ostat">❤️ ${p.likes}</span>
+          <span class="pm-ostat">💬 ${(p.comments||[]).length}</span>
+        </div>
+        <div class="pm-item-mkt">${p.market}${p.shop?' · '+p.shop:''}</div>
+        <button class="pm-del" onclick="deletePost(${p.id},event)">✕</button>
+      </div>`).join('')}</div>`;
+  } else if(tab === 'liked'){
+    if(!likedPosts.length){
+      el.innerHTML = `<div class="pm-empty"><div class="ei">🤍</div><div class="et">좋아요한 게시물이 없어요.</div></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="pm-liked-list">${likedPosts.map(p=>`
+      <div class="pm-liked-item" onclick="openDetailFromProfile(${p.id})">
+        <div class="pm-liked-thumb">${p.photos[0]||'🏮'}</div>
+        <div class="pm-liked-info">
+          <div class="pm-liked-cap">${(p.caption||'').split('\n')[0]}</div>
+          <div class="pm-liked-meta">📍 ${p.market}${p.shop?' · '+p.shop:''} · ${p.author} · ${p.time}</div>
+        </div>
+        <div class="pm-liked-likes">❤️ ${p.likes}</div>
+      </div>`).join('')}</div>`;
+  } else if(tab === 'markets'){
+    if(!visitedMkts.length){
+      el.innerHTML = `<div class="pm-empty"><div class="ei">🏮</div><div class="et">방문한 시장이 없어요.<br>시장에서 사진을 올리면 자동으로 기록돼요.</div></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="pm-mkt-list">${visitedMkts.map(mName=>{
+      const mdata = getMktData(mName);
+      const cnt = myPosts.filter(p=>p.market===mName).length;
+      const dist = distTo(mName);
+      return `<div class="pm-mkt-item" onclick="goToMarket('${mName}')">
+        <div class="pm-mkt-icon-box">${mdata?mdata.icon:'🏮'}</div>
+        <div class="pm-mkt-info">
+          <div class="pm-mkt-name">${mName}</div>
+          <div class="pm-mkt-sub">${mdata?mdata.addr:''}${dist!==null?' · 📍'+distLabel(dist):''}</div>
+        </div>
+        <div class="pm-mkt-cnt">${cnt}개 후기</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+}
+
+function switchPTab(btn, tab){
+  document.querySelectorAll('.pm-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  pTab = tab;
+  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+  const likedPosts = S.posts.filter(p=>p.liked);
+  const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
+  renderPTab(tab, myPosts, likedPosts, visitedMkts);
+}
+
+function toggleEdit(){
+  if(P.editing){
+    // 저장
+    const inp = document.getElementById('pmNameInput');
+    if(inp && inp.value.trim()) P.name = inp.value.trim();
+    P.editing = false;
+    saveProfile();
+    toast('프로필이 저장됐어요!');
+  } else {
+    P.editing = true;
+  }
+  renderProfileModal();
+}
+
+function toggleAvPicker(){
+  const el = document.getElementById('avPicker');
+  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+
+function setAvatar(av){
+  P.avatar = av;
+  saveProfile();
+  document.getElementById('pmAv').textContent = av;
+  document.getElementById('profileBtn').textContent = av;
+  document.querySelectorAll('.av-opt').forEach(el=>el.classList.toggle('on', el.textContent===av));
+}
+
+function deletePost(id, e){
+  e.stopPropagation();
+  if(!confirm('이 게시물을 삭제할까요?')) return;
+  S.posts = S.posts.filter(p=>p.id!==id);
+  save();
+  renderGrid(); renderSidebar(); renderStories();
+  renderProfileModal();
+  toast('삭제됐어요.');
+}
+
+function openDetailFromProfile(id){
+  closeProfile();
+  setTimeout(()=>openDetail(id), 200);
+}
+
+function goToMarket(mktName){
+  closeProfile();
+  S.market = mktName;
+  renderChips();
+  renderGrid();
+  renderSidebar();
+}
+
+// ── SALE ─────────────────────────────────────────────────────────
+let uType = 'review'; // 'review' | 'sale'
+let saleOnly = false;
+let saleTimerInterval = null;
+
+function setUType(type){
+  uType = type;
+  const isSale = type === 'sale';
+  document.getElementById('uTypeReview').className = 'utype-btn' + (isSale ? '' : ' on-review');
+  document.getElementById('uTypeSale').className   = 'utype-btn' + (isSale ? ' on-sale' : '');
+  document.getElementById('saleFields').style.display = isSale ? 'flex' : 'none';
+  document.getElementById('uCapLabel').textContent = isSale ? '한마디 (선택)' : '한마디';
+
+  // 별점 숨기기/보이기
+  const starDiv = document.getElementById('ustars').parentElement;
+  starDiv.style.display = isSale ? 'none' : 'block';
+
+  // placeholder 변경
+  const cap = document.getElementById('uCap');
+  cap.placeholder = isSale
+    ? '추가 안내를 적어주세요. 예: 오늘 재고 20개 한정, 선착순!'
+    : '어떤 시장, 어떤 맛이었나요? 솔직하게 남겨주세요 🏮';
+
+  // 마감 시간 기본값: 지금+2시간
+  if(isSale && !document.getElementById('saleEndTime').value){
+    const now = new Date();
+    now.setHours(now.getHours() + 2);
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('saleEndTime').value = `${hh}:${mm}`;
+  }
+}
+
+function getSaleEndMs(timeStr){
+  if(!timeStr) return null;
+  const [h,m] = timeStr.split(':').map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  if(d < new Date()) d.setDate(d.getDate()+1); // 다음날
+  return d.getTime();
+}
+
+function saleRemaining(endMs){
+  const diff = endMs - Date.now();
+  if(diff <= 0) return null;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  if(h > 0) return `${h}시간 ${m}분`;
+  if(m > 0) return `${m}분 ${s}초`;
+  return `${s}초`;
+}
+
+function isSaleActive(post){
+  if(post.type !== 'sale') return false;
+  if(!post.saleEndMs) return false;
+  return post.saleEndMs > Date.now();
+}
+
+function getActiveSales(){
+  return S.posts.filter(p => p.type === 'sale' && isSaleActive(p));
+}
+
+// 피드 상단 배너 업데이트
+function renderSaleFeedBar(){
+  const sales = getActiveSales();
+  const bar = document.getElementById('saleFeedBar');
+  const scroll = document.getElementById('saleFeedScroll');
+  if(!sales.length){ bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+  scroll.innerHTML = sales.map(p=>{
+    const rem = saleRemaining(p.saleEndMs);
+    const item = p.saleItem || p.caption.split('\n')[0].substring(0,20);
+    return `<div class="sale-feed-chip">
+      ⚡ ${p.market} ${p.shop?'·'+p.shop:''} ${item}
+      <span class="sale-chip-timer">${rem||'곧 마감'}</span>
+    </div>`;
+  }).join('');
+}
+
+function filterSaleOnly(){
+  saleOnly = !saleOnly;
+  renderGrid();
+  // 인기순이면 사이드바도 동기화
+  if(type==='likes') S.sideTab='likes';
+  if(type==='latest') S.sideTab='recent';
+  renderSidebar();
+}
+
+// 그리드 아이템 렌더 — sale 타입 특수 처리 (renderGrid 내부에서 호출)
+function renderSaleCard(p, big){
+  const active = isSaleActive(p);
+  const rem = active ? saleRemaining(p.saleEndMs) : null;
+  const expired = p.type === 'sale' && !active;
+  return `<div class="gitem${big?' big':''} sale-item" onclick="openDetail(${p.id})">
+    <div class="gthumb">${p.photos[0]||'⚡'}</div>
+    ${expired
+      ? '<div class="sale-expired-overlay">마감됨</div>'
+      : `<div class="sale-overlay-badge">
+          <span class="sale-badge-label">⚡ ${p.saleItem||'마감세일'}</span>
+          <span class="sale-timer">${rem||''}</span>
+        </div>`}
+    <div class="goverlay">
+      <span class="gstat">❤️ ${p.likes}</span>
+      <span class="gstat">💬 ${(p.comments||[]).length}</span>
+    </div>
+    <div class="gmkt">
+      <div class="gmkt-name">${(getMktData(p.market)||{}).icon||''} ${p.market}</div>
+      ${p.shop?`<div style="font-size:10px;opacity:.8">${p.shop}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// 상세모달 마감세일 배너 업데이트
+function updateDetailSaleBanner(p){
+  const banner = document.getElementById('dSaleBanner');
+  const label  = document.getElementById('dSaleLabel');
+  const timer  = document.getElementById('dSaleTimer');
+  if(!banner) return;
+  if(p.type !== 'sale' || !p.saleEndMs){ banner.style.display='none'; return; }
+  if(!isSaleActive(p)){
+    banner.style.display='flex';
+    label.textContent = '⚡ ' + (p.saleItem||'마감세일') + ' — ' + (p.saleDiscount||'');
+    timer.textContent = '마감됨';
+    return;
+  }
+  banner.style.display = 'flex';
+  label.textContent = '⚡ ' + (p.saleItem||'마감세일') + '  ' + (p.saleDiscount||'');
+  // 타이머 인터벌
+  if(saleTimerInterval) clearInterval(saleTimerInterval);
+  saleTimerInterval = setInterval(()=>{
+    const rem = saleRemaining(p.saleEndMs);
+    if(!rem){ timer.textContent='마감됨'; clearInterval(saleTimerInterval); return; }
+    timer.textContent = rem;
+  }, 1000);
+  timer.textContent = saleRemaining(p.saleEndMs)||'마감됨';
+}
+
+// 1분마다 배너/그리드 갱신
+setInterval(()=>{ renderSaleFeedBar(); renderGrid(); }, 30000);
+
+// ── FEED SORT ────────────────────────────────────────────────────
+function setSort(type){
+  S.sortBy = type;
+  // 탭 활성화
+  ['latest','likes','near'].forEach(t=>{
+    const el = document.getElementById('sortTab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el) el.classList.toggle('on', t===type);
+  });
+  // 거리순인데 위치 없으면 안내
+  if(type==='near' && !S.userLat){
+    toast('위치 버튼을 눌러 내 위치를 먼저 설정해주세요 📍');
+    return;
+  }
+  // nearSection 업데이트
+  const nearSection = document.getElementById('nearSection');
+  if(nearSection) nearSection.style.display = (type==='near' && S.userLat) ? 'block' : 'none';
+  renderGrid();
+}
+
+// ── BOTTOM NAV ──────────────────────────────────────────────────
+function bnavClick(id, btn){
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(id==='home'){ /* 이미 메인 */ return; }
+  if(id==='checklist') openCL();
+  if(id==='follow')    openFW();
+  if(id==='badge')     openBD();
+}
+
+// ── CHECKLIST ────────────────────────────────────────────────────
+let CL = JSON.parse(localStorage.getItem('jtt4_cl') || '[]');
+let clMkt = 'all';
+function saveCL(){ localStorage.setItem('jtt4_cl', JSON.stringify(CL)); updateClBadge(); }
+
+function updateClBadge(){
+  const remaining = CL.filter(i=>!i.done).length;
+  const el = document.getElementById('cl-badge');
+  if(el){ el.textContent = remaining||''; el.classList.toggle('show', remaining>0); }
+}
+
+function openCL(){
+  renderCLMktTabs();
+  renderCLBody();
+  document.getElementById('cloverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('clInput').focus(),300);
+}
+function closeCL(){
+  document.getElementById('cloverlay').classList.remove('open');
+  document.body.style.overflow='';
+  // 홈 버튼 다시 활성화
+  document.querySelectorAll('.bnav-btn').forEach((b,i)=>b.classList.toggle('on',i===0));
+}
+function closeCLOut(e){ if(e.target===document.getElementById('cloverlay')) closeCL(); }
+
+function renderCLMktTabs(){
+  const mkts = ['all',...new Set(CL.map(i=>i.market).filter(Boolean)),...ALL_MKTS.slice(0,5).map(m=>m.name)];
+  const uniq = [...new Set(mkts)];
+  document.getElementById('clMktTabs').innerHTML = uniq.map(m=>
+    `<button class="cl-mkt-tab${clMkt===m?' on':''}" onclick="switchCLMkt('${m}')">${m==='all'?'전체':m.replace('시장','').replace('수산','')}</button>`
+  ).join('');
+}
+function switchCLMkt(m){ clMkt=m; renderCLMktTabs(); renderCLBody(); }
+
+function renderCLBody(){
+  const items = clMkt==='all' ? CL : CL.filter(i=>i.market===clMkt);
+  const todo  = items.filter(i=>!i.done);
+  const done  = items.filter(i=>i.done);
+  const total = CL.length, doneAll = CL.filter(i=>i.done).length;
+  const pct   = total ? Math.round(doneAll/total*100) : 0;
+  document.getElementById('clProgFill').style.width = pct+'%';
+  document.getElementById('clProgLabel').textContent = `${doneAll} / ${total} 완료 (${pct}%)`;
+
+  let html = '';
+  if(!items.length){
+    html = `<div class="cl-empty">📋<br><br>살 것을 추가해보세요!<br><span style="font-size:12px;color:var(--text3)">시장에서 빠뜨리는 것 없이 장보세요</span></div>`;
+  } else {
+    if(todo.length){
+      html += `<div class="cl-section-title">살 것 (${todo.length})</div>`;
+      html += todo.map(i=>`
+        <div class="cl-item">
+          <div class="cl-check${i.done?' done':''}" onclick="toggleCL(${i.id})"></div>
+          <div style="flex:1">
+            <div class="cl-item-text${i.done?' done':''}">${i.text}</div>
+            ${i.market?`<div class="cl-item-mkt">📍 ${i.market}</div>`:''}
+          </div>
+          <button class="cl-del" onclick="deleteCL(${i.id})">×</button>
+        </div>`).join('');
+    }
+    if(done.length){
+      html += `<div class="cl-section-title" style="margin-top:8px">완료 (${done.length})</div>`;
+      html += done.map(i=>`
+        <div class="cl-item" style="opacity:.6">
+          <div class="cl-check done" onclick="toggleCL(${i.id})"></div>
+          <div style="flex:1">
+            <div class="cl-item-text done">${i.text}</div>
+            ${i.market?`<div class="cl-item-mkt">📍 ${i.market}</div>`:''}
+          </div>
+          <button class="cl-del" onclick="deleteCL(${i.id})">×</button>
+        </div>`).join('');
+      html += `<div style="text-align:center;margin-top:10px">
+        <button onclick="clearDoneCL()" style="font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline">완료 항목 지우기</button>
+      </div>`;
+    }
+  }
+  document.getElementById('clBody').innerHTML = html;
+}
+
+function clEnter(e){ if(e.key==='Enter') addClItem(); }
+function addClItem(){
+  const inp = document.getElementById('clInput');
+  if(!inp.value.trim()) return;
+  // 현재 선택된 시장 자동 태그
+  const mkt = clMkt==='all' ? (S.market!=='all'?S.market:'') : clMkt;
+  CL.unshift({ id:Date.now(), text:inp.value.trim(), market:mkt, done:false });
+  inp.value='';
+  saveCL(); renderCLBody(); renderCLMktTabs();
+  checkBadge('checklist');
+}
+function toggleCL(id){
+  const i=CL.find(x=>x.id===id); if(!i)return;
+  i.done=!i.done;
+  saveCL(); renderCLBody();
+  if(i.done) checkBadge('checklist_done');
+}
+function deleteCL(id){ CL=CL.filter(x=>x.id!==id); saveCL(); renderCLBody(); renderCLMktTabs(); }
+function clearDoneCL(){ CL=CL.filter(i=>!i.done); saveCL(); renderCLBody(); }
+
+// ── FOLLOW ───────────────────────────────────────────────────────
+let FW = JSON.parse(localStorage.getItem('jtt4_fw') || '{}');
+// { marketName: { following: bool, lastSeen: postCount, alertOn: bool } }
+let fwAlertOn = JSON.parse(localStorage.getItem('jtt4_fwAlert') || 'true');
+function saveFW(){ localStorage.setItem('jtt4_fw', JSON.stringify(FW)); updateFwBadge(); }
+
+function updateFwBadge(){
+  let newCount = 0;
+  Object.keys(FW).forEach(mkt=>{
+    if(!FW[mkt].following) return;
+    const cur = S.posts.filter(p=>p.market===mkt).length;
+    if(cur > (FW[mkt].lastSeen||0)) newCount++;
+  });
+  const el = document.getElementById('fw-badge');
+  if(el){ el.textContent = newCount||''; el.classList.toggle('show', newCount>0); }
+}
+
+function openFW(){
+  renderFWBody();
+  const tog = document.getElementById('fwAlertToggle');
+  if(tog) tog.classList.toggle('on', fwAlertOn);
+  document.getElementById('fwoverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeFW(){
+  document.getElementById('fwoverlay').classList.remove('open');
+  document.body.style.overflow='';
+  document.querySelectorAll('.bnav-btn').forEach((b,i)=>b.classList.toggle('on',i===0));
+}
+function closeFWOut(e){ if(e.target===document.getElementById('fwoverlay')) closeFW(); }
+function toggleFwAlert(){
+  fwAlertOn=!fwAlertOn;
+  localStorage.setItem('jtt4_fwAlert', JSON.stringify(fwAlertOn));
+  document.getElementById('fwAlertToggle').classList.toggle('on', fwAlertOn);
+}
+
+function renderFWBody(){
+  const following = ALL_MKTS.filter(m=>FW[m.name]&&FW[m.name].following);
+  const notFollowing = ALL_MKTS.filter(m=>!FW[m.name]||!FW[m.name].following);
+
+  // 후기 있는 시장 우선
+  const withPost = notFollowing.filter(m=>S.posts.some(p=>p.market===m.name));
+  const rest = notFollowing.filter(m=>!S.posts.some(p=>p.market===m.name));
+  const suggest = [...withPost, ...rest].slice(0,12);
+
+  let html = '';
+  if(following.length){
+    html += `<div class="fw-section">팔로우 중 (${following.length})</div>`;
+    html += following.map(m=>{
+      const cur = S.posts.filter(p=>p.market===m.name).length;
+      const lastSeen = FW[m.name]?.lastSeen||0;
+      const hasNew = cur > lastSeen;
+      return `<div class="fw-item">
+        <div class="fw-icon">${m.icon}</div>
+        <div class="fw-info">
+          <div class="fw-name">${m.name}</div>
+          <div class="fw-sub">${m.addr} · 후기 ${cur}개</div>
+        </div>
+        <span class="fw-new-badge${hasNew?' show':''}">NEW</span>
+        <button class="fw-follow-btn following" onclick="toggleFollow('${m.name}')">팔로잉</button>
+      </div>`;
+    }).join('');
+  }
+  if(suggest.length){
+    html += `<div class="fw-section">추천 시장</div>`;
+    html += suggest.map(m=>{
+      const cnt = S.posts.filter(p=>p.market===m.name).length;
+      const dist = distTo(m.name);
+      return `<div class="fw-item">
+        <div class="fw-icon">${m.icon}</div>
+        <div class="fw-info">
+          <div class="fw-name">${m.name}</div>
+          <div class="fw-sub">${dist!==null?'📍'+distLabel(dist)+' · ':''}후기 ${cnt}개</div>
+        </div>
+        <button class="fw-follow-btn" onclick="toggleFollow('${m.name}')">팔로우</button>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('fwBody').innerHTML = html;
+}
+
+function toggleFollow(name){
+  if(!FW[name]) FW[name]={following:false,lastSeen:0};
+  FW[name].following = !FW[name].following;
+  if(FW[name].following){
+    FW[name].lastSeen = S.posts.filter(p=>p.market===name).length;
+    toast(`${name} 팔로우 시작! 🔔`);
+    checkBadge('follow');
+  } else {
+    toast(`${name} 팔로우 해제`);
+  }
+  saveFW(); renderFWBody(); updateFwBadge();
+}
+
+// 새 후기 올라왔을 때 팔로우 알림 (submitPost에서 호출)
+function notifyFollowers(market){
+  if(!fwAlertOn) return;
+  const isFollowing = FW[market]&&FW[market].following;
+  if(isFollowing) toast(`📣 ${market}에 새 후기가 올라왔어요!`);
+}
+
+// ── BADGE ────────────────────────────────────────────────────────
+const BADGE_DEFS = [
+  // 첫 발걸음
+  { id:'first_post',   cat:'첫 발걸음', icon:'📸', name:'첫 후기',       desc:'처음으로 후기를 올렸어요',    xp:50,  cond:()=>myPostCount()>=1 },
+  { id:'post_5',       cat:'첫 발걸음', icon:'🗂️', name:'사진 5장',      desc:'후기 5개를 올렸어요',         xp:80,  cond:()=>myPostCount()>=5 },
+  { id:'post_20',      cat:'첫 발걸음', icon:'📷', name:'사진 20장',     desc:'후기 20개를 올렸어요',        xp:150, cond:()=>myPostCount()>=20 },
+  // 시장 탐험가
+  { id:'market_3',     cat:'시장 탐험가', icon:'🗺️', name:'3개 시장',    desc:'3개 시장에 후기를 남겼어요',  xp:100, cond:()=>visitedMktCount()>=3 },
+  { id:'market_5',     cat:'시장 탐험가', icon:'🧭', name:'5개 시장',    desc:'5개 시장을 탐방했어요',       xp:150, cond:()=>visitedMktCount()>=5 },
+  { id:'market_10',    cat:'시장 탐험가', icon:'🌏', name:'전국 탐험가', desc:'10개 시장을 다녀왔어요',      xp:300, cond:()=>visitedMktCount()>=10 },
+  // 소통왕
+  { id:'like_10',      cat:'소통왕', icon:'❤️',  name:'좋아요 10',      desc:'좋아요를 10개 받았어요',       xp:80,  cond:()=>totalLikesReceived()>=10 },
+  { id:'like_50',      cat:'소통왕', icon:'💖',  name:'인기 후기어',    desc:'좋아요를 50개 받았어요',       xp:200, cond:()=>totalLikesReceived()>=50 },
+  { id:'comment_10',   cat:'소통왕', icon:'💬',  name:'댓글 부자',      desc:'댓글을 10개 달았어요',         xp:80,  cond:()=>commentCount()>=10 },
+  // 장보기 달인
+  { id:'cl_first',     cat:'장보기 달인', icon:'📋', name:'첫 장보기',  desc:'장보기 목록을 처음 만들었어요', xp:30, cond:()=>CL.length>=1 },
+  { id:'cl_done_5',    cat:'장보기 달인', icon:'✅', name:'완벽한 장보기', desc:'5개 항목을 완료했어요',      xp:60,  cond:()=>CL.filter(i=>i.done).length>=5 },
+  { id:'cl_done_20',   cat:'장보기 달인', icon:'🛒', name:'장보기 고수', desc:'20개 항목을 완료했어요',       xp:120, cond:()=>CL.filter(i=>i.done).length>=20 },
+  // 단골 팬
+  { id:'follow_1',     cat:'단골 팬', icon:'🔔',  name:'첫 팔로우',     desc:'시장을 처음 팔로우했어요',     xp:30,  cond:()=>followCount()>=1 },
+  { id:'follow_5',     cat:'단골 팬', icon:'🏮',  name:'단골 5곳',      desc:'5개 시장을 팔로우했어요',      xp:100, cond:()=>followCount()>=5 },
+  { id:'follow_10',    cat:'단골 팬', icon:'👑',  name:'시장 마스터',   desc:'10개 시장을 팔로우했어요',     xp:250, cond:()=>followCount()>=10 },
+];
+
+const LEVEL_TITLES = ['새내기 장꾼','시장 입문자','단골손님','시장 마니아','탐험가','장터 고수','시장 달인','전설의 장꾼'];
+
+function myPostCount(){ return S.posts.filter(p=>p.author===P.name||p.author==='나').length; }
+function visitedMktCount(){ return new Set(S.posts.filter(p=>p.author===P.name||p.author==='나').map(p=>p.market)).size; }
+function totalLikesReceived(){ return S.posts.filter(p=>p.author===P.name||p.author==='나').reduce((s,p)=>s+p.likes,0); }
+function commentCount(){ return S.posts.reduce((s,p)=>s+(p.comments||[]).filter(c=>c.author===P.name||c.author==='나').length,0); }
+function followCount(){ return Object.values(FW).filter(v=>v.following).length; }
+
+function getEarnedBadges(){
+  let earned = JSON.parse(localStorage.getItem('jtt4_badges')||'[]');
+  // 조건 재계산
+  BADGE_DEFS.forEach(b=>{
+    if(!earned.includes(b.id) && b.cond()){
+      earned.push(b.id);
+      localStorage.setItem('jtt4_badges', JSON.stringify(earned));
+    }
+  });
+  return earned;
+}
+
+function getTotalXP(){
+  const earned = getEarnedBadges();
+  return BADGE_DEFS.filter(b=>earned.includes(b.id)).reduce((s,b)=>s+b.xp,0);
+}
+
+function getLevel(xp){
+  const thresholds = [0,100,250,500,900,1400,2000,3000];
+  let lv = 0;
+  thresholds.forEach((t,i)=>{ if(xp>=t) lv=i; });
+  return lv;
+}
+
+function checkBadge(trigger){
+  const before = getEarnedBadges().length;
+  // 재계산
+  const after = getEarnedBadges();
+  BADGE_DEFS.forEach(b=>{
+    if(!after.includes(b.id) && b.cond()){
+      after.push(b.id);
+      localStorage.setItem('jtt4_badges', JSON.stringify(after));
+      setTimeout(()=>toast(`🏅 새 뱃지 획득! "${b.name}" +${b.xp}XP`), 500);
+    }
+  });
+}
+
+function openBD(){
+  renderBDSummary();
+  renderBDBody();
+  document.getElementById('bdoverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeBD(){
+  document.getElementById('bdoverlay').classList.remove('open');
+  document.body.style.overflow='';
+  document.querySelectorAll('.bnav-btn').forEach((b,i)=>b.classList.toggle('on',i===0));
+}
+function closeBDOut(e){ if(e.target===document.getElementById('bdoverlay')) closeBD(); }
+
+function renderBDSummary(){
+  const earned = getEarnedBadges();
+  const xp = getTotalXP();
+  const lv = getLevel(xp);
+  const thresholds = [0,100,250,500,900,1400,2000,3000,9999];
+  const nextXP = thresholds[lv+1]||thresholds[thresholds.length-1];
+  const prevXP = thresholds[lv];
+  const pct = Math.min(100, Math.round((xp-prevXP)/(nextXP-prevXP)*100));
+  const title = LEVEL_TITLES[lv]||LEVEL_TITLES[LEVEL_TITLES.length-1];
+
+  document.getElementById('bdSummary').innerHTML = `
+    <div class="bd-level-ring">
+      <div class="bd-level-num">Lv${lv+1}</div>
+      <div class="bd-level-lbl">레벨</div>
+    </div>
+    <div class="bd-summary-info">
+      <div class="bd-level-title">${title}</div>
+      <div class="bd-xp-bar"><div class="bd-xp-fill" style="width:${pct}%"></div></div>
+      <div class="bd-xp-label">${xp} XP · 다음 레벨까지 ${Math.max(0,nextXP-xp)} XP · 뱃지 ${earned.length}/${BADGE_DEFS.length}개</div>
+    </div>`;
+}
+
+function renderBDBody(){
+  const earned = getEarnedBadges();
+  const cats = [...new Set(BADGE_DEFS.map(b=>b.cat))];
+  let html = '';
+  cats.forEach(cat=>{
+    const badges = BADGE_DEFS.filter(b=>b.cat===cat);
+    html += `<div class="bd-section-title">${cat}</div>`;
+    html += `<div class="bd-grid">`;
+    badges.forEach(b=>{
+      const isEarned = earned.includes(b.id);
+      // 진행도 계산 (조건에 수치 있는 뱃지)
+      let progHtml = '';
+      if(!isEarned){
+        // 간단 진행바
+        let cur=0, max=1;
+        if(b.id.includes('post'))     { cur=myPostCount();       max=parseInt(b.id.replace('post_','')||1); }
+        if(b.id.includes('market'))   { cur=visitedMktCount();   max=parseInt(b.id.replace('market_','')||1); }
+        if(b.id.includes('like'))     { cur=totalLikesReceived();max=parseInt(b.id.replace('like_','')||1); }
+        if(b.id.includes('cl_done'))  { cur=CL.filter(i=>i.done).length; max=parseInt(b.desc.match(/\d+/)?.[0]||1); }
+        if(b.id.includes('follow_') && !b.id.includes('first')) { cur=followCount(); max=parseInt(b.id.replace('follow_','')||1); }
+        const p = Math.min(100,Math.round(cur/max*100));
+        if(p>0) progHtml=`<div class="bd-card-prog"><div class="bd-card-prog-fill" style="width:${p}%"></div></div><div style="font-size:9px;color:var(--text3);margin-top:2px">${cur}/${max}</div>`;
+      }
+      html += `<div class="bd-card${isEarned?' earned':' locked'}">
+        <div class="bd-card-icon">${b.icon}</div>
+        <div class="bd-card-name">${b.name}</div>
+        <div class="bd-card-desc">${b.desc}</div>
+        ${isEarned?`<div class="bd-card-earned-tag">✓ 획득 +${b.xp}XP</div>`:progHtml}
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById('bdBody').innerHTML = html;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+buildRegionSelect();
+renderChips();
+renderStories();
+renderGrid();
+renderSidebar();
+// 프로필 버튼 아바타 초기화
+document.getElementById('profileBtn').textContent = P.avatar||'😊';
+document.getElementById('bnavProfileIcon').textContent = P.avatar||'😊';
+// 뱃지/팔로우/체크리스트 배지 초기화
+updateClBadge();
+updateFwBadge();
+getEarnedBadges(); // 기존 조건 재계산
+// 정렬 탭 초기화
+setSort('latest');
+// 마감세일 배너 초기화
+renderSaleFeedBar();
+// 시드 데이터에 샘플 마감세일 추가 (처음 한 번만)
+if(!localStorage.getItem('jtt4_sale_seeded')){
+  const now = new Date();
+  const e1 = new Date(now); e1.setHours(e1.getHours()+1, e1.getMinutes(), 0, 0);
+  const e2 = new Date(now); e2.setHours(e2.getHours()+2, e2.getMinutes()+30, 0, 0);
+  const salePosts = [
+    {id:Date.now()+1, type:'sale', author:'시장지킴이', avatar:'🏮',
+     market:'광장시장', shop:'은성횟집',
+     photos:['🐟','🍲'], caption:'오늘 동태 재고 소진 임박! 지금 반값에 드립니다 🎣',
+     saleItem:'동태탕 1인분', saleDiscount:'50% 할인 (6,000원→3,000원)', saleEndMs:e1.getTime(),
+     tags:['광장시장','마감세일','동태탕'], likes:14, comments:[], time:'10분 전', hot:false, pick:false},
+    {id:Date.now()+2, type:'sale', author:'망원탐험가', avatar:'🛒',
+     market:'망원시장', shop:'',
+     photos:['🥬','🫙'], caption:'오늘 입고된 제철 채소 마감 세일! 내일은 없어요.',
+     saleItem:'제철 채소 모둠', saleDiscount:'30% 할인', saleEndMs:e2.getTime(),
+     tags:['망원시장','마감세일','채소'], likes:8, comments:[], time:'20분 전', hot:false, pick:false},
+  ];
+  S.posts = [...salePosts, ...S.posts];
+  save();
+  localStorage.setItem('jtt4_sale_seeded','1');
+  renderSaleFeedBar(); renderGrid(); renderSidebar(); renderStories();
+}
+
+// 자동 위치 취득 시도
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      S.userLat=pos.coords.latitude;
+      S.userLng=pos.coords.longitude;
+      document.getElementById('locDot').classList.add('active');
+      const nearest=[...ALL_MKTS]
+        .map(m=>({...m,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+        .sort((a,b)=>a.dist-b.dist)[0];
+      document.getElementById('locLabel').textContent=distLabel(nearest.dist)+' '+nearest.name;
+      const banner=document.getElementById('locBanner');
+      banner.classList.add('show');
+      document.getElementById('locBannerText').innerHTML=
+        `현재 위치에서 <strong>${nearest.name}</strong>까지 <strong>${distLabel(nearest.dist)}</strong> — 📍 거리순 탭을 눌러보세요!`;
+      renderChips();renderStories();renderGrid();renderSidebar();
+    },
+    ()=>{},
+    {timeout:5000,maximumAge:300000}
+  );
+}
+</script>
+</body>
+</html>
