@@ -1030,7 +1030,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       </div>
       <div class="cl-input-detail">
         <input class="cl-input-sm" id="clQty" placeholder="수량 (예: 2마리)">
-        <input class="cl-input-sm" id="clPrice" placeholder="예산 (예: 12000)" type="number">
+        <input class="cl-input-sm" id="clPrice" placeholder="예산 (예: 12,000)" type="text" inputmode="numeric" oninput="fmtInputNum(this)">
         <select class="cl-input-sm" id="clMktSel">
           <option value="">시장 선택</option>
           <option value="광장시장">광장시장</option>
@@ -1167,6 +1167,17 @@ const PLIB = ['🐟','🥩','🍲','🥟','🍢','🥬','🦑','🍣','🥐','�
 // ── 숫자 포맷 유틸 ──────────────────────────────────────────────
 function fmtNum(n){ return Number(n||0).toLocaleString('ko-KR'); }
 function fmtWon(n){ return Number(n||0).toLocaleString('ko-KR')+'원'; }
+// 입력 중 실시간 쉼표 포맷
+function fmtInputNum(el){
+  const raw = el.value.replace(/[^0-9]/g, '');
+  if(!raw){ el.value=''; return; }
+  const num = parseInt(raw);
+  const formatted = num.toLocaleString('ko-KR');
+  el.value = formatted;
+  // 커서 위치 보정 (맨 뒤로)
+  el.setSelectionRange(el.value.length, el.value.length);
+}
+
 function fmtWonShort(n){
   n = Number(n||0);
   if(n>=10000) return (n/10000).toFixed(1).replace('.0','')+'만원';
@@ -2696,7 +2707,7 @@ function renderCLBudget(){
   document.getElementById('clBudgetFill').style.width = pct+'%';
 }
 function setBudget(){
-  const v = prompt('오늘 장보기 예산을 입력하세요 (원)', clBudget||'');
+  const v = prompt('오늘 장보기 예산을 입력하세요 (원)', clBudget ? fmtNum(clBudget) : '');
   if(v===null) return;
   clBudget = parseInt((v||'').replace(/,/g,'').replace(/[^0-9]/g,''))||0;
   localStorage.setItem('jtt4_cl_budget', clBudget);
@@ -2846,7 +2857,7 @@ function addClItem(){
   CL.unshift({
     id:Date.now(), text:inp.value.trim(),
     qty:qty?.value.trim()||'',
-    price:parseInt(price?.value||0)||0,
+    price:parseInt((price?.value||'').replace(/,/g,''))||0,
     cat, market:mkt, done:false
   });
   inp.value='';
