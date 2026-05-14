@@ -892,6 +892,38 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 }
 .mkt-shop-cat-icon{font-size:14px;}
 
+
+/* ── 시장 정보 탭 ── */
+.mkt-info-wrap{padding:14px 18px 40px;display:flex;flex-direction:column;gap:14px;}
+.mkt-info-section{background:#fff;border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.mkt-info-section-head{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-bottom:1px solid var(--border);
+  background:var(--bg2);
+}
+.mkt-info-section-icon{font-size:18px;flex-shrink:0;}
+.mkt-info-section-title{font-size:13px;font-weight:700;color:var(--text);}
+.mkt-info-rows{display:flex;flex-direction:column;}
+.mkt-info-row{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:10px 16px;border-bottom:0.5px solid var(--bg2);
+}
+.mkt-info-row:last-child{border-bottom:none;}
+.mkt-info-key{font-size:12px;color:var(--text3);min-width:80px;flex-shrink:0;padding-top:1px;}
+.mkt-info-val{font-size:13px;color:var(--text);font-weight:500;line-height:1.6;flex:1;}
+.mkt-info-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-right:4px;
+}
+.mkt-info-badge.yes{background:var(--greenbg);color:var(--green);}
+.mkt-info-badge.no{background:var(--bg3);color:var(--text3);}
+.mkt-info-badge.paid{background:var(--goldbg);color:var(--gold);}
+.mkt-info-badge.free{background:var(--greenbg);color:var(--green);}
+.mkt-info-empty{padding:32px 20px;text-align:center;color:var(--text3);font-size:13px;}
+.mkt-info-transit{display:flex;flex-direction:column;gap:4px;}
+.mkt-info-transit-item{display:flex;align-items:flex-start;gap:6px;font-size:12px;}
+.mkt-info-transit-icon{flex-shrink:0;font-size:14px;}
+
 /* TOAST / EMPTY */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -1154,6 +1186,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <button class="mkt-tab on" onclick="switchMktTab(this,'shops')">🏪 상점</button>
       <button class="mkt-tab" onclick="switchMktTab(this,'sales')">⚡ 마감세일</button>
       <button class="mkt-tab" onclick="switchMktTab(this,'reviews')">📸 후기</button>
+      <button class="mkt-tab" onclick="switchMktTab(this,'info')">ℹ️ 정보</button>
     </div>
     <!-- 콘텐츠 -->
     <div class="mkt-content" id="mktContent"></div>
@@ -1762,6 +1795,206 @@ function storyCk(name){
 }
 
 // ── 시장 상세 페이지 ─────────────────────────────────────────────
+// 시장 정보 데이터 (공단 API 연동 전 시드)
+const MKT_INFO = {
+  '광장시장': {
+    hours:   { weekday:'09:00~20:00', weekend:'09:00~21:00', holiday:'09:00~20:00' },
+    parking: { available:true, fee:'유료', info:'광장시장 공영주차장 (30분 1,000원)', nearby:'종로 공영주차장 도보 3분' },
+    toilet:  { available:true, locations:['1층 중앙통로','2층 입구'], disabled:true },
+    cs:      { phone:'02-2267-0291', hours:'09:00~18:00 (주말 제외)' },
+    transit: [
+      {icon:'🚇', text:'1호선 종로5가역 8번 출구 도보 2분'},
+      {icon:'🚌', text:'간선 104·153·종로02 광장시장 하차'},
+    ],
+    facilities: [
+      {name:'유모차 대여', available:true, note:'1층 고객센터'},
+      {name:'물품보관함', available:true, note:'1층 입구'},
+      {name:'ATM',       available:true, note:'내부 1층'},
+      {name:'수유실',    available:true, note:'2층 고객센터 내'},
+      {name:'휠체어 경사로', available:true, note:'정문·후문'},
+    ],
+    tip: '주말 점심시간(12~14시)은 매우 혼잡해요. 평일 오전이나 저녁 이후 방문을 추천해요.',
+  },
+  '망원시장': {
+    hours:   { weekday:'07:00~19:00', weekend:'07:00~19:00', holiday:'휴무' },
+    parking: { available:false, fee:'-', info:'전용 주차장 없음', nearby:'월드컵 공영주차장 도보 7분' },
+    toilet:  { available:true, locations:['시장 내 중앙'], disabled:false },
+    cs:      { phone:'02-322-2289', hours:'09:00~17:00 (주말 제외)' },
+    transit: [
+      {icon:'🚇', text:'6호선 망원역 1번 출구 도보 5분'},
+      {icon:'🚌', text:'지선 7613·7711 망원시장 하차'},
+    ],
+    facilities: [
+      {name:'유모차 대여', available:false, note:'-'},
+      {name:'물품보관함', available:false, note:'-'},
+      {name:'ATM',       available:true,  note:'시장 입구 근처'},
+    ],
+    tip: '주차 공간이 없어요. 자전거·대중교통 이용을 강력 추천해요. 인근 합정·망원역 따릉이 스테이션 이용 가능.',
+  },
+  '통인시장': {
+    hours:   { weekday:'10:00~18:00', weekend:'10:00~18:00', holiday:'일부 휴무' },
+    parking: { available:false, fee:'-', info:'전용 주차장 없음', nearby:'인왕산 공영주차장 도보 10분' },
+    toilet:  { available:true, locations:['시장 내 1곳'], disabled:false },
+    cs:      { phone:'02-722-0911', hours:'10:00~18:00' },
+    transit: [
+      {icon:'🚇', text:'3호선 경복궁역 2번 출구 도보 10분'},
+      {icon:'🚌', text:'지선 1020·7022 효자동주민센터 하차'},
+    ],
+    facilities: [
+      {name:'엽전 교환소', available:true, note:'시장 입구 안내소 (1엽전=1,000원)'},
+      {name:'유모차 대여', available:false, note:'-'},
+      {name:'ATM',        available:false, note:'인근 편의점 이용'},
+    ],
+    tip: '엽전 도시락 체험은 현금으로 엽전을 구매해야 해요. 카드 불가 상점이 많으니 현금 준비 필수.',
+  },
+  '노량진수산시장': {
+    hours:   { weekday:'00:00~24:00 (경매 새벽 3시~)', weekend:'00:00~24:00', holiday:'연중무휴' },
+    parking: { available:true, fee:'유료', info:'시장 전용 주차장 (1시간 1,000원)', nearby:'-' },
+    toilet:  { available:true, locations:['각 층 여러 곳'], disabled:true },
+    cs:      { phone:'02-2254-8000', hours:'09:00~18:00' },
+    transit: [
+      {icon:'🚇', text:'1·9호선 노량진역 1번 출구 연결'},
+      {icon:'🚌', text:'간선 750·751 노량진수산시장 하차'},
+    ],
+    facilities: [
+      {name:'회 포장',     available:true, note:'모든 점포'},
+      {name:'취식 공간',   available:true, note:'2층 식당가'},
+      {name:'물품보관함',  available:false, note:'-'},
+      {name:'ATM',        available:true,  note:'1층 내부'},
+    ],
+    tip: '새벽 3~5시 경매 구경이 백미예요. 활어 구매 후 2층 식당에서 바로 먹을 수 있어요. 흥정 필수!',
+  },
+  '자갈치시장': {
+    hours:   { weekday:'08:00~22:00', weekend:'08:00~22:00', holiday:'연중무휴' },
+    parking: { available:true, fee:'유료', info:'자갈치 공영주차장 (최초 30분 700원)', nearby:'남포동 공영주차장 도보 5분' },
+    toilet:  { available:true, locations:['1층·2층'], disabled:true },
+    cs:      { phone:'051-245-2594', hours:'09:00~18:00' },
+    transit: [
+      {icon:'🚇', text:'1호선 자갈치역 10번 출구 도보 3분'},
+      {icon:'🚌', text:'간선 1·6·7·9 자갈치시장 하차'},
+    ],
+    facilities: [
+      {name:'회 포장',    available:true, note:'모든 점포'},
+      {name:'취식 공간',  available:true, note:'2층 식당가 이용'},
+      {name:'관광 안내',  available:true, note:'1층 안내데스크'},
+      {name:'ATM',       available:true, note:'1층 내부'},
+    ],
+    tip: '"아지매" 할인 흥정 문화가 있어요. 저녁 7시 이후 마감 세일이 자주 있어요.',
+  },
+};
+
+function infoSection(icon, title, rows){
+  const rowHtml = rows.map(([key,val])=>`
+    <div class="mkt-info-row">
+      <span class="mkt-info-key">${key}</span>
+      <span class="mkt-info-val">${val}</span>
+    </div>`).join('');
+  return `<div class="mkt-info-section">
+    <div class="mkt-info-section-head">
+      <span class="mkt-info-section-icon">${icon}</span>
+      <span class="mkt-info-section-title">${title}</span>
+    </div>
+    <div class="mkt-info-rows">${rowHtml}</div>
+  </div>`;
+}
+
+function badge(text, type){ return `<span class="mkt-info-badge ${type}">${text}</span>`; }
+
+function renderMktInfo(name, el){
+  const info = MKT_INFO[name];
+  if(!info){
+    el.innerHTML = `<div class="mkt-info-empty">
+      <div style="font-size:32px;margin-bottom:10px">ℹ️</div>
+      <div>아직 시장 정보가 없어요.<br>
+      <span style="font-size:12px;color:var(--text3)">공단 API 연동 후 자동으로 채워질 예정이에요</span></div>
+    </div>`;
+    return;
+  }
+
+  // 운영시간
+  const hoursSec = infoSection('🕐','운영 시간',[
+    ['평일',   info.hours.weekday],
+    ['주말',   info.hours.weekend],
+    ['공휴일', info.hours.holiday],
+  ]);
+
+  // 주차
+  const parkSec = infoSection('🅿️','주차',[
+    ['주차 가능', info.parking.available ? badge('✅ 가능','yes') : badge('❌ 없음','no')],
+    ['요금',     info.parking.available ? badge(info.parking.fee, info.parking.fee==='무료'?'free':'paid') : '-'],
+    ['주차장',   info.parking.info],
+    ['인근 주차', info.parking.nearby||'-'],
+  ]);
+
+  // 화장실
+  const toiletSec = infoSection('🚻','화장실',[
+    ['이용 가능', info.toilet.available ? badge('✅ 있음','yes') : badge('❌ 없음','no')],
+    ['위치',     info.toilet.locations.join(', ')],
+    ['장애인 화장실', info.toilet.disabled ? badge('✅ 있음','yes') : badge('❌ 없음','no')],
+  ]);
+
+  // 고객센터
+  const csSec = infoSection('📞','고객센터',[
+    ['전화번호', `<a href="tel:${info.cs.phone}" style="color:var(--blue)">${info.cs.phone}</a>`],
+    ['운영시간', info.cs.hours],
+  ]);
+
+  // 대중교통
+  const transitRows = info.transit.map(t=>`
+    <div class="mkt-info-row">
+      <div class="mkt-info-transit-item">
+        <span class="mkt-info-transit-icon">${t.icon}</span>
+        <span style="font-size:13px;color:var(--text)">${t.text}</span>
+      </div>
+    </div>`).join('');
+  const transitSec = `<div class="mkt-info-section">
+    <div class="mkt-info-section-head">
+      <span class="mkt-info-section-icon">🚇</span>
+      <span class="mkt-info-section-title">대중교통</span>
+    </div>
+    <div class="mkt-info-rows">${transitRows}</div>
+  </div>`;
+
+  // 편의시설
+  const facRows = info.facilities.map(f=>`
+    <div class="mkt-info-row">
+      <span class="mkt-info-key">${f.name}</span>
+      <span class="mkt-info-val">
+        ${f.available ? badge('✅ 있음','yes') : badge('❌ 없음','no')}
+        ${f.note&&f.note!=='-'?`<span style="font-size:12px;color:var(--text3);margin-left:6px">${f.note}</span>`:''}
+      </span>
+    </div>`).join('');
+  const facSec = `<div class="mkt-info-section">
+    <div class="mkt-info-section-head">
+      <span class="mkt-info-section-icon">♿</span>
+      <span class="mkt-info-section-title">편의시설</span>
+    </div>
+    <div class="mkt-info-rows">${facRows}</div>
+  </div>`;
+
+  // 방문 팁
+  const tipSec = `<div class="mkt-info-section" style="border-color:var(--goldbdr)">
+    <div class="mkt-info-section-head" style="background:var(--goldbg)">
+      <span class="mkt-info-section-icon">💡</span>
+      <span class="mkt-info-section-title" style="color:var(--gold)">방문 팁</span>
+    </div>
+    <div class="mkt-info-rows">
+      <div class="mkt-info-row">
+        <span style="font-size:13px;color:var(--text);line-height:1.7">${info.tip}</span>
+      </div>
+    </div>
+  </div>`;
+
+  el.innerHTML = `<div class="mkt-info-wrap">
+    ${hoursSec}
+    ${parkSec}
+    ${toiletSec}
+    ${csSec}
+    ${transitSec}
+    ${facSec}
+    ${tipSec}
+  </div>`;
+}
 let mktPageTab = 'shops';
 let curMktName = '';
 
@@ -1884,6 +2117,7 @@ function renderMktContent(name){
   if(mktPageTab === 'shops')   renderMktShops(name, el);
   if(mktPageTab === 'sales')   renderMktSales(name, el);
   if(mktPageTab === 'reviews') renderMktReviews(name, el);
+  if(mktPageTab === 'info')    renderMktInfo(name, el);
 }
 
 // 상점 카테고리 정의
