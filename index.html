@@ -735,6 +735,163 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .saving-bar-fill{height:100%;background:linear-gradient(90deg,#f0b030,#e85c00);border-radius:4px;transition:width .5s ease;}
 .saving-bar-val{font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0;min-width:50px;}
 
+
+/* ── 마감세일 수량 ── */
+.sale-stock-bar{
+  background:rgba(0,0,0,.15);padding:8px 14px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.sale-stock-info{flex:1;display:flex;align-items:center;gap:8px;}
+.sale-stock-label{font-size:12px;color:rgba(255,255,255,.9);}
+.sale-stock-num{font-size:14px;font-weight:700;color:#fff;}
+.sale-stock-prog{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden;}
+.sale-stock-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+.sale-stock-fill.high{background:#4ade80;}
+.sale-stock-fill.mid{background:#fbbf24;}
+.sale-stock-fill.low{background:#f87171;}
+.sale-stock-btns{display:flex;gap:6px;flex-shrink:0;}
+.sale-visit-btn{padding:4px 10px;border-radius:14px;font-size:11px;font-weight:700;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;}
+.sale-visit-btn:hover{background:rgba(255,255,255,.3);}
+.sale-soldout-btn{padding:4px 10px;border-radius:14px;font-size:11px;font-weight:700;border:1.5px solid rgba(241,113,113,.7);background:rgba(241,113,113,.2);color:#fff;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;}
+.sale-soldout-btn:hover{background:rgba(241,113,113,.4);}
+.sale-soldout-badge{background:#ef4444;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:2px 8px;flex-shrink:0;}
+
+
+/* ── 에디터 공식 게시글 ── */
+.gi-editor-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;background:linear-gradient(90deg,#fdf4dc,#fef9ec);
+  border-bottom:1px solid var(--goldbdr);flex-shrink:0;
+}
+.gi-editor-icon{font-size:13px;}
+.gi-editor-label{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.3px;}
+.gi-editor-sub{font-size:11px;color:var(--text3);margin-left:auto;}
+
+/* 가게 정보 카드 */
+.gi-shop-card{
+  margin:8px 14px 4px;
+  border:1.5px solid var(--goldbdr);
+  border-radius:var(--r);
+  overflow:hidden;
+  background:var(--goldbg);
+}
+.gi-shop-card-head{
+  padding:10px 14px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--goldbdr);
+}
+.gi-shop-card-icon{
+  width:40px;height:40px;border-radius:var(--rsm);
+  background:linear-gradient(135deg,var(--goldbdr),var(--goldbg));
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.gi-shop-card-name{font-size:14px;font-weight:700;color:var(--text);}
+.gi-shop-card-mkt{font-size:12px;color:var(--text3);margin-top:2px;}
+.gi-shop-card-body{padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
+.gi-shop-card-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;}
+.gi-shop-card-key{color:var(--text3);min-width:54px;flex-shrink:0;}
+.gi-shop-card-val{color:var(--text);font-weight:500;line-height:1.5;}
+.gi-shop-card-menus{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.gi-shop-card-menu{padding:3px 10px;background:#fff;border:1px solid var(--goldbdr);border-radius:12px;font-size:11px;color:var(--gold);font-weight:500;}
+
+/* 에디터 업로드 모드 */
+.editor-fields{display:flex;flex-direction:column;gap:10px;}
+.editor-field-row{display:flex;gap:8px;}
+.editor-field-row>*{flex:1;}
+
+
+/* ── 시장 상세 페이지 ── */
+.mktoverlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.mktoverlay.open{opacity:1;pointer-events:all;}
+.mktmodal{background:var(--bg);width:100%;max-width:680px;max-height:92vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);}
+.mktoverlay.open .mktmodal{transform:translateY(0);}
+
+/* 시장 헤더 */
+.mkt-hero{flex-shrink:0;padding:20px 18px 16px;background:#fff;border-bottom:1px solid var(--border);}
+.mkt-hero-top{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.mkt-hero-icon{width:60px;height:60px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;background:var(--redbg);border:1.5px solid var(--redbdr);}
+.mkt-hero-info{flex:1;min-width:0;}
+.mkt-hero-name{font-size:20px;font-weight:700;color:var(--text);}
+.mkt-hero-addr{font-size:12px;color:var(--text3);margin-top:3px;}
+.mkt-hero-dist{font-size:12px;font-weight:700;color:var(--green);margin-top:2px;}
+.mkt-hero-close{width:32px;height:32px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+/* 시장 통계 */
+.mkt-stats{display:flex;gap:0;border-top:1px solid var(--border);}
+.mkt-stat{flex:1;padding:10px 0;display:flex;flex-direction:column;align-items:center;gap:2px;border-right:1px solid var(--border);}
+.mkt-stat:last-child{border-right:none;}
+.mkt-stat-num{font-size:18px;font-weight:700;color:var(--text);}
+.mkt-stat-label{font-size:11px;color:var(--text3);}
+/* 팔로우 버튼 */
+.mkt-follow-btn{width:100%;padding:10px;background:var(--red);color:#fff;border:none;border-radius:var(--rsm);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;margin-top:10px;}
+.mkt-follow-btn:hover{background:#a02a18;}
+.mkt-follow-btn.following{background:#fff;color:var(--red);border:1.5px solid var(--red);}
+
+/* 탭 */
+.mkt-tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;flex-shrink:0;}
+.mkt-tab{flex:1;padding:11px 0;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--text3);font-family:inherit;border-bottom:2px solid transparent;transition:all .15s;}
+.mkt-tab.on{color:var(--red);border-bottom-color:var(--red);}
+
+/* 콘텐츠 영역 */
+.mkt-content{flex:1;overflow-y:auto;padding-bottom:30px;}
+
+/* 상점 목록 */
+.mkt-shop-list{display:flex;flex-direction:column;}
+.mkt-shop-item{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);background:#fff;cursor:pointer;transition:background .15s;}
+.mkt-shop-item:hover{background:var(--bg2);}
+.mkt-shop-icon{width:46px;height:46px;border-radius:var(--rsm);background:var(--redbg);border:1px solid var(--redbdr);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.mkt-shop-info{flex:1;min-width:0;}
+.mkt-shop-name{font-size:14px;font-weight:700;color:var(--text);}
+.mkt-shop-menu{font-size:12px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mkt-shop-price{font-size:12px;color:var(--green);font-weight:500;flex-shrink:0;}
+.mkt-shop-badge{font-size:10px;font-weight:700;border-radius:8px;padding:2px 7px;flex-shrink:0;}
+.mkt-shop-badge.open{background:var(--greenbg);color:var(--green);}
+.mkt-shop-badge.sale{background:#fff8e6;color:#b35f00;}
+
+/* 마감세일 목록 */
+.mkt-sale-list{display:flex;flex-direction:column;gap:0;}
+.mkt-sale-item{padding:14px 18px;border-bottom:1px solid var(--border);background:#fff;cursor:pointer;transition:background .15s;}
+.mkt-sale-item:hover{background:var(--bg2);}
+.mkt-sale-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.mkt-sale-item-name{font-size:14px;font-weight:700;color:var(--text);}
+.mkt-sale-timer{font-size:12px;font-weight:700;color:#e85c00;font-variant-numeric:tabular-nums;}
+.mkt-sale-discount{font-size:13px;color:var(--text2);margin-bottom:4px;}
+.mkt-sale-shop{font-size:12px;color:var(--text3);}
+
+/* 후기 미니 그리드 */
+.mkt-review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+.mkt-review-item{aspect-ratio:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;}
+.mkt-review-item:hover .mkt-review-overlay{opacity:1;}
+.mkt-review-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .2s;}
+.mkt-review-stat{color:#fff;font-size:12px;font-weight:700;}
+.mkt-review-photo{font-size:min(18vw,100px);line-height:1;}
+
+/* 빈 상태 */
+.mkt-empty{padding:40px 20px;text-align:center;color:var(--text3);}
+.mkt-empty .ei{font-size:36px;margin-bottom:10px;}
+
+
+/* 상점 카테고리 필터 */
+.mkt-cat-bar{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:8px 14px;display:flex;gap:6px;overflow-x:auto;
+  scrollbar-width:none;flex-shrink:0;
+}
+.mkt-cat-bar::-webkit-scrollbar{display:none;}
+.mkt-cat-chip{
+  padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;
+  border:1px solid var(--border);background:#fff;color:var(--text2);
+  cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s;flex-shrink:0;
+}
+.mkt-cat-chip.on{background:var(--text);color:#fff;border-color:var(--text);}
+.mkt-cat-chip:hover:not(.on){background:var(--bg2);}
+
+/* 상점 카테고리 섹션 헤더 */
+.mkt-shop-cat-header{
+  padding:8px 16px 4px;font-size:11px;font-weight:700;
+  color:var(--text3);letter-spacing:.5px;
+  background:var(--bg2);display:flex;align-items:center;gap:6px;
+}
+.mkt-shop-cat-icon{font-size:14px;}
+
 /* TOAST / EMPTY */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -896,6 +1053,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div class="utype-tabs">
       <button class="utype-btn on-review" id="uTypeReview" onclick="setUType('review')">📝 방문 후기</button>
       <button class="utype-btn" id="uTypeSale" onclick="setUType('sale')">⚡ 마감 세일</button>
+      <button class="utype-btn" id="uTypeEditor" onclick="setUType('editor')">🏮 상점 홍보</button>
     </div>
     <div class="ubody">
       <div>
@@ -922,6 +1080,34 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           <span class="ustar on" data-v="5" onclick="setStar(5)">★</span>
         </div>
       </div>
+      <!-- 에디터 상점 홍보 전용 필드 -->
+      <div id="editorFields" style="display:none" class="editor-fields">
+        <div>
+          <div class="pflabel">🏪 가게 정보</div>
+          <div class="editor-field-row">
+            <input type="text" id="edShopName" placeholder="가게 이름 (예: 은성횟집)">
+            <input type="text" id="edShopHours" placeholder="영업시간 (예: 09:00~19:00)">
+          </div>
+        </div>
+        <div>
+          <div class="pflabel">🍽️ 대표 메뉴</div>
+          <input type="text" id="edMenus" placeholder="쉼표로 구분 (예: 동태탕 6,000원, 생선구이 8,000원)">
+        </div>
+        <div class="editor-field-row">
+          <div style="flex:1">
+            <div class="pflabel">💰 가격대</div>
+            <input type="text" id="edPriceRange" placeholder="예: 5,000~15,000원">
+          </div>
+          <div style="flex:1">
+            <div class="pflabel">📞 연락처 (선택)</div>
+            <input type="text" id="edPhone" placeholder="예: 02-1234-5678">
+          </div>
+        </div>
+        <div>
+          <div class="pflabel">✏️ 특이사항</div>
+          <input type="text" id="edNote" placeholder="예: 현금만 가능, 주차 가능, 포장 됨">
+        </div>
+      </div>
       <!-- 마감세일 전용 필드 -->
       <div id="saleFields" style="display:none" class="sale-fields">
         <div>
@@ -929,6 +1115,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           <div class="sale-discount-row">
             <input type="text" id="saleItem" placeholder="예: 생동태, 녹두빈대떡, 광어회">
             <input type="text" id="saleDiscount" placeholder="예: 50% 할인, 1만원 → 5천원">
+          </div>
+        </div>
+        <div>
+          <div class="pflabel">📦 초기 수량 (선택)</div>
+          <div class="sale-time-row">
+            <input type="number" id="saleStock" placeholder="예: 20" min="1" max="999" style="flex:1;padding:9px 12px;border-radius:var(--rsm);border:1px solid var(--border);font-size:14px;font-family:inherit;outline:none;">
+            <span style="font-size:13px;color:var(--text3)">개</span>
           </div>
         </div>
         <div>
@@ -948,6 +1141,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <button class="ubtn-c" onclick="closeUpload()">취소</button>
       <button class="ubtn-s" onclick="submitPost()">올리기</button>
     </div>
+  </div>
+</div>
+
+<!-- 시장 상세 페이지 -->
+<div class="mktoverlay" id="mktoverlay" onclick="closeMktOut(event)">
+  <div class="mktmodal">
+    <!-- 시장 헤더 -->
+    <div class="mkt-hero" id="mktHero"></div>
+    <!-- 탭 -->
+    <div class="mkt-tabs">
+      <button class="mkt-tab on" onclick="switchMktTab(this,'shops')">🏪 상점</button>
+      <button class="mkt-tab" onclick="switchMktTab(this,'sales')">⚡ 마감세일</button>
+      <button class="mkt-tab" onclick="switchMktTab(this,'reviews')">📸 후기</button>
+    </div>
+    <!-- 콘텐츠 -->
+    <div class="mkt-content" id="mktContent"></div>
   </div>
 </div>
 
@@ -1287,6 +1496,62 @@ const SEEDS = [
    ],
    time:'7일 전',hot:false,pick:true},
 
+  // ── 에디터 공식 상점 소개 ──
+  {id:17, type:'editor', author:'장터통신 에디터', avatar:'🏮',
+   market:'광장시장', shop:'순희네 빈대떡', star:0,
+   photos:['🧆','🍺','🌿'],
+   caption:'1976년부터 3대째 이어온 광장시장의 전설 🏮\n직접 간 녹두만 쓰는 원칙을 50년째 지키고 있어요. 겉은 바삭, 속은 촉촉. 막걸리 한 잔과 함께하면 광장시장의 진짜 맛을 느낄 수 있어요.',
+   shopInfo:{
+     cat:'food', name:'순희네 빈대떡',
+     hours:'10:00~22:00 (연중무휴)',
+     menus:['녹두빈대떡 4,000원','김치빈대떡 4,000원','막걸리 3,000원'],
+     price:'3,000~8,000원',
+     phone:'02-2267-0150',
+     note:'현금만 가능, 포장 가능, 2층 자리 있음'
+   },
+   tags:['광장시장','순희네','빈대떡','3대째','에디터픽'],
+   likes:203, pick:true, hot:true,
+   comments:[
+     {author:'막걸리러버',avatar:'🍺',text:'여기 빈대떡이 진짜 서울 최고예요',time:'1일 전'},
+     {author:'외국인친구랑',avatar:'🌍',text:'외국인 친구 데려갔더니 엄지척',time:'3일 전'}
+   ], time:'3일 전'},
+
+  {id:18, type:'editor', author:'장터통신 에디터', avatar:'🏮',
+   market:'통인시장', shop:'기름떡볶이 원조', star:0,
+   photos:['🍢','🪙','🏮'],
+   caption:'통인시장에만 있는 기름떡볶이 원조집 🍢\n고추장 대신 간장 베이스 기름에 볶아내는 이 떡볶이, 서울 어디서도 못 먹어요. 달달하고 고소한 맛이 중독성 있어요. 엽전 3개(3,000원)면 푸짐하게 먹을 수 있어요.',
+   shopInfo:{
+     cat:'food', name:'기름떡볶이 원조',
+     hours:'10:00~18:00 (월요일 휴무)',
+     menus:['기름떡볶이 엽전 3개','순대 엽전 2개','잡채 엽전 2개'],
+     price:'엽전 1개=1,000원',
+     phone:'',
+     note:'엽전 구매처: 시장 입구 안내소, 현금 지불'
+   },
+   tags:['통인시장','기름떡볶이','엽전','서촌','에디터픽'],
+   likes:167, pick:true, hot:false,
+   comments:[
+     {author:'서촌단골',avatar:'🏘️',text:'매주 오는데 질리지가 않아요',time:'2일 전'}
+   ], time:'5일 전'},
+
+  {id:19, type:'editor', author:'장터통신 에디터', avatar:'🏮',
+   market:'망원시장', shop:'이모네 채소가게', star:0,
+   photos:['🥬','🌾','🌿'],
+   caption:'망원시장 새벽 직송 채소 전문 🥬\n매일 새벽 4시 가락시장에서 직접 가져오는 제철 채소. 마트보다 30~40% 저렴하고 신선도는 두 배. 합정·홍대 주민들의 단골 장보기 코스예요.',
+   shopInfo:{
+     cat:'veg', name:'이모네 채소가게',
+     hours:'07:00~19:00 (일요일 휴무)',
+     menus:['시금치 한 단 1,500원','쑥갓 한 단 1,500원','열무 한 단 2,000원','제철 채소 모둠 5,000원'],
+     price:'1,500~5,000원',
+     phone:'010-3456-7890',
+     note:'마감세일 자주 있음, 팔로우 추천'
+   },
+   tags:['망원시장','채소','직송','가성비','에디터픽'],
+   likes:89, pick:true, hot:false,
+   comments:[
+     {author:'망원주부',avatar:'👩',text:'여기 시금치 진짜 싱싱해요!',time:'1일 전'}
+   ], time:'2일 전'},
+
   // ── 내 페이지 게시글 (author: '나') ──
   {id:14,author:'나',avatar:'😊',market:'광장시장',shop:'마약김밥 원조',star:5,
    photos:['🍙','🥢','🌿'],
@@ -1491,13 +1756,300 @@ function renderStories(){
 function storyCk(name){
   const seen = JSON.parse(localStorage.getItem('jtt4_seen')||'[]');
   if(!seen.includes(name)){ seen.push(name); localStorage.setItem('jtt4_seen',JSON.stringify(seen)); }
-  filterMkt(name, null);
   renderStories();
-  // 첫 번째 카드로 스크롤
+  // 시장 상세 페이지 열기
+  openMktPage(name);
+}
+
+// ── 시장 상세 페이지 ─────────────────────────────────────────────
+let mktPageTab = 'shops';
+let curMktName = '';
+
+function openMktPage(name){
+  curMktName = name;
+  mktPageTab = 'shops';
+  mktSelCat = 'all';
+  // 탭 초기화
+  document.querySelectorAll('.mkt-tab').forEach((b,i)=>b.classList.toggle('on', i===0));
+  renderMktHero(name);
+  renderMktContent(name);
+  document.getElementById('mktoverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMktPage(){
+  document.getElementById('mktoverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeMktOut(e){ if(e.target===document.getElementById('mktoverlay')) closeMktPage(); }
+
+function switchMktTab(btn, tab){
+  document.querySelectorAll('.mkt-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  mktPageTab = tab;
+  renderMktContent(curMktName);
+}
+
+function renderMktHero(name){
+  const mdata = getMktData(name);
+  const dist  = distTo(name);
+  const posts = S.posts.filter(p=>p.market===name);
+  const reviews = posts.filter(p=>p.type!=='sale');
+  const sales   = posts.filter(p=>p.type==='sale' && isSaleActive(p));
+  const shops   = getShopsForMarket(name);
+  const isFollowing = FW[name]&&FW[name].following;
+  const totalLikes  = reviews.reduce((s,p)=>s+p.likes,0);
+
+  document.getElementById('mktHero').innerHTML = `
+    <div class="mkt-hero-top">
+      <div class="mkt-hero-icon">${mdata?mdata.icon:'🏮'}</div>
+      <div class="mkt-hero-info">
+        <div class="mkt-hero-name">${name}</div>
+        <div class="mkt-hero-addr">${mdata?mdata.addr:''}</div>
+        ${dist!==null?`<div class="mkt-hero-dist">📍 현재 위치에서 ${distLabel(dist)}</div>`:''}
+      </div>
+      <button class="mkt-hero-close" onclick="closeMktPage()">✕</button>
+    </div>
+    <div class="mkt-stats">
+      <div class="mkt-stat">
+        <div class="mkt-stat-num">${shops.length}</div>
+        <div class="mkt-stat-label">등록 상점</div>
+      </div>
+      <div class="mkt-stat">
+        <div class="mkt-stat-num">${reviews.length}</div>
+        <div class="mkt-stat-label">후기</div>
+      </div>
+      <div class="mkt-stat">
+        <div class="mkt-stat-num">${sales.length}</div>
+        <div class="mkt-stat-label">마감세일</div>
+      </div>
+      <div class="mkt-stat">
+        <div class="mkt-stat-num">${totalLikes}</div>
+        <div class="mkt-stat-label">좋아요</div>
+      </div>
+    </div>
+    <button class="mkt-follow-btn${isFollowing?' following':''}" onclick="toggleFollowFromMkt('${name}')">
+      ${isFollowing ? '🔔 팔로잉 중' : '🔔 팔로우하기'}
+    </button>`;
+}
+
+function toggleFollowFromMkt(name){
+  toggleFollow(name);
+  renderMktHero(name);
+}
+
+// 시장의 상점 목록 — 에디터 게시글 + 후기에서 추출
+function getShopsForMarket(name){
+  const shops = {};
+  // 에디터 게시글 먼저 처리 (shopInfo 우선 반영)
+  const sorted = [...S.posts.filter(p=>p.market===name)]
+    .sort((a,b)=> (b.type==='editor'?1:0)-(a.type==='editor'?1:0));
+
+  sorted.forEach(p=>{
+    const shopName = (p.shopInfo&&p.shopInfo.name) ? p.shopInfo.name : p.shop;
+    if(!shopName) return;
+    if(!shops[shopName]){
+      shops[shopName] = {
+        name:        shopName,
+        menus:       (p.shopInfo&&p.shopInfo.menus)  || [],
+        hours:       (p.shopInfo&&p.shopInfo.hours)  || '',
+        price:       (p.shopInfo&&p.shopInfo.price)  || '',
+        phone:       (p.shopInfo&&p.shopInfo.phone)  || '',
+        note:        (p.shopInfo&&p.shopInfo.note)   || '',
+        icon:        p.photos[0] || '🏮',
+        reviewCount: 0,
+        hasSale:     false,
+        isEditor:    p.type === 'editor',
+      };
+    } else {
+      // 에디터 게시글로 기존 상점 정보 업그레이드
+      if(p.type === 'editor' && p.shopInfo){
+        shops[shopName].menus  = p.shopInfo.menus  || shops[shopName].menus;
+        shops[shopName].hours  = p.shopInfo.hours  || shops[shopName].hours;
+        shops[shopName].price  = p.shopInfo.price  || shops[shopName].price;
+        shops[shopName].phone  = p.shopInfo.phone  || shops[shopName].phone;
+        shops[shopName].note   = p.shopInfo.note   || shops[shopName].note;
+        shops[shopName].isEditor = true;
+      }
+    }
+    if(p.type !== 'sale') shops[shopName].reviewCount++;
+    if(p.type === 'sale' && isSaleActive(p)) shops[shopName].hasSale = true;
+    if(p.type === 'editor') shops[shopName].isEditor = true;
+  });
+  return Object.values(shops).sort((a,b)=> (b.isEditor?1:0)-(a.isEditor?1:0));
+}
+
+function renderMktContent(name){
+  const el = document.getElementById('mktContent');
+  if(mktPageTab === 'shops')   renderMktShops(name, el);
+  if(mktPageTab === 'sales')   renderMktSales(name, el);
+  if(mktPageTab === 'reviews') renderMktReviews(name, el);
+}
+
+// 상점 카테고리 정의
+const SHOP_CATS = [
+  {id:'all',    icon:'🏪', label:'전체'},
+  {id:'food',   icon:'🍽️', label:'음식점',   keywords:['골목','식당','집','밥','국','탕','찌개','구이','볶음','찜','전','빈대떡','김밥','순대','떡볶이','떡','분식','도시락','면','국수','라면','죽','카페','커피','베이커리','빵','크로아상']},
+  {id:'fish',   icon:'🐟', label:'해산물',   keywords:['횟집','수산','생선','어시장','회','조개','낙지','오징어','꽃게','새우','굴','홍합','어패류','동태','광어','우럭','대하']},
+  {id:'meat',   icon:'🥩', label:'정육',     keywords:['정육','고기','돼지','소고기','한우','닭','갈비','삼겹','육회','축산']},
+  {id:'veg',    icon:'🥬', label:'채소·나물', keywords:['채소','야채','나물','시금치','상추','배추','무','파','마늘','양파','콩나물','쑥갓','열무','과일','청과']},
+  {id:'grain',  icon:'🌾', label:'곡물·반찬', keywords:['쌀','잡곡','곡물','반찬','김치','젓갈','장아찌','된장','고추장','참기름','들기름','견과','건어물']},
+  {id:'etc',    icon:'🛍️', label:'기타',     keywords:[]},
+];
+
+let mktSelCat = 'all';
+
+function guessShopCat(shop){
+  const text = (shop.name+' '+(shop.menus||[]).join(' ')).toLowerCase();
+  for(const cat of SHOP_CATS){
+    if(cat.id==='all'||cat.id==='etc') continue;
+    if(cat.keywords.some(k=>text.includes(k))) return cat.id;
+  }
+  return 'etc';
+}
+
+function renderMktShops(name, el){
+  const shops = getShopsForMarket(name);
+
+  if(!shops.length){
+    el.innerHTML = `<div class="mkt-empty">
+      <div class="ei">🏪</div>
+      <div>아직 등록된 상점이 없어요.<br>
+      <span style="font-size:12px;color:var(--text3)">후기를 올리거나 상점 홍보글을 작성하면 자동으로 등록돼요</span></div>
+    </div>`;
+    return;
+  }
+
+  // 카테고리 분류
+  shops.forEach(s=>{ if(!s.cat) s.cat = guessShopCat(s); });
+
+  // 카테고리 필터 — 실제 상점이 있는 카테고리만 표시
+  const usedCats = new Set(shops.map(s=>s.cat));
+  const visibleCats = SHOP_CATS.filter(c=>c.id==='all'||usedCats.has(c.id));
+
+  // 필터링
+  const filtered = mktSelCat==='all'
+    ? shops
+    : shops.filter(s=>s.cat===mktSelCat);
+
+  // 카테고리별 그룹핑 (전체 탭일 때)
+  let listHtml = '';
+  if(mktSelCat==='all'){
+    const groups = {};
+    SHOP_CATS.forEach(c=>{ if(c.id!=='all') groups[c.id]=[]; });
+    shops.forEach(s=>{ if(groups[s.cat]) groups[s.cat].push(s); else groups['etc'].push(s); });
+    SHOP_CATS.filter(c=>c.id!=='all').forEach(cat=>{
+      const g = groups[cat.id];
+      if(!g||!g.length) return;
+      listHtml += `<div class="mkt-shop-cat-header">
+        <span class="mkt-shop-cat-icon">${cat.icon}</span>
+        <span>${cat.label}</span>
+        <span style="margin-left:auto;color:var(--text3)">${g.length}곳</span>
+      </div>`;
+      listHtml += g.map(s=>shopItemHtml(name,s)).join('');
+    });
+  } else {
+    listHtml = filtered.map(s=>shopItemHtml(name,s)).join('');
+  }
+
+  el.innerHTML = `
+    <div class="mkt-cat-bar" id="mktCatBar">
+      ${visibleCats.map(cat=>`
+        <button class="mkt-cat-chip${mktSelCat===cat.id?' on':''}"
+          onclick="switchMktCat('${cat.id}','${name}')">
+          ${cat.icon} ${cat.label}${cat.id!=='all'?' ('+shops.filter(s=>s.cat===cat.id).length+')':''}
+        </button>`).join('')}
+    </div>
+    <div class="mkt-shop-list">${listHtml}</div>`;
+}
+
+function shopItemHtml(name, s){
+  return `<div class="mkt-shop-item" onclick="filterByShop('${name}','${s.name}')">
+    <div class="mkt-shop-icon">${s.icon}</div>
+    <div class="mkt-shop-info">
+      <div class="mkt-shop-name">
+        ${s.name}
+        ${s.isEditor?'<span style="font-size:10px;color:var(--gold);margin-left:4px">🏮 공식</span>':''}
+      </div>
+      <div class="mkt-shop-menu">
+        ${s.menus&&s.menus.length ? s.menus.slice(0,2).join(' · ') : (s.hours||'정보 없음')}
+      </div>
+      ${s.reviewCount>0?`<div style="font-size:11px;color:var(--text3);margin-top:2px">후기 ${s.reviewCount}개</div>`:''}
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      ${s.price?`<span class="mkt-shop-price">${s.price}</span>`:''}
+      ${s.hasSale?'<span class="mkt-shop-badge sale">⚡ 세일중</span>':''}
+      ${s.hours&&s.hours.includes('~')?'<span class="mkt-shop-badge open">영업중</span>':''}
+    </div>
+  </div>`;
+}
+
+function switchMktCat(catId, mktName){
+  mktSelCat = catId;
+  const el = document.getElementById('mktContent');
+  if(el) renderMktShops(mktName, el);
+}
+
+function renderMktSales(name, el){
+  const sales = S.posts.filter(p=>p.market===name && p.type==='sale' && isSaleActive(p));
+  if(!sales.length){
+    el.innerHTML = `<div class="mkt-empty"><div class="ei">⚡</div><div>현재 마감세일이 없어요</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="mkt-sale-list">
+    ${sales.map(p=>{
+      const rem = saleRemaining(p.saleEndMs);
+      const stockLeft = p.saleStock ? Math.max(0, p.saleStock-(p.saleVisits||0)) : null;
+      return `<div class="mkt-sale-item" onclick="closeMktPage();setTimeout(()=>openDetail(${p.id}),200)">
+        <div class="mkt-sale-top">
+          <span class="mkt-sale-item-name">⚡ ${p.saleItem||'마감세일'}</span>
+          <span class="mkt-sale-timer">${rem||'곧 마감'}</span>
+        </div>
+        <div class="mkt-sale-discount">${p.saleDiscount||''}</div>
+        <div class="mkt-sale-shop">
+          ${p.shop?'🏪 '+p.shop+' · ':''}
+          ${stockLeft!==null?`📦 잔여 약 ${stockLeft}개`:''}
+          ${p.saleSoldOut?'<span style="color:#ef4444;font-weight:700">품절 확인됨</span>':''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderMktReviews(name, el){
+  const reviews = S.posts.filter(p=>p.market===name && p.type!=='sale');
+  if(!reviews.length){
+    el.innerHTML = `<div class="mkt-empty"><div class="ei">📸</div><div>아직 후기가 없어요</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="mkt-review-grid">
+    ${reviews.map(p=>`
+      <div class="mkt-review-item" onclick="closeMktPage();setTimeout(()=>openDetail(${p.id}),200)">
+        <div class="mkt-review-photo">${p.photos[0]||'🏮'}</div>
+        <div class="mkt-review-overlay">
+          <span class="mkt-review-stat">❤️${p.likes}</span>
+          <span class="mkt-review-stat">💬${(p.comments||[]).length}</span>
+        </div>
+        ${p.type==='editor'?'<div style="position:absolute;top:4px;right:4px;font-size:11px">🏮</div>':''}
+      </div>`).join('')}
+  </div>`;
+}
+
+// 상점 클릭 시 해당 시장+상점 후기만 보기
+function filterByShop(mktName, shopName){
+  closeMktPage();
+  S.market = mktName;
+  renderChips();
+  renderGrid();
+  // 해당 상점 게시글로 스크롤
   setTimeout(()=>{
-    const first = document.querySelector('.gitem');
-    if(first) first.scrollIntoView({behavior:'smooth',block:'start'});
-  }, 100);
+    const cards = document.querySelectorAll('.gitem');
+    const posts = S.posts.filter(p=>p.market===mktName&&p.shop===shopName);
+    if(posts.length){
+      const el = document.getElementById('gcard-'+posts[0].id);
+      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  }, 200);
 }
 
 // ── GRID ─────────────────────────────────────────────────────────
@@ -1580,12 +2132,70 @@ function renderFeedCard(p){
     ? `${capFirst} <span class="gi-caption-more" onclick="expandCap(this)" data-rest="${capRest.replace(/"/g,'&quot;')}">더 보기</span>`
     : capFirst;
 
-  // 마감세일 배너
+  // 마감세일 배너 + 수량 바
+  const stockTotal = p.saleStock||0;
+  const stockLeft  = stockTotal > 0 ? Math.max(0, stockTotal - (p.saleVisits||0)) : 0;
+  const stockPct   = stockTotal > 0 ? Math.round(stockLeft/stockTotal*100) : 0;
+  const stockClass = stockPct>50?'high':stockPct>20?'mid':'low';
+  const isSoldOut  = p.saleSoldOut || (stockTotal>0 && stockLeft===0);
+
+  const stockBarHtml = isSale && active ? `
+    <div class="sale-stock-bar">
+      <div class="sale-stock-info">
+        ${stockTotal>0 ? `
+          <span class="sale-stock-label">잔여</span>
+          <span class="sale-stock-num">${isSoldOut?'품절':('약 '+stockLeft+'개')}</span>
+          <div class="sale-stock-prog">
+            <div class="sale-stock-fill ${stockClass}" style="width:${isSoldOut?0:stockPct}%"></div>
+          </div>` :
+          `<span class="sale-stock-label" style="opacity:.8">수량 미입력 — 댓글로 문의하세요</span>`
+        }
+      </div>
+      ${isSoldOut
+        ? `<span class="sale-soldout-badge">품절 확인됨</span>`
+        : `<div class="sale-stock-btns">
+            <button class="sale-visit-btn" onclick="markVisit(${p.id},event)">✅ 다녀왔어요</button>
+            <button class="sale-soldout-btn" onclick="markSoldOut(${p.id},event)">🚫 품절</button>
+           </div>`
+      }
+    </div>` : '';
+
   const saleBanner = isSale ? `
     <div class="gi-sale-banner">
       <span class="gi-sale-item">⚡ ${p.saleItem||'마감세일'}${p.saleDiscount?' · '+p.saleDiscount:''}</span>
       <span class="gi-sale-timer" id="gsaletime-${p.id}">${active?(rem||'마감임박'):'마감됨'}</span>
+    </div>
+    ${stockBarHtml}` : '';
+
+  // 에디터 배지 + 가게 정보 카드
+  const isEditor = p.type === 'editor';
+  const editorBadgeHtml = isEditor ? `
+    <div class="gi-editor-badge">
+      <span class="gi-editor-icon">🏮</span>
+      <span class="gi-editor-label">장터통신 에디터 공식 소개</span>
+      <span class="gi-editor-sub">광고 없는 직접 취재</span>
     </div>` : '';
+
+  const shopCardHtml = (isEditor && p.shopInfo && p.shopInfo.name) ? (() => {
+    const s = p.shopInfo;
+    const menuChips = (s.menus||[]).map(m=>`<span class="gi-shop-card-menu">${m}</span>`).join('');
+    return `<div class="gi-shop-card">
+      <div class="gi-shop-card-head">
+        <div class="gi-shop-card-icon">${(getMktData(p.market)||{}).icon||'🏮'}</div>
+        <div>
+          <div class="gi-shop-card-name">${s.name}</div>
+          <div class="gi-shop-card-mkt">📍 ${p.market}${dist!==null?' · '+distLabel(dist):''}</div>
+        </div>
+      </div>
+      <div class="gi-shop-card-body">
+        ${s.hours?`<div class="gi-shop-card-row"><span class="gi-shop-card-key">⏰ 영업</span><span class="gi-shop-card-val">${s.hours}</span></div>`:''}
+        ${s.price?`<div class="gi-shop-card-row"><span class="gi-shop-card-key">💰 가격대</span><span class="gi-shop-card-val">${s.price}</span></div>`:''}
+        ${s.phone?`<div class="gi-shop-card-row"><span class="gi-shop-card-key">📞 연락처</span><span class="gi-shop-card-val">${s.phone}</span></div>`:''}
+        ${s.note?`<div class="gi-shop-card-row"><span class="gi-shop-card-key">📌 참고</span><span class="gi-shop-card-val">${s.note}</span></div>`:''}
+        ${menuChips?`<div class="gi-shop-card-menus">${menuChips}</div>`:''}
+      </div>
+    </div>`;
+  })() : '';
 
   // 뱃지
   const badges = [];
@@ -1628,6 +2238,8 @@ function renderFeedCard(p){
     <div class="gi-likes">좋아요 <span id="glikecnt-${p.id}">${p.likes}</span>개</div>
     <!-- 캡션 -->
     <div class="gi-caption">${capHtml}</div>
+    <!-- 가게 정보 카드 -->
+    ${shopCardHtml}
     <!-- 태그 -->
     ${p.tags&&p.tags.length?`<div class="gi-tags">${p.tags.map(t=>`<span class="gi-tag">#${t}</span>`).join('')}</div>`:''}
     <!-- 댓글 미리보기 -->
@@ -1804,7 +2416,7 @@ function renderSidebar(){
       </div>
       <div class="near-mkt-list">
         ${nearMkts.map(m=>`
-          <div class="near-mkt-item" onclick="filterMkt('${m.name}',null)">
+          <div class="near-mkt-item" onclick="openMktPage('${m.name}')">
             <div class="near-mkt-icon">${m.icon}</div>
             <div class="near-mkt-info">
               <div class="near-mkt-name">${m.name}</div>
@@ -1826,10 +2438,7 @@ function renderSidebar(){
       </div>
       <div class="rank-list">${rankRows}</div>
     </div>
-    <div class="notice-box">
-      <div class="notice-title">📣 장터통신</div>
-      <div class="notice-body">전통시장을 직접 다녀온 사람들의 솔직한 사진 후기 커뮤니티. 광고 없는 진짜 이야기만 나눠요.</div>
-    </div>`;
+`;
 }
 
 function switchSideTab(tab){ S.sideTab=tab; renderSidebar(); }
@@ -1919,6 +2528,13 @@ function openUpload(){
   if(tr) tr.className='utype-btn on-review';
   if(ts) ts.className='utype-btn';
   const sf=document.getElementById('saleFields'); if(sf) sf.style.display='none';
+  const ss=document.getElementById('saleStock'); if(ss) ss.value='';
+  const ef=document.getElementById('editorFields'); if(ef) ef.style.display='none';
+  ['edShopName','edShopHours','edMenus','edPriceRange','edPhone','edNote'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const uTypeEditor=document.getElementById('uTypeEditor');
+  if(uTypeEditor) uTypeEditor.className='utype-btn';
   const starDiv=document.getElementById('ustars'); if(starDiv) starDiv.parentElement.style.display='block';
   const cl=document.getElementById('uCapLabel'); if(cl) cl.textContent='한마디';
   const cap=document.getElementById('uCap'); if(cap) cap.placeholder='어떤 시장, 어떤 맛이었나요? 솔직하게 남겨주세요 🏮';
@@ -1990,7 +2606,8 @@ function setStar(v){
 }
 
 function submitPost(){
-  const isSalePost = uType === 'sale';
+  const isSalePost   = uType === 'sale';
+  const isEditorPost = uType === 'editor';
   if(!S.uPics.length){toast('사진을 골라주세요 📷');return;}
   if(!S.uMarket){toast('시장을 선택해주세요');return;}
   const cap=document.getElementById('uCap').value.trim();
@@ -2001,14 +2618,27 @@ function submitPost(){
   const saleDiscount = isSalePost ? document.getElementById('saleDiscount').value.trim() : '';
   const saleEndTime  = isSalePost ? document.getElementById('saleEndTime').value : '';
   const saleEndMs    = isSalePost ? getSaleEndMs(saleEndTime) : null;
+  const saleStockEl  = document.getElementById('saleStock');
+  const saleStock    = isSalePost && saleStockEl ? (parseInt(saleStockEl.value)||0) : 0;
   if(isSalePost && !saleItem){ toast('할인 품목을 입력해주세요'); return; }
   if(isSalePost && !saleEndTime){ toast('마감 시간을 입력해주세요'); return; }
+
+  // 에디터 상점 홍보 정보
+  const shopInfo = isEditorPost ? {
+    name:    (document.getElementById('edShopName')?.value||'').trim(),
+    hours:   (document.getElementById('edShopHours')?.value||'').trim(),
+    menus:   (document.getElementById('edMenus')?.value||'').split(',').map(s=>s.trim()).filter(Boolean),
+    price:   (document.getElementById('edPriceRange')?.value||'').trim(),
+    phone:   (document.getElementById('edPhone')?.value||'').trim(),
+    note:    (document.getElementById('edNote')?.value||'').trim(),
+  } : null;
+  if(isEditorPost && !shopInfo.name){ toast('가게 이름을 입력해주세요'); return; }
   S.posts.unshift({
-    id:Date.now(), type: isSalePost ? 'sale' : 'review',
+    id:Date.now(), type: isSalePost ? 'sale' : isEditorPost ? 'editor' : 'review',
     author:P.name||'나', avatar:P.avatar||'😊',
     market:S.uMarket, shop, star: isSalePost ? 0 : S.uStar,
     photos:[...S.uPics], caption:cap,
-    saleItem, saleDiscount, saleEndMs,
+    saleItem, saleDiscount, saleEndMs, saleStock, saleVisits:0, saleSoldOut:false, shopInfo,
     tags:[S.uMarket.replace('시장',''),...(shop?[shop]:[]),...(saleItem?[saleItem]:[])],
     likes:0, comments:[], time:'방금 전', hot:false, pick:false
   });
@@ -2381,42 +3011,84 @@ function openDetailFromProfile(id){
 
 function goToMarket(mktName){
   closeProfile();
-  S.market = mktName;
-  renderChips();
-  renderGrid();
-  renderSidebar();
+  setTimeout(()=>openMktPage(mktName), 200);
 }
 
 // ── SALE ─────────────────────────────────────────────────────────
+// 다녀왔어요 / 품절 신고
+function markVisit(id, e){
+  if(e) e.stopPropagation();
+  const p = S.posts.find(x=>x.id===id); if(!p) return;
+  // 중복 방문 방지 (localStorage로 체크)
+  const visited = JSON.parse(localStorage.getItem('jtt4_visited')||'[]');
+  if(visited.includes(id)){ toast('이미 방문 기록이 있어요!'); return; }
+  visited.push(id);
+  localStorage.setItem('jtt4_visited', JSON.stringify(visited));
+  p.saleVisits = (p.saleVisits||0) + 1;
+  save();
+  renderGrid();
+  renderSaleFeedBar();
+  toast('방문 기록됐어요! 감사합니다 😊');
+  checkBadge('visit');
+}
+
+function markSoldOut(id, e){
+  if(e) e.stopPropagation();
+  const p = S.posts.find(x=>x.id===id); if(!p) return;
+  // 중복 신고 방지
+  const reported = JSON.parse(localStorage.getItem('jtt4_reported')||'[]');
+  if(reported.includes(id)){ toast('이미 신고하셨어요'); return; }
+  // 3명 이상 신고 시 품절 확정
+  p.soldOutReports = (p.soldOutReports||0) + 1;
+  reported.push(id);
+  localStorage.setItem('jtt4_reported', JSON.stringify(reported));
+  if(p.soldOutReports >= 3){
+    p.saleSoldOut = true;
+    toast('품절이 확인됐어요 🚫');
+  } else {
+    toast(`품절 신고 접수 (${p.soldOutReports}/3명 신고 시 확정)`);
+  }
+  save();
+  renderGrid();
+  renderSaleFeedBar();
+  updateSaleBadge();
+}
 let uType = 'review'; // 'review' | 'sale'
 let saleOnly = false;
 let saleTimerInterval = null;
 
 function setUType(type){
   uType = type;
-  const isSale = type === 'sale';
-  document.getElementById('uTypeReview').className = 'utype-btn' + (isSale ? '' : ' on-review');
-  document.getElementById('uTypeSale').className   = 'utype-btn' + (isSale ? ' on-sale' : '');
-  document.getElementById('saleFields').style.display = isSale ? 'flex' : 'none';
-  document.getElementById('uCapLabel').textContent = isSale ? '한마디 (선택)' : '한마디';
+  const isSale   = type === 'sale';
+  const isEditor = type === 'editor';
 
-  // 별점 숨기기/보이기
+  document.getElementById('uTypeReview').className = 'utype-btn' + (type==='review' ? ' on-review' : '');
+  document.getElementById('uTypeSale').className   = 'utype-btn' + (isSale   ? ' on-sale'   : '');
+  document.getElementById('uTypeEditor').className = 'utype-btn' + (isEditor ? ' on-review' : '');
+
+  document.getElementById('saleFields').style.display   = isSale   ? 'flex' : 'none';
+  document.getElementById('editorFields').style.display = isEditor ? 'flex' : 'none';
+
+  document.getElementById('uCapLabel').textContent = isSale
+    ? '한마디 (선택)' : isEditor ? '상점 소개글' : '한마디';
+
+  // 별점
   const starDiv = document.getElementById('ustars').parentElement;
-  starDiv.style.display = isSale ? 'none' : 'block';
+  starDiv.style.display = (isSale || isEditor) ? 'none' : 'block';
 
-  // placeholder 변경
+  // placeholder
   const cap = document.getElementById('uCap');
   cap.placeholder = isSale
     ? '추가 안내를 적어주세요. 예: 오늘 재고 20개 한정, 선착순!'
+    : isEditor
+    ? '상점의 매력을 소개해주세요. 예: 30년 전통의 손맛, 국산 재료만 사용해요 🏮'
     : '어떤 시장, 어떤 맛이었나요? 솔직하게 남겨주세요 🏮';
 
-  // 마감 시간 기본값: 지금+2시간
   if(isSale && !document.getElementById('saleEndTime').value){
     const now = new Date();
     now.setHours(now.getHours() + 2);
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    document.getElementById('saleEndTime').value = `${hh}:${mm}`;
+    document.getElementById('saleEndTime').value =
+      `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   }
 }
 
@@ -3148,26 +3820,26 @@ setSort('latest');
 renderSaleFeedBar();
 // 시드 데이터에 샘플 마감세일 추가 (처음 한 번만)
 // 마감세일 시드 — 버전 체크로 항상 최신 데이터 유지
-if(localStorage.getItem('jtt4_sale_seeded') !== 'v6'){
+if(localStorage.getItem('jtt4_sale_seeded') !== 'v8'){
   // 기존 마감세일 시드 제거
   S.posts = S.posts.filter(p => p.type !== 'sale');
   const now = new Date();
-  const e1 = new Date(now); e1.setHours(e1.getHours()+2, e1.getMinutes(), 0, 0);
-  const e2 = new Date(now); e2.setHours(e2.getHours()+3, e2.getMinutes()+30, 0, 0);
-  const e3 = new Date(now); e3.setHours(e3.getHours()+1, e3.getMinutes()+30, 0, 0);
+  const e1 = new Date(now.getTime() + 7*24*3600000);   // 7일 후
+  const e2 = new Date(now.getTime() + 10*24*3600000);  // 10일 후
+  const e3 = new Date(now.getTime() + 5*24*3600000);   // 5일 후
   const salePosts = [
     {id:Date.now()+1, type:'sale', author:'시장지킴이', avatar:'🏮',
      market:'광장시장', shop:'은성횟집',
      photos:['🐟','🍲'], caption:'오늘 아침 속초 직송 생동태 입고! 재고 소진 임박 🎣\n살이 탱탱하고 국물이 시원합니다. 마감 전 꼭 들러주세요!',
      saleItem:'동태탕 1인분 (속초산 생동태)', saleDiscount:'50% 할인 · 6,000원 → 3,000원',
-     saleEndMs:e1.getTime(), tags:['광장시장','마감세일','동태탕','은성횟집'],
+     saleEndMs:e1.getTime(), saleStock:20, saleVisits:8, saleSoldOut:false, tags:['광장시장','마감세일','동태탕','은성횟집'],
      likes:15, liked:true, comments:[{author:'단골손님',avatar:'🧡',text:'오늘 꼭 갑니다!',time:'5분 전'}],
      time:'10분 전', hot:false, pick:false},
     {id:Date.now()+2, type:'sale', author:'망원채소가게', avatar:'🌿',
      market:'망원시장', shop:'이모네 채소가게',
      photos:['🥬','🌾','🥦'], caption:'새벽 4시 가락시장 직송 채소 오늘 마감 세일! 🌿\n시금치 500g · 쑥갓 한 단 · 열무 한 단 · 얼갈이 한 단 모두 포함. 아삭아삭 신선도 보장!',
      saleItem:'시금치·쑥갓·열무·얼갈이 모둠 (각 한 단)', saleDiscount:'30% 할인 · 세트 7,000원 → 4,900원',
-     saleEndMs:e2.getTime(), tags:['망원시장','마감세일','시금치','쑥갓','열무','채소'],
+     saleEndMs:e2.getTime(), saleStock:15, saleVisits:4, saleSoldOut:false, tags:['망원시장','마감세일','시금치','쑥갓','열무','채소'],
      likes:8, comments:[
        {author:'망원주부',avatar:'👩',text:'얼갈이 많이 남았나요?',time:'8분 전'},
        {author:'망원채소가게',avatar:'🌿',text:'네! 아직 10단 남아있어요 😊',time:'6분 전'}
@@ -3176,26 +3848,26 @@ if(localStorage.getItem('jtt4_sale_seeded') !== 'v6'){
      market:'노량진수산시장', shop:'대광활어센터',
      photos:['🐟','🦐'], caption:'오늘 경매 직송 광어 남은 재고 특가! 🌊\n신선도 최상. 포장 가능합니다.',
      saleItem:'광어회 500g (경매 직송)', saleDiscount:'35% 할인 · 35,000원 → 23,000원',
-     saleEndMs:e3.getTime(), tags:['노량진','마감세일','광어회','수산시장'],
+     saleEndMs:e3.getTime(), saleStock:10, saleVisits:6, saleSoldOut:false, tags:['노량진','마감세일','광어회','수산시장'],
      likes:23, liked:true, comments:[{author:'수산마니아',avatar:'🐠',text:'포장도 되나요?',time:'3분 전'}],
      time:'방금 전', hot:false, pick:false},
     {id:Date.now()+4, type:'sale', author:'강릉바다상회', avatar:'🌊',
      market:'강릉중앙시장', shop:'강릉바다상회',
      photos:['🦐','🦀'], caption:'오늘 강릉항 직송 대하 마감 세일! 🦐\n가을 대하 제철입니다. 오늘 입고된 마지막 물량이에요.',
      saleItem:'가을 대하 500g', saleDiscount:'40% 할인 · 25,000원 → 15,000원',
-     saleEndMs:new Date(now.getTime()+5400000).getTime(), tags:['강릉','마감세일','대하','제철'],
+     saleEndMs:new Date(now.getTime()+8*24*3600000).getTime(), saleStock:30, saleVisits:5, saleSoldOut:false, tags:['강릉','마감세일','대하','제철'],
      likes:18, comments:[{author:'대하러버',avatar:'🦐',text:'택배도 되나요?',time:'15분 전'}],
      time:'30분 전', hot:false, pick:false},
     {id:Date.now()+5, type:'sale', author:'안동시장상인', avatar:'🍗',
      market:'안동구시장', shop:'종가집반찬',
      photos:['🧆','🥘'], caption:'오늘 만든 반찬 오후 6시 마감! 🍱\n안동식혜, 헛제삿밥 반찬, 간고등어 세트. 직접 담근 반찬이라 내일은 없어요.',
      saleItem:'안동 전통 반찬 세트 (4종)', saleDiscount:'20% 할인 · 18,000원 → 14,400원',
-     saleEndMs:new Date(now.getTime()+3600000).getTime(), tags:['안동','마감세일','반찬','전통'],
+     saleEndMs:new Date(now.getTime()+6*24*3600000).getTime(), saleStock:8, saleVisits:2, saleSoldOut:false, tags:['안동','마감세일','반찬','전통'],
      likes:12, liked:true, comments:[], time:'1시간 전', hot:false, pick:false},
   ];
   S.posts = [...S.posts, ...salePosts];
   save();
-  localStorage.setItem('jtt4_sale_seeded','v6');
+  localStorage.setItem('jtt4_sale_seeded','v8');
   renderSaleFeedBar(); renderGrid(); renderSidebar(); renderStories();
   updateSaleBadge();
 }
