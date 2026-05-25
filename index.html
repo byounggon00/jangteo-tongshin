@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>장터통신</title>
+<title>시장정복단</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -21,9 +21,11 @@ html{overflow-x:hidden;}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;max-width:100vw;}
 
 /* ── HEADER ── */
-.hdr{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
+.hdr{background:#111;border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:200;}
 .hdr-inner{max-width:1180px;margin:0 auto;padding:0 16px;display:flex;align-items:center;height:54px;gap:10px;}
-.logo{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:700;color:var(--text);letter-spacing:-0.5px;flex-shrink:0;display:flex;align-items:center;gap:4px;}
+.logo{display:flex;flex-direction:column;gap:0;flex-shrink:0;cursor:pointer;line-height:1;}
+.logo-kr{font-size:18px;font-weight:700;color:#fff;letter-spacing:-1px;line-height:1.1;}
+.logo-en{font-size:9px;color:#f0b030;letter-spacing:1.5px;font-weight:500;margin-top:1px;text-transform:lowercase;}
 .logo-dot{width:7px;height:7px;background:var(--red);border-radius:50%;margin-bottom:6px;flex-shrink:0;}
 
 /* 위치 버튼 */
@@ -924,6 +926,411 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .mkt-info-transit-item{display:flex;align-items:flex-start;gap:6px;font-size:12px;}
 .mkt-info-transit-icon{flex-shrink:0;font-size:14px;}
 
+
+/* ── 주변 세일 카운터 배너 ── */
+.sale-counter-bar{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:10px 16px;display:none;cursor:pointer;
+  transition:background .15s;
+}
+.sale-counter-bar:hover{background:var(--bg2);}
+.sale-counter-bar.show{display:block;}
+.sale-counter-inner{
+  max-width:1180px;margin:0 auto;
+  display:flex;align-items:center;gap:10px;
+}
+.sale-counter-num{
+  font-size:28px;font-weight:700;color:var(--red);
+  min-width:36px;text-align:center;line-height:1;flex-shrink:0;
+}
+.sale-counter-info{flex:1;}
+.sale-counter-title{font-size:13px;font-weight:700;color:var(--text);}
+.sale-counter-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.sale-counter-arrow{font-size:18px;color:var(--text3);flex-shrink:0;}
+/* 세일 칩 미리보기 */
+.sale-counter-chips{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.sale-counter-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:12px;
+  background:var(--redbg);border:1px solid var(--redbdr);
+  font-size:11px;color:var(--red);font-weight:500;
+}
+
+/* ── 품절 토스트 (기존 토스트와 별도) ── */
+.soldout-toast{
+  position:fixed;bottom:80px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#1a1510;color:#fff;
+  padding:12px 18px;border-radius:14px;
+  font-size:13px;z-index:500;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .3s;
+  max-width:320px;width:90%;text-align:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.soldout-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.soldout-toast-title{font-weight:700;margin-bottom:4px;color:#f87171;}
+.soldout-toast-body{font-size:12px;color:rgba(255,255,255,.8);line-height:1.5;}
+.soldout-toast-btn{
+  margin-top:8px;display:inline-block;
+  padding:5px 14px;border-radius:20px;
+  background:var(--red);color:#fff;
+  font-size:12px;font-weight:700;cursor:pointer;
+  border:none;font-family:inherit;
+}
+
+
+/* ── 온보딩 ── */
+.onboard-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:600;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.onboard-overlay.open{opacity:1;pointer-events:all;}
+.onboard-modal{
+  background:#fff;width:100%;max-width:480px;
+  border-radius:24px 24px 0 0;padding:0 0 40px;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);
+  display:flex;flex-direction:column;
+}
+.onboard-overlay.open .onboard-modal{transform:translateY(0);}
+
+/* 헤더 */
+.onboard-hdr{padding:28px 24px 0;text-align:center;}
+.onboard-logo{font-size:48px;margin-bottom:8px;}
+.onboard-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.onboard-sub{font-size:14px;color:var(--text2);line-height:1.6;}
+
+/* 선택지 */
+.onboard-choices{padding:24px 20px 0;display:flex;flex-direction:column;gap:12px;}
+.onboard-choice{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 20px;border-radius:16px;border:2px solid var(--border);
+  background:#fff;cursor:pointer;transition:all .2s;text-align:left;
+  font-family:inherit;width:100%;
+}
+.onboard-choice:hover{border-color:var(--red);background:var(--redbg);}
+.onboard-choice.sel{border-color:var(--red);background:var(--redbg);}
+.onboard-choice-icon{font-size:32px;flex-shrink:0;width:44px;text-align:center;}
+.onboard-choice-info{flex:1;}
+.onboard-choice-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.onboard-choice-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* 확인 버튼 */
+.onboard-btn{
+  margin:20px 20px 0;padding:16px;
+  border-radius:14px;background:var(--red);color:#fff;
+  border:none;cursor:pointer;font-size:16px;font-weight:700;
+  font-family:inherit;transition:background .2s;
+}
+.onboard-btn:hover{background:#a02a18;}
+.onboard-btn:disabled{background:var(--bg3);color:var(--text3);cursor:default;}
+.onboard-skip{
+  margin:12px auto 0;display:block;
+  background:none;border:none;cursor:pointer;
+  font-size:13px;color:var(--text3);font-family:inherit;
+  text-decoration:underline;
+}
+
+
+/* ── 시장 탐방 지도 카드 ── */
+.map-card{
+  margin:16px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(160deg,#1a1510,#2a2018);
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
+}
+.map-card-hdr{
+  padding:18px 20px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.map-card-title{font-size:14px;font-weight:700;color:rgba(255,255,255,.9);}
+.map-card-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
+.map-share-btn{
+  padding:6px 14px;border-radius:20px;
+  background:var(--red);color:#fff;
+  border:none;cursor:pointer;font-size:12px;font-weight:700;
+  font-family:inherit;transition:background .2s;flex-shrink:0;
+}
+.map-share-btn:hover{background:#a02a18;}
+
+/* SVG 지도 영역 */
+.map-svg-wrap{padding:0 16px 12px;position:relative;}
+.map-svg-wrap svg{width:100%;height:auto;display:block;}
+
+/* 프로그레스 바 */
+.map-progress{padding:0 20px 14px;}
+.map-progress-bar{height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;margin-bottom:8px;}
+.map-progress-fill{height:100%;background:linear-gradient(90deg,var(--red),#f0b030);border-radius:3px;transition:width .6s ease;}
+.map-progress-label{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.7);}
+.map-progress-num{font-weight:700;color:#fff;}
+
+/* 방문 시장 칩 */
+.map-chips{padding:0 16px 16px;display:flex;gap:6px;flex-wrap:wrap;}
+.map-chip{
+  padding:4px 10px;border-radius:12px;font-size:11px;font-weight:500;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);
+  border:1px solid rgba(255,255,255,.15);cursor:pointer;
+  transition:all .15s;
+}
+.map-chip:hover{background:rgba(255,255,255,.22);}
+.map-chip.visited{background:rgba(193,53,32,.5);border-color:rgba(193,53,32,.7);color:#fff;}
+
+/* 공유 카드 (인스타용 캔버스) */
+.share-card-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.share-card-overlay.open{opacity:1;pointer-events:all;}
+.share-card-wrap{
+  background:#fff;border-radius:20px;padding:20px;
+  width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px;
+}
+.share-card-title{font-size:15px;font-weight:700;color:var(--text);text-align:center;}
+.share-canvas-wrap{border-radius:12px;overflow:hidden;background:#1a1510;}
+.share-canvas-wrap canvas{width:100%;display:block;}
+.share-btns{display:flex;gap:8px;}
+.share-btn-copy{
+  flex:1;padding:11px;border-radius:12px;
+  background:var(--red);color:#fff;border:none;
+  cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;
+}
+.share-btn-close{
+  padding:11px 16px;border-radius:12px;
+  background:var(--bg2);color:var(--text);border:none;
+  cursor:pointer;font-size:13px;font-family:inherit;
+}
+
+
+/* ── 탐방 기록 상점 목록 ── */
+.map-mkt-section{background:#fff;border-bottom:1px solid var(--border);}
+.map-mkt-header{
+  padding:12px 16px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;
+}
+.map-mkt-header-left{display:flex;align-items:center;gap:10px;}
+.map-mkt-icon{width:42px;height:42px;border-radius:var(--rsm);background:var(--redbg);border:1px solid var(--redbdr);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.map-mkt-name{font-size:14px;font-weight:700;color:var(--text);}
+.map-mkt-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.map-mkt-toggle{font-size:14px;color:var(--text3);transition:transform .2s;}
+.map-mkt-toggle.open{transform:rotate(180deg);}
+
+/* 상점 목록 */
+.map-shop-list{border-top:1px solid var(--bg2);}
+.map-shop-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px 10px 24px;border-bottom:1px solid var(--bg2);
+  background:#fff;
+}
+.map-shop-item:last-child{border-bottom:none;}
+.map-shop-emoji{font-size:20px;flex-shrink:0;width:28px;text-align:center;}
+.map-shop-info{flex:1;min-width:0;}
+.map-shop-name{font-size:13px;font-weight:600;color:var(--text);}
+.map-shop-memo{font-size:11px;color:var(--text3);margin-top:2px;font-style:italic;}
+.map-shop-cnt{font-size:11px;color:var(--text3);flex-shrink:0;}
+.map-shop-memo-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:13px;padding:4px;color:var(--text3);flex-shrink:0;
+}
+.map-shop-memo-btn:hover{color:var(--red);}
+
+/* 메모 입력 */
+.map-memo-form{
+  padding:8px 16px 12px 24px;
+  background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;gap:6px;
+}
+.map-memo-input{
+  flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--rsm);
+  font-size:12px;font-family:inherit;background:#fff;outline:none;
+}
+.map-memo-input:focus{border-color:var(--red);}
+.map-memo-save{
+  padding:7px 12px;border-radius:var(--rsm);
+  background:var(--red);color:#fff;border:none;
+  cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;
+}
+
+/* 후기 없는 시장 추가 유도 */
+.map-no-review{
+  padding:10px 16px 10px 24px;
+  font-size:12px;color:var(--text3);font-style:italic;
+}
+
+
+/* ── 게이밍 탐방지도 ── */
+.game-map-card{
+  background:linear-gradient(160deg,#0a0e1a,#131b2e);
+  margin:0;position:relative;overflow:hidden;
+}
+.game-map-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%, rgba(193,53,32,.15) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+/* 칭호 배너 */
+.game-title-bar{
+  padding:14px 18px 10px;
+  display:flex;align-items:center;gap:12px;
+  position:relative;z-index:1;
+}
+.game-rank-badge{
+  padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;
+  background:linear-gradient(90deg,var(--red),#f0b030);color:#fff;
+  letter-spacing:.5px;flex-shrink:0;
+}
+.game-title-info{flex:1;}
+.game-title-name{font-size:15px;font-weight:700;color:#fff;}
+.game-title-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
+.game-share-btn{
+  padding:5px 12px;border-radius:16px;font-size:11px;font-weight:700;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);
+  color:#fff;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0;
+}
+.game-share-btn:hover{background:rgba(255,255,255,.25);}
+
+/* XP 바 */
+.game-xp-bar{padding:0 18px 12px;position:relative;z-index:1;}
+.game-xp-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px;}
+.game-xp-label{color:rgba(255,255,255,.5);}
+.game-xp-num{color:#f0b030;font-weight:700;}
+.game-xp-track{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.game-xp-fill{
+  height:100%;border-radius:4px;
+  background:linear-gradient(90deg,#f0b030,#e87020);
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 8px rgba(240,176,48,.5);
+}
+
+/* 정복 지도 */
+.game-map-wrap{padding:4px 16px 10px;position:relative;z-index:1;}
+.game-map-wrap svg{width:100%;height:auto;display:block;}
+
+/* 권역 정복 현황 */
+.game-regions{padding:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap;position:relative;z-index:1;}
+.game-region-chip{
+  padding:4px 10px;border-radius:10px;font-size:11px;font-weight:600;
+  border:1px solid;transition:all .2s;
+}
+.game-region-chip.conquered{background:rgba(193,53,32,.3);border-color:rgba(193,53,32,.6);color:#f87171;}
+.game-region-chip.partial{background:rgba(240,176,48,.15);border-color:rgba(240,176,48,.4);color:#f0b030;}
+.game-region-chip.locked{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.3);}
+
+/* 미션 카드 */
+.game-missions{padding:0 16px 16px;position:relative;z-index:1;}
+.game-missions-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.5px;margin-bottom:8px;}
+.game-mission-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;margin-bottom:6px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;transition:all .15s;
+}
+.game-mission-item.done{opacity:.5;}
+.game-mission-item:hover:not(.done){background:rgba(255,255,255,.1);}
+.game-mission-icon{font-size:20px;flex-shrink:0;}
+.game-mission-info{flex:1;}
+.game-mission-text{font-size:13px;color:#fff;font-weight:500;}
+.game-mission-desc{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+.game-mission-xp{font-size:12px;font-weight:700;color:#f0b030;flex-shrink:0;}
+.game-mission-check{font-size:16px;flex-shrink:0;}
+
+/* 레벨업 오버레이 */
+.levelup-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.8);
+  z-index:700;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.levelup-overlay.show{opacity:1;pointer-events:all;}
+.levelup-card{
+  background:linear-gradient(160deg,#1a0e08,#2a1810);
+  border:2px solid #f0b030;border-radius:24px;
+  padding:36px 28px;text-align:center;
+  max-width:300px;width:90%;
+  animation:levelup-pop .5s cubic-bezier(.2,1.5,.4,1) forwards;
+}
+@keyframes levelup-pop{
+  0%{transform:scale(.5);opacity:0}
+  100%{transform:scale(1);opacity:1}
+}
+.levelup-emoji{font-size:64px;margin-bottom:12px;display:block;}
+.levelup-title{font-size:14px;color:#f0b030;font-weight:700;letter-spacing:1px;margin-bottom:8px;}
+.levelup-rank{font-size:24px;font-weight:700;color:#fff;margin-bottom:6px;}
+.levelup-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5;}
+.levelup-btn{
+  margin-top:20px;padding:10px 28px;border-radius:20px;
+  background:linear-gradient(90deg,#f0b030,#e87020);color:#fff;
+  border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;
+}
+
+
+/* ── 빠른 후기 모드 ── */
+.quick-review-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;background:var(--goldbg);
+  border-bottom:1px solid var(--goldbdr);flex-shrink:0;cursor:pointer;
+  transition:background .15s;
+}
+.quick-review-bar:hover{background:var(--goldbdr);}
+.quick-review-icon{font-size:18px;}
+.quick-review-label{font-size:13px;font-weight:700;color:var(--gold);flex:1;}
+.quick-review-sub{font-size:11px;color:var(--text3);}
+.quick-review-toggle{font-size:12px;color:var(--text3);}
+
+/* 빠른 후기 패널 */
+.quick-panel{
+  background:#fff;border-bottom:2px solid var(--goldbdr);
+  padding:14px 18px;flex-shrink:0;
+  display:none;flex-direction:column;gap:10px;
+}
+.quick-panel.show{display:flex;}
+.quick-photo-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
+.quick-photo-row::-webkit-scrollbar{display:none;}
+.quick-photo-thumb{
+  width:52px;height:52px;border-radius:var(--rsm);
+  background:var(--bg2);border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;cursor:pointer;flex-shrink:0;transition:all .15s;
+}
+.quick-photo-thumb.sel{border-color:var(--red);background:var(--redbg);}
+.quick-mkt-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.quick-mkt-row::-webkit-scrollbar{display:none;}
+.quick-mkt-chip{
+  padding:5px 12px;border-radius:20px;border:1px solid var(--border);
+  background:#fff;font-size:12px;color:var(--text2);cursor:pointer;
+  white-space:nowrap;font-family:inherit;transition:all .15s;flex-shrink:0;
+}
+.quick-mkt-chip.sel{background:var(--text);color:#fff;border-color:var(--text);}
+.quick-input-row{display:flex;gap:8px;}
+.quick-text{
+  flex:1;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:22px;font-size:14px;font-family:inherit;
+  color:var(--text);background:var(--bg);outline:none;
+  transition:border-color .2s;
+}
+.quick-text:focus{border-color:var(--red);}
+.quick-submit{
+  padding:10px 18px;border-radius:22px;
+  background:var(--red);color:#fff;border:none;
+  cursor:pointer;font-size:14px;font-weight:700;
+  font-family:inherit;white-space:nowrap;flex-shrink:0;
+}
+
+/* 첫 리뷰어 유도 버튼 */
+.first-reviewer-btn{
+  display:flex;align-items:center;gap:10px;
+  margin:12px 14px 4px;padding:12px 16px;
+  background:var(--redbg);border:1.5px dashed var(--redbdr);
+  border-radius:var(--r);cursor:pointer;transition:all .2s;
+}
+.first-reviewer-btn:hover{background:var(--redbdr);}
+.first-reviewer-icon{font-size:24px;flex-shrink:0;}
+.first-reviewer-info{flex:1;}
+.first-reviewer-title{font-size:13px;font-weight:700;color:var(--red);}
+.first-reviewer-desc{font-size:11px;color:var(--text3);margin-top:2px;}
+.first-reviewer-arrow{font-size:18px;color:var(--red);}
+
 /* TOAST / EMPTY */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -934,7 +1341,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 <header class="hdr">
   <div class="hdr-inner">
-    <div class="logo">장터통신<div class="logo-dot"></div></div>
+    <div class="logo">
+  <div class="logo-kr">시장정복단</div>
+  <div class="logo-en">market hunter</div>
+</div>
     <button class="loc-btn" id="locBtn" onclick="getLocation()">
       <div class="loc-dot" id="locDot"></div>
       <span id="locLabel">내 위치</span>
@@ -970,9 +1380,45 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
+<!-- 주변 세일 카운터 -->
+<div class="sale-counter-bar" id="saleCounterBar" onclick="bnavClick('sale',document.getElementById('bnav-sale'))">
+  <div class="sale-counter-inner">
+    <div class="sale-counter-num" id="saleCounterNum">0</div>
+    <div class="sale-counter-info">
+      <div class="sale-counter-title" id="saleCounterTitle"></div>
+      <div class="sale-counter-sub" id="saleCounterSub"></div>
+      <div class="sale-counter-chips" id="saleCounterChips"></div>
+    </div>
+    <div class="sale-counter-arrow">›</div>
+  </div>
+</div>
+
+<!-- 품절 토스트 -->
+<div class="soldout-toast" id="soldoutToast">
+  <div class="soldout-toast-title" id="soldoutToastTitle"></div>
+  <div class="soldout-toast-body" id="soldoutToastBody"></div>
+  <button class="soldout-toast-btn" onclick="goToSaleFollow()">팔로우하고 다음엔 먼저 알기</button>
+</div>
+
 <div class="page-wrap">
   <main class="main">
     <div class="feed-col">
+    <!-- 빠른 후기 모드 -->
+    <div class="quick-review-bar" onclick="toggleQuickPanel()">
+      <span class="quick-review-icon">📸</span>
+      <span class="quick-review-label">지금 시장에 있어요? 30초 후기</span>
+      <span class="quick-review-sub">사진 + 한 줄만</span>
+      <span class="quick-review-toggle" id="quickToggleArrow">▼</span>
+    </div>
+    <div class="quick-panel" id="quickPanel">
+      <div class="quick-photo-row" id="quickPhotos"></div>
+      <div class="quick-mkt-row" id="quickMkts"></div>
+      <div class="quick-input-row">
+        <input class="quick-text" id="quickText" placeholder="한 줄 후기... 예: 빈대떡 바삭함 최고 🧆" maxlength="80" onkeydown="if(event.key==='Enter')quickSubmit()">
+        <button class="quick-submit" onclick="quickSubmit()">올리기</button>
+      </div>
+    </div>
+
     <!-- 정렬 토글 바 -->
     <div class="feed-sort-bar">
       <button class="sort-tab on" id="sortTabLatest" onclick="setSort('latest')">
@@ -1069,6 +1515,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <button class="pm-tab" onclick="switchPTab(this,'markets')">🏮 방문 시장</button>
       <button class="pm-tab" onclick="switchPTab(this,'saving')">💰 절약</button>
       <button class="pm-tab" onclick="switchPTab(this,'favorites')">⭐ 즐겨찾기</button>
+      <button class="pm-tab" onclick="switchPTab(this,'follow')">🔔 팔로우</button>
     </div>
     <!-- 콘텐츠 영역 -->
     <div id="pmContent" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;"></div>
@@ -1204,21 +1651,34 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <span class="bnav-label">마감세일</span>
     <span class="bnav-badge" id="sale-badge"></span>
   </button>
+  <button class="bnav-btn" id="bnav-map" onclick="bnavClick('map',this)">
+    <span class="bnav-icon">🗺️</span>
+    <span class="bnav-label">탐방지도</span>
+  </button>
   <button class="bnav-btn" id="bnav-checklist" onclick="bnavClick('checklist',this)">
     <span class="bnav-icon">📋</span>
     <span class="bnav-label">장보기</span>
     <span class="bnav-badge" id="cl-badge"></span>
-  </button>
-  <button class="bnav-btn" id="bnav-follow" onclick="bnavClick('follow',this)">
-    <span class="bnav-icon">🔔</span>
-    <span class="bnav-label">팔로우</span>
-    <span class="bnav-badge" id="fw-badge"></span>
   </button>
   <button class="bnav-btn" id="bnav-profile" onclick="openProfile()">
     <span class="bnav-icon" id="bnavProfileIcon">😊</span>
     <span class="bnav-label">내 페이지</span>
   </button>
 </nav>
+
+<!-- 탐방지도 페이지 -->
+<div class="mktoverlay" id="mapPageOverlay" onclick="if(event.target===this)closeMapPage()">
+  <div class="mktmodal" style="max-height:95vh">
+    <div class="mkt-hero" style="border-radius:20px 20px 0 0;padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">🗺️</span>
+        <span style="font-size:16px;font-weight:700;color:var(--text);flex:1">탐방 지도</span>
+        <button onclick="closeMapPage()" style="width:30px;height:30px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:14px">✕</button>
+      </div>
+    </div>
+    <div class="mkt-content" id="mapPageContent"></div>
+  </div>
+</div>
 
 <!-- CHECKLIST MODAL -->
 <div class="cloverlay" id="cloverlay" onclick="closeCLOut(event)">
@@ -1314,6 +1774,68 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="bd-summary" id="bdSummary"></div>
     <div class="bd-body" id="bdBody"></div>
+  </div>
+</div>
+
+<!-- 온보딩 -->
+<div class="onboard-overlay" id="onboardOverlay">
+  <div class="onboard-modal">
+    <div class="onboard-hdr">
+      <div class="onboard-logo">🏮</div>
+      <div class="onboard-title">시장정복단에 오신 것을 환영해요!</div>
+      <div class="onboard-sub">어떤 목적으로 방문하셨어요?<br>맞춤 화면으로 안내해드릴게요</div>
+    </div>
+    <div class="onboard-choices">
+      <button class="onboard-choice" id="ob-explore" onclick="selectOnboard('explore',this)">
+        <div class="onboard-choice-icon">📸</div>
+        <div class="onboard-choice-info">
+          <div class="onboard-choice-title">시장 탐방 · 맛집 발견</div>
+          <div class="onboard-choice-desc">전국 전통시장 사진 후기 탐색,<br>숨은 맛집 발견, 나들이·데이트 코스</div>
+        </div>
+      </button>
+      <button class="onboard-choice" id="ob-shopping" onclick="selectOnboard('shopping',this)">
+        <div class="onboard-choice-icon">🛒</div>
+        <div class="onboard-choice-info">
+          <div class="onboard-choice-title">장보기 · 마감세일 정보</div>
+          <div class="onboard-choice-desc">신선식품 마감 할인 실시간 알림,<br>장보기 체크리스트, 절약 기록</div>
+        </div>
+      </button>
+      <button class="onboard-choice" id="ob-both" onclick="selectOnboard('both',this)">
+        <div class="onboard-choice-icon">🏮</div>
+        <div class="onboard-choice-info">
+          <div class="onboard-choice-title">둘 다 관심 있어요</div>
+          <div class="onboard-choice-desc">탐방도 하고 장보기도 해요.<br>전체 기능을 모두 활용할게요</div>
+        </div>
+      </button>
+    </div>
+    <button class="onboard-btn" id="onboardBtn" onclick="completeOnboard()" disabled>시작하기</button>
+    <button class="onboard-skip" onclick="completeOnboard('skip')">건너뛰기</button>
+  </div>
+</div>
+
+<!-- 시장 지도 공유 카드 -->
+<div class="share-card-overlay" id="shareCardOverlay" onclick="closeShareCard(event)">
+  <div class="share-card-wrap">
+    <div class="share-card-title">📸 인스타 스토리에 공유하기</div>
+    <div class="share-canvas-wrap">
+      <canvas id="shareCanvas" width="360" height="500"></canvas>
+    </div>
+    <div class="share-btns">
+      <button class="share-btn-copy" onclick="saveShareCard()">📥 이미지 저장</button>
+      <button class="share-btn-close" onclick="closeShareCardBtn()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 레벨업 오버레이 -->
+<div class="levelup-overlay" id="levelupOverlay" onclick="closeLevelUp()">
+  <div class="levelup-card" onclick="event.stopPropagation()">
+    <div style="font-size:14px;font-weight:700;color:#f0b030;letter-spacing:2px;margin-bottom:8px">⚔️ 시장정복단</div>
+    <span class="levelup-emoji" id="levelupEmoji">🏴‍☠️</span>
+    <div class="levelup-title">등급 승급!</div>
+    <div class="levelup-rank" id="levelupRank"></div>
+    <div class="levelup-desc" id="levelupDesc"></div>
+    <button class="levelup-btn" onclick="closeLevelUp()">계속 정복하기 ⚔️</button>
   </div>
 </div>
 
@@ -1530,7 +2052,7 @@ const SEEDS = [
    time:'7일 전',hot:false,pick:true},
 
   // ── 에디터 공식 상점 소개 ──
-  {id:17, type:'editor', author:'장터통신 에디터', avatar:'🏮',
+  {id:17, type:'editor', author:'시장정복단 에디터', avatar:'🏮',
    market:'광장시장', shop:'순희네 빈대떡', star:0,
    photos:['🧆','🍺','🌿'],
    caption:'1976년부터 3대째 이어온 광장시장의 전설 🏮\n직접 간 녹두만 쓰는 원칙을 50년째 지키고 있어요. 겉은 바삭, 속은 촉촉. 막걸리 한 잔과 함께하면 광장시장의 진짜 맛을 느낄 수 있어요.',
@@ -1549,7 +2071,7 @@ const SEEDS = [
      {author:'외국인친구랑',avatar:'🌍',text:'외국인 친구 데려갔더니 엄지척',time:'3일 전'}
    ], time:'3일 전'},
 
-  {id:18, type:'editor', author:'장터통신 에디터', avatar:'🏮',
+  {id:18, type:'editor', author:'시장정복단 에디터', avatar:'🏮',
    market:'통인시장', shop:'기름떡볶이 원조', star:0,
    photos:['🍢','🪙','🏮'],
    caption:'통인시장에만 있는 기름떡볶이 원조집 🍢\n고추장 대신 간장 베이스 기름에 볶아내는 이 떡볶이, 서울 어디서도 못 먹어요. 달달하고 고소한 맛이 중독성 있어요. 엽전 3개(3,000원)면 푸짐하게 먹을 수 있어요.',
@@ -1567,7 +2089,7 @@ const SEEDS = [
      {author:'서촌단골',avatar:'🏘️',text:'매주 오는데 질리지가 않아요',time:'2일 전'}
    ], time:'5일 전'},
 
-  {id:19, type:'editor', author:'장터통신 에디터', avatar:'🏮',
+  {id:19, type:'editor', author:'시장정복단 에디터', avatar:'🏮',
    market:'망원시장', shop:'이모네 채소가게', star:0,
    photos:['🥬','🌾','🌿'],
    caption:'망원시장 새벽 직송 채소 전문 🥬\n매일 새벽 4시 가락시장에서 직접 가져오는 제철 채소. 마트보다 30~40% 저렴하고 신선도는 두 배. 합정·홍대 주민들의 단골 장보기 코스예요.',
@@ -2406,7 +2928,7 @@ function renderFeedCard(p){
   const editorBadgeHtml = isEditor ? `
     <div class="gi-editor-badge">
       <span class="gi-editor-icon">🏮</span>
-      <span class="gi-editor-label">장터통신 에디터 공식 소개</span>
+      <span class="gi-editor-label">시장정복단 에디터 공식 소개</span>
       <span class="gi-editor-sub">광고 없는 직접 취재</span>
     </div>` : '';
 
@@ -2474,6 +2996,19 @@ function renderFeedCard(p){
     <div class="gi-caption">${capHtml}</div>
     <!-- 가게 정보 카드 -->
     ${shopCardHtml}
+    <!-- 첫 리뷰어 유도 (에디터 게시글 + 후기 없을 때) -->
+    ${isEditor && (() => {
+      const shopReviews = S.posts.filter(x=>x.market===p.market&&x.shop===p.shop&&x.type!=='editor'&&x.type!=='sale');
+      return shopReviews.length === 0;
+    })() ? `
+    <div class="first-reviewer-btn" onclick="openUploadForShop('${p.market}','${p.shop||''}',event)">
+      <span class="first-reviewer-icon">📸</span>
+      <div class="first-reviewer-info">
+        <div class="first-reviewer-title">이 가게 첫 번째 후기를 남겨보세요!</div>
+        <div class="first-reviewer-desc">직접 다녀왔다면 사진 한 장 + 한 줄만</div>
+      </div>
+      <span class="first-reviewer-arrow">›</span>
+    </div>` : ''}
     <!-- 태그 -->
     ${p.tags&&p.tags.length?`<div class="gi-tags">${p.tags.map(t=>`<span class="gi-tag">#${t}</span>`).join('')}</div>`:''}
     <!-- 댓글 미리보기 -->
@@ -2882,6 +3417,10 @@ function submitPost(){
   notifyFollowers(newMkt);
   checkBadge('post');
   updateSaleBadge();
+  // 레벨업 체크
+  const prevVisited = [...new Set(S.posts.filter(p=>p.author===(P.name||'나')).slice(1).map(p=>p.market))].length;
+  const newVisited  = [...new Set(S.posts.filter(p=>p.author===(P.name||'나')).map(p=>p.market))].length;
+  if(newVisited > prevVisited) checkLevelUp(prevVisited, newVisited);
   toast('올라갔어요! 🎉');
 }
 
@@ -2980,26 +3519,140 @@ function renderPTab(tab, myPosts, likedPosts, visitedMkts){
         <div class="pm-liked-likes">❤️ ${p.likes}</div>
       </div>`).join('')}</div>`;
   } else if(tab === 'markets'){
+    const total = ALL_MKTS.length;
+    const pct   = visitedMkts.length ? Math.round(visitedMkts.length/total*100) : 0;
+
     if(!visitedMkts.length){
-      el.innerHTML = `<div class="pm-empty"><div class="ei">🏮</div><div class="et">방문한 시장이 없어요.<br>시장에서 사진을 올리면 자동으로 기록돼요.</div></div>`;
+      el.innerHTML = `
+        <div class="map-card">
+          <div class="map-card-hdr">
+            <div>
+              <div class="map-card-title">🏮 나의 시장 탐방 지도</div>
+              <div class="map-card-sub">전국 ${total}개 시장 중 아직 방문한 곳이 없어요</div>
+            </div>
+          </div>
+          <div class="map-progress" style="padding-top:8px">
+            <div class="map-progress-bar"><div class="map-progress-fill" style="width:0%"></div></div>
+            <div class="map-progress-label"><span>0 / ${total}개 방문</span><span class="map-progress-num">0%</span></div>
+          </div>
+        </div>
+        <div class="pm-empty" style="padding:24px 20px">
+          <div class="ei">🗺️</div>
+          <div class="et">시장에서 사진을 올리면<br>자동으로 지도에 기록돼요!</div>
+        </div>`;
       return;
     }
-    el.innerHTML = `<div class="pm-mkt-list">${visitedMkts.map(mName=>{
-      const mdata = getMktData(mName);
-      const cnt = myPosts.filter(p=>p.market===mName).length;
-      const dist = distTo(mName);
-      return `<div class="pm-mkt-item" onclick="goToMarket('${mName}')">
-        <div class="pm-mkt-icon-box">${mdata?mdata.icon:'🏮'}</div>
-        <div class="pm-mkt-info">
-          <div class="pm-mkt-name">${mName}</div>
-          <div class="pm-mkt-sub">${mdata?mdata.addr:''}${dist!==null?' · 📍'+distLabel(dist):''}</div>
-        </div>
-        <div class="pm-mkt-cnt">${cnt}개 후기</div>
+
+    // 지역별 방문 현황
+    const regionStats = {};
+    REGIONS.forEach(r=>{ regionStats[r]={total:ALL_MKTS.filter(m=>m.region===r).length, visited:0}; });
+    visitedMkts.forEach(name=>{
+      const m=getMktData(name);
+      if(m&&regionStats[m.region]) regionStats[m.region].visited++;
+    });
+
+    const regionRows = REGIONS.map(r=>{
+      const s=regionStats[r];
+      const rPct=s.total?Math.round(s.visited/s.total*100):0;
+      return `<div class="mkt-info-row" style="padding:8px 16px">
+        <span class="mkt-info-key">${r}</span>
+        <span class="mkt-info-val" style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:4px;background:rgba(0,0,0,.08);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${rPct}%;background:var(--red);border-radius:2px"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text3);min-width:40px">${s.visited}/${s.total}</span>
+        </span>
       </div>`;
-    }).join('')}</div>`;
+    }).join('');
+
+    el.innerHTML = `
+      <!-- 지도 카드 -->
+      <div class="map-card">
+        <div class="map-card-hdr">
+          <div>
+            <div class="map-card-title">🏮 나의 시장 탐방 지도</div>
+            <div class="map-card-sub">전국 ${total}개 시장 중 ${visitedMkts.length}개 방문</div>
+          </div>
+          <button class="map-share-btn" onclick="openShareCard()">📸 공유</button>
+        </div>
+        <!-- 한국 지도 SVG (간략화) -->
+        <div class="map-svg-wrap">
+          ${renderKoreaMapSVG(visitedMkts)}
+        </div>
+        <div class="map-progress">
+          <div class="map-progress-bar">
+            <div class="map-progress-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="map-progress-label">
+            <span>${visitedMkts.length} / ${total}개 방문</span>
+            <span class="map-progress-num">${pct}%</span>
+          </div>
+        </div>
+        <!-- 방문 시장 칩 -->
+        <div class="map-chips">
+          ${visitedMkts.map(name=>{
+            const m=getMktData(name);
+            return `<span class="map-chip visited" onclick="closeProfile();setTimeout(()=>openMktPage('${name}'),200)">
+              ${m?m.icon:'🏮'} ${name.replace('시장','').replace('수산','').replace('관광','')}
+            </span>`;
+          }).join('')}
+        </div>
+      </div>
+      <!-- 지역별 방문 현황 -->
+      <div style="margin:0 16px 16px">
+        <div class="mkt-info-section">
+          <div class="mkt-info-section-head">
+            <span class="mkt-info-section-icon">📊</span>
+            <span class="mkt-info-section-title">지역별 방문 현황</span>
+          </div>
+          <div class="mkt-info-rows">${regionRows}</div>
+        </div>
+      </div>
+      <!-- 방문 시장 목록 -->
+      <div class="pm-mkt-list">
+        ${visitedMkts.map(mName=>{
+          const mdata=getMktData(mName);
+          const cnt=myPosts.filter(p=>p.market===mName).length;
+          const dist=distTo(mName);
+          return `<div class="pm-mkt-item" onclick="goToMarket('${mName}')">
+            <div class="pm-mkt-icon-box">${mdata?mdata.icon:'🏮'}</div>
+            <div class="pm-mkt-info">
+              <div class="pm-mkt-name">${mName}</div>
+              <div class="pm-mkt-sub">${mdata?mdata.addr:''}${dist!==null?' · 📍'+distLabel(dist):''}</div>
+            </div>
+            <div class="pm-mkt-cnt">${cnt}개 후기</div>
+          </div>`;
+        }).join('')}
+      </div>`;
 
   } else if(tab === 'saving'){
     renderSavingTab(el);
+
+  } else if(tab === 'follow'){
+    // 팔로우 탭 — 기존 팔로우 페이지 내용 렌더링
+    const fwKeys = Object.keys(FW).filter(k=>FW[k].following);
+    if(!fwKeys.length){
+      el.innerHTML = `<div class="pm-empty"><div class="ei">🔔</div><div class="et">팔로우한 시장이 없어요.<br>시장 전용 페이지에서 팔로우해보세요!</div></div>`;
+      return;
+    }
+    el.innerHTML = `<div style="display:flex;flex-direction:column">
+      ${fwKeys.map(name=>{
+        const fw = FW[name];
+        const mdata = getMktData(name);
+        const newPosts = S.posts.filter(p=>p.market===name && p.id>(fw.lastSeen||0));
+        return `<div class="fw-item">
+          <div class="fw-icon">${mdata?mdata.icon:'🏮'}</div>
+          <div class="fw-info">
+            <div class="fw-name">${name}${newPosts.length?`<span class="fw-new-badge">NEW ${newPosts.length}</span>`:''}</div>
+            <div class="fw-sub">${mdata?mdata.addr:''}</div>
+          </div>
+          <div class="fw-actions">
+            <button class="fw-bell${fw.notify?' on':''}" onclick="toggleNotify('${name}')">🔔</button>
+            <button class="fw-unfollow" onclick="toggleFollow('${name}');renderProfileModal()">언팔</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 
   } else if(tab === 'favorites'){
     const favs = JSON.parse(localStorage.getItem('jtt4_favs')||'[]');
@@ -3039,6 +3692,396 @@ function switchPTab(btn, tab){
   const likedPosts = S.posts.filter(p=>p.liked);
   const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
   renderPTab(tab, myPosts, likedPosts, visitedMkts);
+}
+
+// ── 게이밍 탐방 시스템 ──────────────────────────────────────────
+
+// 칭호 등급 정의
+const EXPLORER_RANKS = [
+  {min:0,  emoji:'🥬', title:'시장정복단 견습단원', desc:'첫 시장을 정복하고 단원이 되어보세요!',           xpNeeded:0},
+  {min:1,  emoji:'🏮', title:'시장정복단 정단원',   desc:'정식 시장정복단 단원이 됐어요. 더 정복하세요!',   xpNeeded:50},
+  {min:3,  emoji:'⚡', title:'시장정복단 정예단원', desc:'전통시장 정복에 맛들인 정예 단원이에요!',         xpNeeded:150},
+  {min:5,  emoji:'🗺️', title:'시장정복단 탐험대장', desc:'팀을 이끄는 탐험대장. 전국이 무대예요!',          xpNeeded:300},
+  {min:8,  emoji:'⚔️', title:'시장정복단 선봉대장', desc:'어느 시장이든 앞장서는 선봉대장이에요!',          xpNeeded:500},
+  {min:12, emoji:'🏯', title:'시장정복단 지역단장', desc:'지역 시장을 완전히 장악한 지역단장이에요!',        xpNeeded:800},
+  {min:18, emoji:'👑', title:'시장정복단 총사령관', desc:'전국 시장을 호령하는 총사령관이에요!',             xpNeeded:1200},
+  {min:30, emoji:'🏴‍☠️', title:'시장정복단 전설',     desc:'시장정복단 역사에 이름을 남긴 전설의 단원!',      xpNeeded:2000},
+];
+
+// XP 계산
+function calcExplorerXP(){
+  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+  const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
+  let xp = 0;
+  xp += visitedMkts.length * 50;           // 시장 방문당 50XP
+  xp += myPosts.length * 10;               // 후기당 10XP
+  xp += myPosts.filter(p=>p.liked).length * 5; // 받은 좋아요당 5XP
+  const memos = JSON.parse(localStorage.getItem('jtt4_shop_memos')||'{}');
+  xp += Object.keys(memos).length * 15;    // 메모당 15XP
+  const savedSales = S.posts.filter(p=>p.type==='sale'&&p.liked);
+  xp += savedSales.length * 20;            // 마감세일 이용당 20XP
+  return xp;
+}
+
+function getExplorerRank(visitedCount, xp){
+  let rank = EXPLORER_RANKS[0];
+  for(const r of EXPLORER_RANKS){
+    if(visitedCount >= r.min) rank = r;
+  }
+  return rank;
+}
+
+function getNextRank(visitedCount){
+  for(const r of EXPLORER_RANKS){
+    if(visitedCount < r.min) return r;
+  }
+  return null;
+}
+
+// 레벨업 체크
+function checkLevelUp(prevVisited, newVisited){
+  const prevRank = getExplorerRank(prevVisited, 0);
+  const newRank  = getExplorerRank(newVisited, 0);
+  if(prevRank.title !== newRank.title){
+    showLevelUp(newRank);
+  }
+}
+
+function showLevelUp(rank){
+  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+  const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
+  document.getElementById('levelupEmoji').textContent = rank.emoji;
+  document.getElementById('levelupRank').textContent  = `${visitedMkts.length}번째 시장 정복!`;
+  document.getElementById('levelupDesc').textContent  = `${rank.title} 등급 달성 · ${rank.desc}`;
+  document.getElementById('levelupOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLevelUp(){
+  document.getElementById('levelupOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// 게이밍 지도 SVG — 안개 + 정복 효과
+function renderGameMapSVG(visitedMkts){
+  const visitedRegions = new Set(visitedMkts.map(name=>{
+    const m=getMktData(name); return m?m.region:'';
+  }));
+
+  const ALL_REGIONS_DEF = [
+    {id:'강원',   path:'M155,40 L220,40 L230,80 L200,110 L155,100 Z',           tx:185, ty:78},
+    {id:'서울',   path:'M95,70 L155,70 L155,100 L140,130 L95,130 L80,110 Z',    tx:118, ty:103},
+    {id:'충청',   path:'M80,130 L155,130 L155,180 L120,195 L80,175 L70,155 Z',  tx:112, ty:162},
+    {id:'경상',   path:'M155,130 L230,130 L240,200 L200,250 L160,240 L145,190 Z',tx:192,ty:192},
+    {id:'전라',   path:'M80,175 L120,195 L145,190 L145,250 L110,280 L70,265 L60,220 Z',tx:103,ty:232},
+    {id:'부산',   path:'M200,250 L240,200 L255,230 L230,260 L200,260 Z',         tx:222, ty:240},
+    {id:'대구',   path:'M155,180 L200,180 L200,230 L160,240 Z',                  tx:178, ty:210},
+    {id:'광주',   path:'M95,195 L145,195 L145,250 L110,260 L85,240 Z',           tx:115, ty:228},
+    {id:'제주',   path:'',                                                         tx:110, ty:344},
+  ];
+
+  const regionPaths = ALL_REGIONS_DEF.map(r=>{
+    const isConquered = visitedRegions.has(r.id);
+    const fill = isConquered
+      ? 'rgba(193,53,32,0.7)'
+      : 'rgba(255,255,255,0.04)';
+    const stroke = isConquered
+      ? 'rgba(240,176,48,0.6)'
+      : 'rgba(255,255,255,0.1)';
+    const textOp = isConquered ? '1' : '0.2';
+    const glow = isConquered ? 'filter:drop-shadow(0 0 6px rgba(193,53,32,.8))' : '';
+
+    if(r.id==='제주'){
+      return `<ellipse cx="110" cy="340" rx="40" ry="22"
+        fill="${fill}" stroke="${stroke}" stroke-width="${isConquered?1.5:0.5}" style="${glow}"/>
+        ${isConquered?`<text x="110" y="344" fill="#fff" font-size="10" text-anchor="middle">제주 ✓</text>`:
+        `<text x="110" y="344" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="middle">제주</text>`}`;
+    }
+    return `<path d="${r.path}" fill="${fill}" stroke="${stroke}" stroke-width="${isConquered?1.5:0.5}" style="${glow}"/>
+      ${isConquered
+        ? `<text x="${r.tx}" y="${r.ty}" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">${r.id} ✓</text>`
+        : `<text x="${r.tx}" y="${r.ty}" fill="rgba(255,255,255,0.15)" font-size="9" text-anchor="middle">?</text>`
+      }`;
+  }).join('');
+
+  // 방문 핀
+  const pinPositions = {
+    '서울':{x:118,y:95},'경기':{x:108,y:115},'인천':{x:88,y:105},
+    '강원':{x:188,y:72},'충청':{x:112,y:155},'전라':{x:100,y:228},
+    '경상':{x:192,y:188},'부산':{x:218,y:245},'대구':{x:175,y:205},
+    '광주':{x:110,y:228},'대전':{x:118,y:162},'울산':{x:230,y:220},'제주':{x:110,y:340},
+  };
+  const pins = visitedMkts.map(name=>{
+    const m=getMktData(name);
+    if(!m) return '';
+    const pos=pinPositions[m.region]||null;
+    if(!pos) return '';
+    return `<g>
+      <circle cx="${pos.x}" cy="${pos.y}" r="7" fill="rgba(193,53,32,.3)" opacity=".6">
+        <animate attributeName="r" values="5;9;5" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values=".6;0;.6" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="${pos.x}" cy="${pos.y}" r="4" fill="#f87171"/>
+      <circle cx="${pos.x}" cy="${pos.y}" r="2" fill="#fff"/>
+    </g>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg" style="max-height:200px">
+    <defs>
+      <filter id="fog"><feGaussianBlur stdDeviation="1.5"/></filter>
+    </defs>
+    <!-- 미정복 안개 효과 -->
+    <rect width="280" height="380" fill="transparent"/>
+    ${regionPaths}
+    ${pins}
+  </svg>`;
+}
+
+// 미션 정의
+function getDailyMissions(visitedMkts, myPosts){
+  const today = new Date().toDateString();
+  const todayPosts = myPosts.filter(p=>new Date(p.createdAt||0).toDateString()===today);
+  const completed = JSON.parse(localStorage.getItem('jtt4_missions')||'{}');
+
+  return [
+    {
+      id:'new_mkt',
+      icon:'🗺️', text:'새로운 시장 방문하기',
+      desc:`현재 ${visitedMkts.length}개 방문`,
+      xp:50, done: visitedMkts.length >= (completed.new_mkt_base||0)+1,
+    },
+    {
+      id:'post_today',
+      icon:'📸', text:'오늘 후기 1개 올리기',
+      desc:'방문한 곳 사진 후기 남기기',
+      xp:30, done: todayPosts.length >= 1,
+    },
+    {
+      id:'sale_check',
+      icon:'⚡', text:'마감세일 3건 확인하기',
+      desc:`⚡ 탭에서 세일 탐색`,
+      xp:20, done: (completed.sale_checked||0) >= 3,
+    },
+    {
+      id:'memo_shop',
+      icon:'✏️', text:'상점 메모 남기기',
+      desc:'방문한 가게에 한 줄 기록',
+      xp:15, done: Object.keys(JSON.parse(localStorage.getItem('jtt4_shop_memos')||'{}')).length > 0,
+    },
+  ];
+}
+
+// ── 시장 탐방 지도 ───────────────────────────────────────────────
+
+// 한국 지도 간략 SVG (권역별 색상 채우기)
+function renderKoreaMapSVG(visitedMkts){
+  const visitedRegions = new Set(visitedMkts.map(name=>{
+    const m=getMktData(name); return m?m.region:'';
+  }));
+
+  // 권역별 색상
+  const regionColor = (region) => visitedRegions.has(region)
+    ? 'rgba(193,53,32,0.75)' : 'rgba(255,255,255,0.08)';
+  const stroke = 'rgba(255,255,255,0.2)';
+
+  // 한국 지도 간략 SVG — 권역별 블록
+  return `<svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg" style="max-height:220px">
+    <defs>
+      <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- 배경 -->
+    <rect width="280" height="380" fill="transparent"/>
+
+    <!-- 강원 -->
+    <path d="M155,40 L220,40 L230,80 L200,110 L155,100 Z"
+      fill="${regionColor('강원')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="185" y="78" fill="white" font-size="10" text-anchor="middle" opacity="${visitedRegions.has('강원')?1:.4}">강원</text>
+
+    <!-- 서울/경기/인천 -->
+    <path d="M95,70 L155,70 L155,100 L140,130 L95,130 L80,110 Z"
+      fill="${regionColor('서울')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="118" y="103" fill="white" font-size="9" text-anchor="middle" opacity="${visitedRegions.has('서울')?1:.4}">서울/경기</text>
+
+    <!-- 충청 -->
+    <path d="M80,130 L155,130 L155,180 L120,195 L80,175 L70,155 Z"
+      fill="${regionColor('충청')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="112" y="162" fill="white" font-size="10" text-anchor="middle" opacity="${visitedRegions.has('충청')?1:.4}">충청</text>
+
+    <!-- 경상 -->
+    <path d="M155,130 L230,130 L240,200 L200,250 L160,240 L145,190 Z"
+      fill="${regionColor('경상')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="192" y="192" fill="white" font-size="10" text-anchor="middle" opacity="${visitedRegions.has('경상')?1:.4}">경상</text>
+
+    <!-- 전라 -->
+    <path d="M80,175 L120,195 L145,190 L145,250 L110,280 L70,265 L60,220 Z"
+      fill="${regionColor('전라')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="103" y="232" fill="white" font-size="10" text-anchor="middle" opacity="${visitedRegions.has('전라')?1:.4}">전라</text>
+
+    <!-- 부산/울산 -->
+    <path d="M200,250 L240,200 L255,230 L230,260 L200,260 Z"
+      fill="${regionColor('부산')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="222" y="240" fill="white" font-size="9" text-anchor="middle" opacity="${visitedRegions.has('부산')?1:.4}">부산</text>
+
+    <!-- 대구 -->
+    <path d="M155,180 L200,180 L200,230 L160,240 Z"
+      fill="${regionColor('대구')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="178" y="210" fill="white" font-size="9" text-anchor="middle" opacity="${visitedRegions.has('대구')?1:.4}">대구</text>
+
+    <!-- 광주/대전 -->
+    <path d="M95,195 L145,195 L145,250 L110,260 L85,240 Z"
+      fill="${regionColor('광주')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="115" y="228" fill="white" font-size="9" text-anchor="middle" opacity="${visitedRegions.has('광주')?1:.4}">광주</text>
+
+    <!-- 제주 -->
+    <ellipse cx="110" cy="340" rx="40" ry="22"
+      fill="${regionColor('제주')}" stroke="${stroke}" stroke-width="1"/>
+    <text x="110" y="344" fill="white" font-size="10" text-anchor="middle" opacity="${visitedRegions.has('제주')?1:.4}">제주</text>
+
+    <!-- 방문 핀 -->
+    ${visitedMkts.map(name=>{
+      const m=getMktData(name);
+      if(!m) return '';
+      const pos=getRegionPos(m.region);
+      return pos?`<circle cx="${pos.x}" cy="${pos.y}" r="5" fill="#f87171" filter="url(#glow)" opacity=".9"/>
+        <circle cx="${pos.x}" cy="${pos.y}" r="2.5" fill="white"/>`:''
+    }).join('')}
+  </svg>`;
+}
+
+// 권역별 핀 위치
+function getRegionPos(region){
+  const positions = {
+    '서울':  {x:118, y:95}, '경기': {x:118, y:115}, '인천': {x:90,  y:105},
+    '강원':  {x:188, y:72}, '충청': {x:112, y:155}, '전라': {x:100, y:228},
+    '경상':  {x:192, y:188},'부산': {x:218, y:245}, '대구': {x:175, y:205},
+    '광주':  {x:110, y:228},'대전': {x:118, y:162}, '울산': {x:230, y:220},
+    '제주':  {x:110, y:340},
+  };
+  return positions[region]||null;
+}
+
+// 공유 카드 생성 (Canvas)
+function openShareCard(){
+  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+  const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
+  const total = ALL_MKTS.length;
+  const pct   = Math.round(visitedMkts.length/total*100);
+
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width=360; canvas.height=500;
+
+  // 배경
+  const grad = ctx.createLinearGradient(0,0,360,500);
+  grad.addColorStop(0,'#1a1510');
+  grad.addColorStop(1,'#2a2018');
+  ctx.fillStyle=grad;
+  ctx.roundRect(0,0,360,500,20);
+  ctx.fill();
+
+  // 로고
+  ctx.font='bold 18px Arial';
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.textAlign='left';
+  ctx.fillText('⚔️ 시장정복단', 24, 44);
+
+  // 타이틀
+  ctx.font='bold 26px Arial';
+  ctx.fillStyle='#ffffff';
+  ctx.textAlign='center';
+  // 숫자 강조
+  ctx.font='bold 72px Arial';
+  ctx.fillStyle='#f87171';
+  ctx.fillText(visitedMkts.length+'개', 180, 160);
+  ctx.font='bold 20px Arial';
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  ctx.fillText('시장 정복', 180, 190);
+  ctx.font='bold 26px Arial';
+  ctx.fillStyle='#ffffff';
+  ctx.fillText('나의 시장 탐방 기록', 180, 100);
+
+  // 숫자 강조
+  ctx.font='bold 72px Arial';
+  ctx.fillStyle='#f87171';
+  ctx.textAlign='center';
+  ctx.fillText(visitedMkts.length+'개', 180, 190);
+
+  ctx.font='16px Arial';
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fillText(`전국 ${total}개 시장 정복`, 180, 218);
+
+  // 프로그레스 바
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.roundRect(30,230,300,10,5); ctx.fill();
+  const barW = Math.max(8, Math.round(300*pct/100));
+  const barGrad=ctx.createLinearGradient(30,0,330,0);
+  barGrad.addColorStop(0,'#C13520'); barGrad.addColorStop(1,'#f0b030');
+  ctx.fillStyle=barGrad;
+  ctx.roundRect(30,230,barW,10,5); ctx.fill();
+
+  ctx.font='13px Arial';
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  ctx.textAlign='right';
+  ctx.fillText(pct+'% 달성', 330, 258);
+
+  // 방문 시장 칩
+  let chipX=30, chipY=280;
+  ctx.font='13px Arial';
+  visitedMkts.slice(0,8).forEach((name,i)=>{
+    const m=getMktData(name);
+    const label=(m?m.icon:'🏮')+' '+name.replace('시장','').replace('수산','');
+    const w=ctx.measureText(label).width+20;
+    if(chipX+w>330){ chipX=30; chipY+=34; }
+    ctx.fillStyle='rgba(193,53,32,0.5)';
+    ctx.roundRect(chipX,chipY,w,26,13); ctx.fill();
+    ctx.fillStyle='#ffffff';
+    ctx.textAlign='left';
+    ctx.fillText(label, chipX+10, chipY+17);
+    chipX+=w+8;
+  });
+  if(visitedMkts.length>8){
+    ctx.fillStyle='rgba(255,255,255,0.4)';
+    ctx.font='12px Arial';
+    ctx.textAlign='left';
+    ctx.fillText(`외 ${visitedMkts.length-8}개 더`, chipX+4, chipY+17);
+  }
+
+  // 하단 URL
+  ctx.font='12px Arial';
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  ctx.textAlign='center';
+  ctx.fillText('#시장정복단', 180, 455);
+  ctx.font='11px Arial';
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.fillText('시장정복단 · hilarious-pasca-ac2e18.netlify.app', 180, 478);
+
+  // 하단 구분선
+  ctx.strokeStyle='rgba(255,255,255,0.1)';
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(30,450); ctx.lineTo(330,450); ctx.stroke();
+
+  document.getElementById('shareCardOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeShareCard(e){
+  if(e.target===document.getElementById('shareCardOverlay')) closeShareCardBtn();
+}
+function closeShareCardBtn(){
+  document.getElementById('shareCardOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function saveShareCard(){
+  const canvas=document.getElementById('shareCanvas');
+  const link=document.createElement('a');
+  link.download='시장정복단_탐방기록.png';
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+  toast('이미지가 저장됐어요! 인스타 스토리에 올려보세요 📸');
+  setTimeout(closeShareCardBtn, 1500);
 }
 
 // ── 절약 탭 렌더링 ──────────────────────────────────────────────
@@ -3249,6 +4292,71 @@ function goToMarket(mktName){
 }
 
 // ── SALE ─────────────────────────────────────────────────────────
+
+// 주변 세일 카운터 배너 업데이트
+function updateSaleCounter(){
+  const sales  = getActiveSales();
+  const bar    = document.getElementById('saleCounterBar');
+  const numEl  = document.getElementById('saleCounterNum');
+  const titleEl= document.getElementById('saleCounterTitle');
+  const subEl  = document.getElementById('saleCounterSub');
+  const chips  = document.getElementById('saleCounterChips');
+  if(!bar) return;
+
+  if(!sales.length){
+    bar.classList.remove('show');
+    return;
+  }
+
+  bar.classList.add('show');
+  numEl.textContent = sales.length;
+
+  // 위치 있으면 거리 기준, 없으면 그냥 개수
+  const nearSales = S.userLat
+    ? sales.filter(p=>{ const d=distTo(p.market); return d!==null&&d<5; })
+    : sales;
+  const range = S.userLat ? '5km' : '전국';
+
+  titleEl.innerHTML = `지금 ${range} 안에서 마감세일 <strong style="color:var(--red)">${sales.length}건</strong> 진행 중`;
+  subEl.textContent  = `모르면 그냥 지나쳐요 — 탭해서 확인하세요`;
+
+  // 칩 미리보기 (최대 3개)
+  chips.innerHTML = sales.slice(0,3).map(p=>{
+    const rem = saleRemaining(p.saleEndMs);
+    return `<span class="sale-counter-chip">
+      ⚡ ${p.market} ${p.saleItem||''}
+      ${rem?`<span style="opacity:.7">${rem}</span>`:''}
+    </span>`;
+  }).join('');
+}
+
+// 품절 토스트 표시
+let soldoutToastTimer = null;
+function showSoldoutToast(p){
+  const toast   = document.getElementById('soldoutToast');
+  const titleEl = document.getElementById('soldoutToastTitle');
+  const bodyEl  = document.getElementById('soldoutToastBody');
+  if(!toast) return;
+
+  titleEl.textContent = `🚫 ${p.saleItem||'마감세일'} 품절됐어요`;
+  bodyEl.textContent  = `${p.market}${p.shop?' · '+p.shop:''} — 방금 품절 확인됐어요.
+팔로우하면 다음 세일을 먼저 알 수 있어요.`;
+
+  toast.classList.add('show');
+  if(soldoutToastTimer) clearTimeout(soldoutToastTimer);
+  soldoutToastTimer = setTimeout(()=>toast.classList.remove('show'), 6000);
+}
+
+function goToSaleFollow(){
+  document.getElementById('soldoutToast').classList.remove('show');
+  openProfile();
+  // 내 페이지에서 팔로우 탭 활성화
+  setTimeout(()=>{
+    const tabs = document.querySelectorAll('.pm-tab');
+    tabs.forEach(t=>{ if(t.textContent.includes('팔로우')) t.click(); });
+  }, 300);
+}
+
 // 다녀왔어요 / 품절 신고
 function markVisit(id, e){
   if(e) e.stopPropagation();
@@ -3278,14 +4386,20 @@ function markSoldOut(id, e){
   localStorage.setItem('jtt4_reported', JSON.stringify(reported));
   if(p.soldOutReports >= 3){
     p.saleSoldOut = true;
-    toast('품절이 확인됐어요 🚫');
+    save();
+    renderGrid();
+    renderSaleFeedBar();
+    updateSaleBadge();
+    updateSaleCounter();
+    // 품절 토스트 — 손실 회피 자극
+    showSoldoutToast(p);
   } else {
     toast(`품절 신고 접수 (${p.soldOutReports}/3명 신고 시 확정)`);
+    save();
+    renderGrid();
+    renderSaleFeedBar();
+    updateSaleBadge();
   }
-  save();
-  renderGrid();
-  renderSaleFeedBar();
-  updateSaleBadge();
 }
 let uType = 'review'; // 'review' | 'sale'
 let saleOnly = false;
@@ -3490,7 +4604,7 @@ setInterval(()=>{
     if(timerEl && sales[i]){ timerEl.textContent = saleRemaining(sales[i].saleEndMs)||'곧 마감'; }
   });
 }, 1000);
-setInterval(()=>{ renderSaleFeedBar(); renderGrid(); updateSaleBadge(); }, 30000);
+setInterval(()=>{ renderSaleFeedBar(); renderGrid(); updateSaleBadge(); updateSaleCounter(); }, 30000);
 
 // ── FEED SORT ────────────────────────────────────────────────────
 function setSort(type){
@@ -3512,6 +4626,272 @@ function setSort(type){
 }
 
 // ── SALE TAB ─────────────────────────────────────────────────────
+function openMapTab(){
+  // 탐방지도 — 내 페이지 방문시장 탭 직접 오픈
+  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+  const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
+  renderMapPage(visitedMkts);
+  document.getElementById('mapPageOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMapPage(){
+  document.getElementById('mapPageOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  // 홈 탭 활성화
+  document.querySelectorAll('.bnav-btn').forEach((b,i)=>b.classList.toggle('on',i===0));
+}
+
+function renderMapPage(visitedMkts){
+  const total = ALL_MKTS.length;
+  const pct   = visitedMkts.length ? Math.round(visitedMkts.length/total*100) : 0;
+  const el    = document.getElementById('mapPageContent');
+  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+  const memos = JSON.parse(localStorage.getItem('jtt4_shop_memos')||'{}');
+
+  // 지역별 방문 현황
+  const regionStats = {};
+  REGIONS.forEach(r=>{ regionStats[r]={total:ALL_MKTS.filter(m=>m.region===r).length, visited:0}; });
+  visitedMkts.forEach(name=>{
+    const m=getMktData(name);
+    if(m&&regionStats[m.region]) regionStats[m.region].visited++;
+  });
+  const regionRows = REGIONS.map(r=>{
+    const s=regionStats[r]; if(!s.total) return '';
+    const rPct=Math.round(s.visited/s.total*100);
+    return `<div class="mkt-info-row" style="padding:8px 16px">
+      <span class="mkt-info-key" style="color:var(--text3)">${r}</span>
+      <span class="mkt-info-val" style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:4px;background:rgba(0,0,0,.08);border-radius:2px;overflow:hidden">
+          <div style="height:100%;width:${rPct}%;background:var(--red);border-radius:2px"></div>
+        </div>
+        <span style="font-size:11px;color:var(--text3);min-width:40px">${s.visited}/${s.total}</span>
+      </span>
+    </div>`;
+  }).join('');
+
+  // 시장별 방문 상점 추출 (후기에서 자동)
+  function getShopsVisited(mktName){
+    const posts = myPosts.filter(p=>p.market===mktName);
+    const shopMap = {};
+    posts.forEach(p=>{
+      const sname = (p.shopInfo&&p.shopInfo.name)||p.shop||'';
+      if(!sname) return;
+      if(!shopMap[sname]) shopMap[sname]={name:sname, icon:p.photos[0]||'🏮', count:0};
+      shopMap[sname].count++;
+    });
+    return Object.values(shopMap);
+  }
+
+  // 시장별 상점 기록 섹션
+  const mktSections = visitedMkts.map((mName,idx)=>{
+    const mdata = getMktData(mName);
+    const myMktPosts = myPosts.filter(p=>p.market===mName);
+    const shops = getShopsVisited(mName);
+    const memoKey = `mkt_${mName}`;
+
+    const shopItems = shops.map(s=>{
+      const key = `${mName}__${s.name}`;
+      const memo = memos[key]||'';
+      return `<div class="map-shop-item" id="shopitem-${key.replace(/[^a-z0-9]/gi,'_')}">
+        <div class="map-shop-emoji">${s.icon}</div>
+        <div class="map-shop-info">
+          <div class="map-shop-name">${s.name}</div>
+          ${memo
+            ? `<div class="map-shop-memo" id="memo-txt-${key.replace(/[^a-z0-9]/gi,'_')}">"${memo}"</div>`
+            : `<div class="map-shop-memo" id="memo-txt-${key.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text3);font-style:normal">한 줄 메모 추가...</div>`
+          }
+        </div>
+        <span class="map-shop-cnt">${s.count}개 후기</span>
+        <button class="map-shop-memo-btn" onclick="toggleMemoForm('${key}')" title="메모 남기기">✏️</button>
+      </div>
+      <div id="memoform-${key.replace(/[^a-z0-9]/gi,'_')}" style="display:none">
+        <div class="map-memo-form">
+          <input class="map-memo-input" id="memoinput-${key.replace(/[^a-z0-9]/gi,'_')}"
+            placeholder="예: 빈대떡 바삭함 최고, 재방문 예정"
+            value="${memo}" maxlength="50">
+          <button class="map-memo-save" onclick="saveMemo('${key}')">저장</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // 후기 없지만 시장만 기록된 경우
+    const noShopNote = !shops.length
+      ? `<div class="map-no-review">가게명을 입력한 후기를 올리면 상점이 자동으로 기록돼요</div>`
+      : '';
+
+    return `<div class="map-mkt-section">
+      <div class="map-mkt-header" onclick="toggleMktSection('mapMkt${idx}')">
+        <div class="map-mkt-header-left">
+          <div class="map-mkt-icon">${mdata?mdata.icon:'🏮'}</div>
+          <div>
+            <div class="map-mkt-name">${mName}</div>
+            <div class="map-mkt-meta">후기 ${myMktPosts.length}개 · 상점 ${shops.length}곳 기록</div>
+          </div>
+        </div>
+        <span class="map-mkt-toggle open" id="toggle-mapMkt${idx}">▼</span>
+      </div>
+      <div class="map-shop-list" id="mapMkt${idx}">
+        ${shopItems}
+        ${noShopNote}
+        <div style="padding:8px 16px 12px 24px">
+          <button onclick="closeMapPage();setTimeout(()=>openMktPage('${mName}'),200)"
+            style="font-size:12px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;padding:0">
+            📸 ${mName} 후기 더 보기 →
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 게이밍 시스템 계산
+  const xp       = calcExplorerXP();
+  const rank     = getExplorerRank(visitedMkts.length, xp);
+  const nextRank = getNextRank(visitedMkts.length);
+  const xpToNext = nextRank ? nextRank.xpNeeded : 0;
+  const xpPct    = nextRank ? Math.min(100, Math.round(xp/xpToNext*100)) : 100;
+  const missions = getDailyMissions(visitedMkts, myPosts);
+
+  // 권역별 정복 현황
+  const conqueredRegions = new Set(visitedMkts.map(n=>{ const m=getMktData(n); return m?m.region:''; }));
+  const allRegionNames = [...new Set(ALL_MKTS.map(m=>m.region))].filter(Boolean);
+  const regionChips = allRegionNames.map(r=>{
+    const total_r = ALL_MKTS.filter(m=>m.region===r).length;
+    const visited_r = visitedMkts.filter(n=>{ const m=getMktData(n); return m&&m.region===r; }).length;
+    const cls = visited_r===total_r&&total_r>0 ? 'conquered' : visited_r>0 ? 'partial' : 'locked';
+    const label = cls==='conquered' ? `${r} ✓` : cls==='partial' ? `${r} ${visited_r}/${total_r}` : `${r} ?`;
+    return `<span class="game-region-chip ${cls}">${label}</span>`;
+  }).join('');
+
+  const missionItems = missions.map(m=>`
+    <div class="game-mission-item${m.done?' done':''}">
+      <span class="game-mission-icon">${m.icon}</span>
+      <div class="game-mission-info">
+        <div class="game-mission-text">${m.text}</div>
+        <div class="game-mission-desc">${m.desc}</div>
+      </div>
+      <span class="game-mission-xp">+${m.xp}XP</span>
+      <span class="game-mission-check">${m.done?'✅':'○'}</span>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <!-- 게이밍 지도 카드 -->
+    <div class="game-map-card">
+      <!-- 숫자 카운터 헤더 -->
+      <div class="game-title-bar" style="padding:16px 18px 8px;flex-direction:column;align-items:stretch;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)">⚔️ 시장정복단</div>
+          <button class="game-share-btn" onclick="openShareCard()">📸 공유</button>
+        </div>
+        <!-- 핵심 숫자 3개 -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 10px;text-align:center">
+            <div style="font-size:34px;font-weight:700;color:#f87171;line-height:1">${visitedMkts.length}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">시장 정복</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:2px">/ ${total}개</div>
+          </div>
+          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 10px;text-align:center">
+            <div style="font-size:34px;font-weight:700;color:#f0b030;line-height:1">${myPosts.length}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">후기 기록</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:2px">개</div>
+          </div>
+          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 10px;text-align:center">
+            <div style="font-size:34px;font-weight:700;color:#4ade80;line-height:1">${xp}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">탐험 XP</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:2px">포인트</div>
+          </div>
+        </div>
+        <!-- 다음 목표 -->
+        ${nextRank ? `<div style="background:rgba(240,176,48,.1);border:1px solid rgba(240,176,48,.2);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px">
+          <div style="flex:1">
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px">${nextRank.emoji} ${nextRank.title} 승급까지</div>
+            <div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${Math.round(visitedMkts.length/nextRank.min*100)}%;background:linear-gradient(90deg,#f0b030,#e87020);border-radius:3px;transition:width .5s ease"></div>
+            </div>
+          </div>
+          <div style="font-size:20px;flex-shrink:0">${nextRank.emoji}</div>
+          <div style="font-size:11px;font-weight:700;color:#f0b030;flex-shrink:0">${visitedMkts.length}/${nextRank.min}</div>
+        </div>` : `<div style="text-align:center;font-size:13px;color:#f0b030;font-weight:700">🏴‍☠️ 최고 등급 달성!</div>`}
+      </div>
+
+      <!-- 정복 지도 -->
+      <div class="game-map-wrap">${renderGameMapSVG(visitedMkts)}</div>
+
+      <!-- 정복 현황 -->
+      <div style="padding:0 18px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:1px">정복 현황</div>
+      <div class="game-regions">${regionChips}</div>
+
+      <!-- 오늘의 미션 -->
+      <div class="game-missions">
+        <div class="game-missions-title">📜 오늘의 정복 미션</div>
+        ${missionItems}
+      </div>
+    </div>
+
+    <!-- 방문 시장별 상점 기록 -->
+    ${visitedMkts.length ? `
+    <div style="background:var(--bg2);padding:10px 16px 6px">
+      <span style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px">🏪 방문 상점 기록</span>
+    </div>
+    ${mktSections}` : ''}
+
+    <!-- 지역별 현황 -->
+    <div style="padding:16px">
+      <div class="mkt-info-section">
+        <div class="mkt-info-section-head">
+          <span class="mkt-info-section-icon">📊</span>
+          <span class="mkt-info-section-title">지역별 방문 현황</span>
+        </div>
+        <div class="mkt-info-rows">${regionRows}</div>
+      </div>
+    </div>
+  `;
+}
+
+// 시장 섹션 접기/펼치기
+function toggleMktSection(id){
+  const el = document.getElementById(id);
+  const tog = document.getElementById('toggle-'+id);
+  if(!el) return;
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  if(tog) tog.classList.toggle('open', !isOpen);
+}
+
+// 메모 폼 토글
+function toggleMemoForm(key){
+  const safeKey = key.replace(/[^a-z0-9]/gi,'_');
+  const form = document.getElementById('memoform-'+safeKey);
+  if(!form) return;
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen){
+    const inp = document.getElementById('memoinput-'+safeKey);
+    if(inp) setTimeout(()=>inp.focus(), 100);
+  }
+}
+
+// 메모 저장
+function saveMemo(key){
+  const safeKey = key.replace(/[^a-z0-9]/gi,'_');
+  const inp = document.getElementById('memoinput-'+safeKey);
+  if(!inp) return;
+  const val = inp.value.trim();
+  const memos = JSON.parse(localStorage.getItem('jtt4_shop_memos')||'{}');
+  if(val) memos[key] = val;
+  else delete memos[key];
+  localStorage.setItem('jtt4_shop_memos', JSON.stringify(memos));
+  // 텍스트 업데이트
+  const txt = document.getElementById('memo-txt-'+safeKey);
+  if(txt){
+    txt.textContent = val ? `"${val}"` : '한 줄 메모 추가...';
+    txt.style.fontStyle = val ? 'italic' : 'normal';
+    txt.style.color = val ? '' : 'var(--text3)';
+  }
+  document.getElementById('memoform-'+safeKey).style.display = 'none';
+  toast(val ? '메모 저장됐어요 ✏️' : '메모 삭제됐어요');
+}
+
 function openSaleTab(){
   saleOnly = true;
   S.sortBy = 'latest';
@@ -3533,9 +4913,10 @@ function updateSaleBadge(){
 function bnavClick(id, btn){
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  if(id==='home'){ saleOnly=false; setSort('latest'); return; }
+  if(id==='home'){ saleOnly=false; setSort('latest'); updateSaleCounter(); return; }
   if(id==='sale')      openSaleTab();
   if(id==='checklist') openCL();
+  if(id==='map')       openMapTab();
   if(id==='follow')    openFW();
   if(id==='badge')     openBD();
 }
@@ -4029,6 +5410,162 @@ function toast(msg){
   setTimeout(()=>el.classList.remove('show'),2500);
 }
 
+// ── 빠른 후기 ───────────────────────────────────────────────────
+let quickSelPhotos = [];
+let quickSelMkt    = '';
+
+function toggleQuickPanel(){
+  const panel = document.getElementById('quickPanel');
+  const arrow = document.getElementById('quickToggleArrow');
+  const isOpen = panel.classList.contains('show');
+  panel.classList.toggle('show', !isOpen);
+  arrow.textContent = isOpen ? '▼' : '▲';
+  if(!isOpen) initQuickPanel();
+}
+
+function initQuickPanel(){
+  quickSelPhotos = [];
+  quickSelMkt    = S.market !== 'all' ? S.market : '';
+
+  // 사진 칩 — PLIB_META에서
+  const photoPicker = document.getElementById('quickPhotos');
+  photoPicker.innerHTML = PLIB_META.slice(0,12).map((item,i)=>`
+    <div class="quick-photo-thumb" id="qph-${i}" onclick="toggleQuickPhoto('${item.e}',${i})"
+      style="background:${item.g}">${item.e}
+    </div>`).join('');
+
+  // 시장 칩 — 최근 방문 + GPS 근처
+  const myMkts = [...new Set(S.posts.filter(p=>p.author===P.name||p.author==='나').map(p=>p.market))].slice(0,5);
+  const nearMkts = S.userLat
+    ? ALL_MKTS.filter(m=>{ const d=distTo(m.name); return d!==null&&d<3; }).map(m=>m.name).slice(0,3)
+    : [];
+  const chips = [...new Set([...nearMkts, ...myMkts])].slice(0,6);
+
+  document.getElementById('quickMkts').innerHTML =
+    chips.map(name=>`
+      <button class="quick-mkt-chip${quickSelMkt===name?' sel':''}" onclick="selectQuickMkt('${name}',this)">
+        ${(getMktData(name)||{}).icon||'🏮'} ${name.replace('시장','').replace('수산','')}
+      </button>`).join('') +
+    `<button class="quick-mkt-chip" onclick="openUpload();toggleQuickPanel()">+ 직접 선택</button>`;
+
+  // 포커스
+  setTimeout(()=>document.getElementById('quickText')?.focus(), 200);
+}
+
+function toggleQuickPhoto(emoji, idx){
+  const el = document.getElementById('qph-'+idx);
+  if(quickSelPhotos.includes(emoji)){
+    quickSelPhotos = quickSelPhotos.filter(e=>e!==emoji);
+    el?.classList.remove('sel');
+  } else if(quickSelPhotos.length < 4){
+    quickSelPhotos.push(emoji);
+    el?.classList.add('sel');
+  }
+}
+
+function selectQuickMkt(name, btn){
+  quickSelMkt = name;
+  document.querySelectorAll('.quick-mkt-chip').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function quickSubmit(){
+  const text = document.getElementById('quickText')?.value.trim();
+  if(!text){ toast('한 줄 후기를 입력해주세요!'); return; }
+  if(!quickSelMkt){ toast('시장을 선택해주세요!'); return; }
+  if(!quickSelPhotos.length){ toast('사진(이모지)을 한 개 이상 선택해주세요!'); return; }
+
+  const prevVisited = [...new Set(S.posts.filter(p=>p.author===(P.name||'나')).map(p=>p.market))].length;
+
+  S.posts.unshift({
+    id: Date.now(),
+    type: 'review',
+    author: P.name||'나',
+    avatar: P.avatar||'😊',
+    market: quickSelMkt,
+    shop: '',
+    star: 5,
+    photos: quickSelPhotos,
+    caption: text,
+    tags: [quickSelMkt],
+    likes: 0, liked: false,
+    comments: [],
+    time: '방금 전',
+    hot: false, pick: false,
+    createdAt: Date.now(),
+  });
+  save();
+  renderGrid();
+  renderStories();
+  updateSaleBadge();
+  updateSaleCounter();
+
+  // 레벨업 체크
+  const newVisited = [...new Set(S.posts.filter(p=>p.author===(P.name||'나')).map(p=>p.market))].length;
+  if(newVisited > prevVisited) checkLevelUp(prevVisited, newVisited);
+
+  // 패널 닫기 & 초기화
+  document.getElementById('quickPanel').classList.remove('show');
+  document.getElementById('quickToggleArrow').textContent = '▼';
+  document.getElementById('quickText').value = '';
+  quickSelPhotos = [];
+  checkBadge('post');
+  toast('올라갔어요! 🎉');
+}
+
+// 특정 상점으로 업로드 모달 열기
+function openUploadForShop(market, shop, e){
+  if(e) e.stopPropagation();
+  openUpload();
+  setTimeout(()=>{
+    // 시장 자동 설정
+    const el = document.getElementById('mktSearch');
+    if(el){ el.value = market; searchMkt(market); }
+    if(shop){
+      const shopEl = document.getElementById('uShop');
+      if(shopEl) shopEl.value = shop;
+    }
+  }, 300);
+}
+
+// ── 온보딩 ───────────────────────────────────────────────────────
+let onboardType = null; // 'explore' | 'shopping' | 'both'
+
+function openOnboard(){
+  document.getElementById('onboardOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectOnboard(type, btn){
+  onboardType = type;
+  document.querySelectorAll('.onboard-choice').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('onboardBtn').disabled = false;
+}
+
+function completeOnboard(skip){
+  const type = skip ? 'both' : onboardType;
+  localStorage.setItem('jtt4_onboard', type);
+
+  document.getElementById('onboardOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+
+  // 타입별 초기 화면 설정
+  if(type === 'explore'){
+    // 탐방형: 최신순 피드, 스토리 바 강조
+    setSort('latest');
+    toast('사진 후기 피드를 보여드릴게요 📸');
+  } else if(type === 'shopping'){
+    // 장보기형: 마감세일 탭으로 바로 이동
+    setTimeout(()=>{
+      bnavClick('sale', document.getElementById('bnav-sale'));
+    }, 400);
+    toast('마감세일 정보를 먼저 보여드릴게요 ⚡');
+  } else {
+    setSort('latest');
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────────
 // 시드 데이터 버전 체크 — 새 게시글 반영을 위해 리셋
 if(localStorage.getItem('jtt4_ver') !== 'v7'){
@@ -4106,6 +5643,11 @@ if(localStorage.getItem('jtt4_sale_seeded') !== 'v8'){
   updateSaleBadge();
 }
 
+// 온보딩 — 처음 방문자만
+if(!localStorage.getItem('jtt4_onboard')){
+  setTimeout(openOnboard, 600);
+}
+
 // 자동 위치 취득 시도
 if(navigator.geolocation){
   navigator.geolocation.getCurrentPosition(
@@ -4122,6 +5664,7 @@ if(navigator.geolocation){
       document.getElementById('locBannerText').innerHTML=
         `현재 위치에서 <strong>${nearest.name}</strong>까지 <strong>${distLabel(nearest.dist)}</strong> — 📍 거리순 탭을 눌러보세요!`;
       renderChips();renderStories();renderGrid();renderSidebar();
+      updateSaleCounter();
     },
     ()=>{},
     {timeout:5000,maximumAge:300000}
