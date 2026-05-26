@@ -103,8 +103,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 /* 카드 헤더 (프로필 영역) */
 .gi-head{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;overflow:hidden;
 }
 .gi-av{
   width:36px;height:36px;border-radius:50%;
@@ -112,9 +112,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   display:flex;align-items:center;justify-content:center;
   font-size:18px;flex-shrink:0;
 }
-.gi-author{font-size:13px;font-weight:700;color:var(--text);}
+.gi-author{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .gi-meta{font-size:11px;color:var(--text3);}
-.gi-more{margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);padding:0 4px;}
+.gi-more{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);padding:0 4px;flex-shrink:0;}
 
 /* 사진 영역 — 1:1 정사각형 꽉 채움 */
 .gi-photo{
@@ -155,7 +155,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .gi-pdot.on{background:#fff;}
 
 /* 별점 */
-.gi-stars{font-size:12px;color:#e8b020;letter-spacing:1px;}
+.gi-stars{display:none;}
 
 /* 액션 버튼 */
 .gi-actions{
@@ -174,10 +174,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .gi-save{margin-left:auto;}
 
 /* 좋아요 수 */
-.gi-likes{
-  padding:0 14px 4px;
-  font-size:13px;font-weight:700;color:var(--text);
-}
+.gi-likes{display:none;}
 
 /* 캡션 */
 .gi-caption{
@@ -214,10 +211,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 }
 
 /* 시간 */
-.gi-time{padding:0 14px 10px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;}
+.gi-time{display:none;}
 
 /* 태그 */
-.gi-tags{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 6px;}
+.gi-tags{display:none;}
 .gi-tag{font-size:12px;color:var(--blue);}
 
 /* 마감세일 배너 */
@@ -2896,24 +2893,18 @@ function renderFeedCard(p){
   const isSoldOut  = p.saleSoldOut || (stockTotal>0 && stockLeft===0);
 
   const stockBarHtml = isSale && active ? `
-    <div class="sale-stock-bar">
+    <div class="sale-stock-bar" style="padding:6px 12px">
       <div class="sale-stock-info">
         ${stockTotal>0 ? `
           <span class="sale-stock-label">잔여</span>
           <span class="sale-stock-num">${isSoldOut?'품절':('약 '+stockLeft+'개')}</span>
           <div class="sale-stock-prog">
             <div class="sale-stock-fill ${stockClass}" style="width:${isSoldOut?0:stockPct}%"></div>
-          </div>` :
-          `<span class="sale-stock-label" style="opacity:.8">수량 미입력 — 댓글로 문의하세요</span>`
+          </div>` : ''
         }
+        ${isSoldOut?'<span class="sale-soldout-badge">품절</span>':''}
       </div>
-      ${isSoldOut
-        ? `<span class="sale-soldout-badge">품절 확인됨</span>`
-        : `<div class="sale-stock-btns">
-            <button class="sale-visit-btn" onclick="markVisit(${p.id},event)">✅ 다녀왔어요</button>
-            <button class="sale-soldout-btn" onclick="markSoldOut(${p.id},event)">🚫 품절</button>
-           </div>`
-      }
+      ${!isSoldOut?`<button class="sale-visit-btn" onclick="markVisit(${p.id},event)">✅ 다녀왔어요</button>`:''}
     </div>` : '';
 
   const saleBanner = isSale ? `
@@ -2956,7 +2947,7 @@ function renderFeedCard(p){
   // 뱃지
   const badges = [];
   if(p.hot)  badges.push('<span style="font-size:11px;background:var(--redbg);color:var(--red);border:1px solid var(--redbdr);border-radius:10px;padding:1px 7px">🔥 인기</span>');
-  if(p.pick) badges.push('<span style="font-size:11px;background:var(--goldbg);color:var(--gold);border:1px solid var(--goldbdr);border-radius:10px;padding:1px 7px">⭐ 에디터픽</span>');
+  if(p.pick) badges.push('<span style="font-size:11px;background:var(--goldbg);color:var(--gold);border:1px solid var(--goldbdr);border-radius:10px;padding:1px 7px">⭐</span>');
 
   // 댓글 미리보기 (최신 1개)
   const lastCmt = (p.comments||[]).slice(-1)[0];
@@ -2980,23 +2971,17 @@ function renderFeedCard(p){
     <!-- 사진 -->
     ${photoHtml}
     <!-- 액션 -->
+    <!-- 액션 버튼 — 간결하게 -->
     <div class="gi-actions">
       <button class="gi-btn${p.liked?' liked':''}" id="glike-${p.id}" onclick="feedLike(${p.id})">
         ${p.liked?'❤️':'🤍'} <span id="glikenum-${p.id}">${p.likes}</span>
       </button>
-      <button class="gi-btn" onclick="focusFeedCmt(${p.id})">💬 <span>${cmtCount}</span></button>
-      <button class="gi-btn" onclick="toast('링크 복사됨!')">🔗</button>
-      <button class="gi-fav-btn${isFaved(p)?' faved':''}" id="gfav-${p.id}" onclick="toggleFav(${p.id},event)" title="즐겨찾기">${isFaved(p)?'⭐':'☆'}</button>
+      <button class="gi-btn" onclick="openDetail(${p.id})">💬 ${cmtCount>0?`<span>${cmtCount}</span>`:''}</button>
+      <button class="gi-fav-btn${isFaved(p)?' faved':''}" id="gfav-${p.id}" onclick="toggleFav(${p.id},event)">${isFaved(p)?'⭐':'☆'}</button>
     </div>
-    <!-- 별점 -->
-    ${p.star>0?`<div style="padding:0 14px 4px"><span class="gi-stars">${'★'.repeat(p.star)}${'☆'.repeat(5-p.star)}</span></div>`:''}
-    <!-- 좋아요 수 -->
-    <div class="gi-likes">좋아요 <span id="glikecnt-${p.id}">${p.likes}</span>개</div>
-    <!-- 캡션 -->
-    <div class="gi-caption">${capHtml}</div>
-    <!-- 가게 정보 카드 -->
-    ${shopCardHtml}
-    <!-- 첫 리뷰어 유도 (에디터 게시글 + 후기 없을 때) -->
+    <!-- 캡션 — 한 줄만 -->
+    <div class="gi-caption" style="padding:4px 14px 10px">${capHtml}</div>
+    <!-- 첫 리뷰어 유도 (에디터만) -->
     ${isEditor && (() => {
       const shopReviews = S.posts.filter(x=>x.market===p.market&&x.shop===p.shop&&x.type!=='editor'&&x.type!=='sale');
       return shopReviews.length === 0;
@@ -3005,25 +2990,10 @@ function renderFeedCard(p){
       <span class="first-reviewer-icon">📸</span>
       <div class="first-reviewer-info">
         <div class="first-reviewer-title">이 가게 첫 번째 후기를 남겨보세요!</div>
-        <div class="first-reviewer-desc">직접 다녀왔다면 사진 한 장 + 한 줄만</div>
+        <div class="first-reviewer-desc">사진 한 장 + 한 줄만</div>
       </div>
       <span class="first-reviewer-arrow">›</span>
     </div>` : ''}
-    <!-- 태그 -->
-    ${p.tags&&p.tags.length?`<div class="gi-tags">${p.tags.map(t=>`<span class="gi-tag">#${t}</span>`).join('')}</div>`:''}
-    <!-- 댓글 미리보기 -->
-    ${cmtCount>1?`<div style="padding:0 14px 2px;font-size:12px;color:var(--text3);cursor:pointer" onclick="focusFeedCmt(${p.id})">댓글 ${cmtCount}개 모두 보기</div>`:''}
-    ${cmtPreview}
-    <!-- 댓글 펼침 영역 -->
-    <div id="gcmts-${p.id}" style="display:none;padding:0 14px 8px;"></div>
-    <!-- 댓글 입력 -->
-    <div class="gi-comment-input">
-      <div class="gi-av" style="width:28px;height:28px;font-size:14px;flex-shrink:0">${P.avatar||'😊'}</div>
-      <input class="gi-cinput" id="gcinput-${p.id}" placeholder="댓글 달기..." onkeydown="gCmtEnter(event,${p.id})">
-      <button class="gi-csubmit" onclick="addFeedCmt(${p.id})">게시</button>
-    </div>
-    <!-- 시간 -->
-    <div class="gi-time">${p.time}</div>
   </div>`;
 }
 
