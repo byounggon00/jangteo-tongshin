@@ -17,9 +17,8 @@
   --r:12px;--rsm:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html{overflow-x:hidden;overflow-y:scroll;}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;width:100%;box-sizing:border-box;}
-*,*::before,*::after{box-sizing:border-box;}
+html,body{overflow-x:hidden;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
 /* ── HEADER ── */
 .hdr{background:#111;border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:200;overflow:hidden;width:100%;}
@@ -86,7 +85,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 /* ── PAGE LAYOUT ── */
 .page-wrap{max-width:1180px;margin:0 auto;padding:0 0 100px;display:grid;grid-template-columns:1fr 300px;gap:0;align-items:start;overflow:hidden;width:100%;}
-@media(max-width:860px){.page-wrap{grid-template-columns:1fr;}.sidebar{display:none;}}
+.page-wrap{grid-template-columns:1fr !important;}
+.sidebar{display:none !important;}
+@media(min-width:1200px){.page-wrap{grid-template-columns:1fr 300px;}.sidebar{display:block;}}
 .feed-col{max-width:480px;width:100%;margin:0 auto;}
 .main{min-width:0;}
 
@@ -123,7 +124,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   background:#1a1510;
   position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  max-width:100%;
 }
 .gi-photo-bg{
   position:absolute;inset:0;
@@ -946,7 +946,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .sale-counter-sub{font-size:11px;color:var(--text3);margin-top:2px;}
 .sale-counter-arrow{font-size:18px;color:var(--text3);flex-shrink:0;}
 /* 세일 칩 미리보기 */
-.sale-counter-chips{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.sale-counter-chips{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;overflow:hidden;}
 .sale-counter-chip{
   display:inline-flex;align-items:center;gap:4px;
   padding:3px 10px;border-radius:12px;
@@ -5538,26 +5538,7 @@ function completeOnboard(skip){
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
-// 가로 스크롤 완전 차단 — 넘치는 요소 자동 감지 후 강제 숨김
-(function fixOverflow(){
-  document.documentElement.style.overflowX = 'hidden';
-  document.body.style.overflowX = 'hidden';
-  document.body.style.width = '100vw';
-  document.body.style.maxWidth = '100vw';
 
-  // 모든 요소 width 강제
-  const style = document.createElement('style');
-  style.textContent = `
-    html, body { overflow-x: hidden !important; max-width: 100vw !important; }
-    * { max-width: 100% !important; box-sizing: border-box !important; }
-    img, svg, video, canvas { max-width: 100% !important; height: auto; }
-    .hdr, .story-bar, .sale-feed-bar, .sale-counter-bar,
-    .quick-review-bar, .feed-sort-bar, .gitem, .page-wrap,
-    .feed-col, .bottom-nav { width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
-    .sale-ticker-wrap { max-width: calc(100vw - 100px) !important; }
-  `;
-  document.head.appendChild(style);
-})();
 // 시드 데이터 버전 체크 — 새 게시글 반영을 위해 리셋
 if(localStorage.getItem('jtt4_ver') !== 'v7'){
   localStorage.removeItem('jtt4');
