@@ -932,7 +932,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   transition:background .15s;width:100%;overflow:hidden;box-sizing:border-box;
 }
 .sale-counter-bar:hover{background:var(--bg2);}
-.sale-counter-bar.show{display:block;}
+.sale-counter-bar.show{display:none;}
 .sale-counter-inner{
   max-width:100%;margin:0 auto;
   display:flex;align-items:center;gap:8px;overflow:hidden;
@@ -1279,18 +1279,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 /* 빠른 후기 패널 */
 .quick-panel{
   background:#fff;border-bottom:2px solid var(--goldbdr);
-  padding:14px 18px;flex-shrink:0;
-  display:none;flex-direction:column;gap:10px;
+  padding:12px 16px;
+  display:none;flex-direction:column;gap:12px;
 }
 .quick-panel.show{display:flex;}
-.quick-photo-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
+.quick-photo-row{display:flex;flex-direction:row;gap:8px;overflow-x:scroll;overflow-y:visible;scrollbar-width:none;padding:4px 0 8px;min-height:64px;}
 .quick-photo-row::-webkit-scrollbar{display:none;}
 .quick-photo-thumb{
-  width:52px;height:52px;border-radius:var(--rsm);
-  background:var(--bg2);border:2px solid var(--border);
+  width:52px;height:52px;min-width:52px;min-height:52px;
+  border-radius:10px;border:2px solid var(--border);
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;cursor:pointer;flex-shrink:0;transition:all .15s;
+  font-size:26px;cursor:pointer;flex-shrink:0;transition:all .15s;
 }
+.quick-photo-thumb.sel{border-color:var(--red);box-shadow:0 0 0 2px var(--red);}
 .quick-photo-thumb.sel{border-color:var(--red);background:var(--redbg);}
 .quick-mkt-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
 .quick-mkt-row::-webkit-scrollbar{display:none;}
@@ -4266,6 +4267,7 @@ function goToMarket(mktName){
 
 // 주변 세일 카운터 배너 업데이트
 function updateSaleCounter(){
+  return; // 메인화면에서 숨김
   const sales  = getActiveSales();
   const bar    = document.getElementById('saleCounterBar');
   const numEl  = document.getElementById('saleCounterNum');
@@ -5390,8 +5392,11 @@ function toggleQuickPanel(){
   const arrow = document.getElementById('quickToggleArrow');
   const isOpen = panel.classList.contains('show');
   panel.classList.toggle('show', !isOpen);
-  arrow.textContent = isOpen ? '▼' : '▲';
-  if(!isOpen) initQuickPanel();
+  if(arrow) arrow.textContent = isOpen ? '▼' : '▲';
+  // 열 때마다 초기화
+  if(!isOpen){
+    initQuickPanel();
+  }
 }
 
 function initQuickPanel(){
@@ -5400,10 +5405,11 @@ function initQuickPanel(){
 
   // 사진 칩 — PLIB_META에서
   const photoPicker = document.getElementById('quickPhotos');
-  photoPicker.innerHTML = PLIB_META.slice(0,12).map((item,i)=>`
-    <div class="quick-photo-thumb" id="qph-${i}" onclick="toggleQuickPhoto('${item.e}',${i})"
-      style="background:${item.g}">${item.e}
-    </div>`).join('');
+  if(photoPicker && typeof PLIB_META !== 'undefined'){
+    photoPicker.innerHTML = PLIB_META.slice(0,12).map((item,i)=>`
+      <div class="quick-photo-thumb" id="qph-${i}" onclick="toggleQuickPhoto('${item.e}',${i})"
+        style="background:${item.g}">${item.e}</div>`).join('');
+  }
 
   // 시장 칩 — 최근 방문 + GPS 근처
   const myMkts = [...new Set(S.posts.filter(p=>p.author===P.name||p.author==='나').map(p=>p.market))].slice(0,5);
