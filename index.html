@@ -1990,20 +1990,40 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <button class="cl-close" onclick="closeEdit()">✕</button>
     </div>
     <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+      <!-- 사진 수정 -->
+      <div>
+        <div class="pflabel">사진</div>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px" id="editPhotoRow"></div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="photo-upload-btn" style="flex:1;padding:8px" onclick="triggerEditPhoto('cam')">
+            <span class="photo-upload-btn-icon">📷</span>
+            <span class="photo-upload-btn-label">카메라</span>
+          </button>
+          <button class="photo-upload-btn" style="flex:1;padding:8px" onclick="triggerEditPhoto('gal')">
+            <span class="photo-upload-btn-icon">🖼️</span>
+            <span class="photo-upload-btn-label">갤러리</span>
+          </button>
+        </div>
+        <input type="file" id="editCamInput" accept="image/*" capture="environment" style="display:none" onchange="handleEditPhoto(event)">
+        <input type="file" id="editGalInput" accept="image/*" multiple style="display:none" onchange="handleEditPhoto(event)">
+      </div>
+      <!-- 캡션 -->
       <div>
         <div class="pflabel">한마디</div>
         <textarea id="editCapInput" style="
-          width:100%;min-height:100px;padding:10px 14px;
+          width:100%;min-height:80px;padding:10px 14px;
           border:1.5px solid var(--border);border-radius:var(--rsm);
           font-size:14px;font-family:inherit;resize:none;outline:none;
-          line-height:1.6;
+          line-height:1.6;box-sizing:border-box;
         "></textarea>
       </div>
+      <!-- 가게 이름 -->
       <div>
         <div class="pflabel">가게 이름</div>
         <input id="editShopInput" type="text" style="
           width:100%;padding:9px 14px;border:1.5px solid var(--border);
           border-radius:var(--rsm);font-size:14px;font-family:inherit;outline:none;
+          box-sizing:border-box;
         ">
       </div>
       <div style="display:flex;gap:8px">
@@ -3149,7 +3169,7 @@ function renderFeedCard(p){
     const dots = p.photos.map((_,i)=>`<div class="gi-pdot${i===0?' on':''}"></div>`).join('');
     photoHtml = `
       <div class="gi-photo" id="giphoto-${p.id}" style="overflow:hidden;width:100%">
-        <div class="gi-photos-strip" id="gistrip-${p.id}" style="display:flex;width:100%;height:100%;overflow:hidden;position:relative">
+        <div class="gi-photos-strip" id="gistrip-${p.id}" style="position:relative;width:100%;height:100%;overflow:hidden">
           ${slides}
         </div>
         <button onclick="feedSlide(${p.id},-1,event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.8);border:none;cursor:pointer;font-size:14px;z-index:2;display:flex;align-items:center;justify-content:center" id="giprev-${p.id}">‹</button>
@@ -3391,8 +3411,26 @@ function renderGrid(){
   list.forEach(p=>{
     if(p.photos.length>1){
       const prev=document.getElementById('giprev-'+p.id);
-      if(prev) prev.style.display='none'; // 첫 장엔 이전 버튼 없음
+      if(prev) prev.style.display='none';
     }
+  });
+  // 슬라이더 초기화
+  setTimeout(initAllSliders, 50);
+}
+
+function initAllSliders(){
+  document.querySelectorAll('.gi-photos-strip').forEach(strip=>{
+    const slides = strip.querySelectorAll('.gi-photo-slide');
+    if(slides.length <= 1) return;
+    slides.forEach((sl, i)=>{
+      sl.style.position   = 'absolute';
+      sl.style.top        = '0';
+      sl.style.left       = '0';
+      sl.style.width      = '100%';
+      sl.style.height     = '100%';
+      sl.style.transform  = `translateX(${i * 100}%)`;
+      sl.style.transition = 'transform .3s ease';
+    });
   });
 }
 
@@ -4016,11 +4054,14 @@ function editPostById(id){
   menuPostId = savedId;
   const p = S.posts.find(x=>x.id===savedId);
   if(!p) return;
+  // 편집용 사진 배열 초기화
+  editPhotos = [...(p.photos||[])];
   // 수정 모달 열기
   const capEl  = document.getElementById('editCapInput');
   const shopEl = document.getElementById('editShopInput');
   if(capEl)  capEl.value  = p.caption||'';
   if(shopEl) shopEl.value = p.shop||'';
+  renderEditPhotoRow();
   document.getElementById('editOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   setTimeout(()=>capEl?.focus(), 300);
@@ -4031,6 +4072,43 @@ function closeEdit(){
   document.body.style.overflow = '';
 }
 
+let editPhotos = [];
+
+function triggerEditPhoto(mode){
+  if(editPhotos.length >= 4){ toast('최대 4장까지 가능해요'); return; }
+  document.getElementById(mode==='cam' ? 'editCamInput' : 'editGalInput').click();
+}
+
+function handleEditPhoto(e){
+  const files = Array.from(e.target.files||[]);
+  files.slice(0, 4-editPhotos.length).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ev => { editPhotos.push(ev.target.result); renderEditPhotoRow(); };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function renderEditPhotoRow(){
+  const row = document.getElementById('editPhotoRow');
+  if(!row) return;
+  row.innerHTML = editPhotos.map((ph, i)=>{
+    const isReal = ph.startsWith('data:')||ph.startsWith('http');
+    return `<div style="position:relative;width:64px;height:64px;flex-shrink:0;border-radius:10px;overflow:hidden;border:1.5px solid var(--border)">
+      ${isReal
+        ? `<img src="${ph}" style="width:100%;height:100%;object-fit:cover">`
+        : `<div style="width:100%;height:100%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:28px">${ph}</div>`}
+      <button onclick="removeEditPhoto(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center">×</button>
+    </div>`;
+  }).join('') +
+  (editPhotos.length < 4 ? `<div onclick="triggerEditPhoto('gal')" style="width:64px;height:64px;flex-shrink:0;border-radius:10px;border:1.5px dashed var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;color:var(--text3)">+</div>` : '');
+}
+
+function removeEditPhoto(idx){
+  editPhotos.splice(idx,1);
+  renderEditPhotoRow();
+}
+
 function submitEdit(){
   const p = S.posts.find(x=>x.id===menuPostId);
   if(!p) return;
@@ -4039,6 +4117,7 @@ function submitEdit(){
   if(!cap){ toast('내용을 입력해주세요'); return; }
   p.caption = cap;
   p.shop    = shop;
+  if(editPhotos.length) p.photos = editPhotos;
   save();
   renderGrid();
   closeEdit();
@@ -4219,12 +4298,7 @@ function getDailyMissions(visitedMkts, myPosts){
       desc:'방문한 곳 사진 후기 남기기',
       xp:30, done: todayPosts.length >= 1,
     },
-    {
-      id:'sale_check',
-      icon:'⚡', text:'마감세일 3건 확인하기',
-      desc:`⚡ 탭에서 세일 탐색`,
-      xp:20, done: (completed.sale_checked||0) >= 3,
-    },
+
     {
       id:'memo_shop',
       icon:'✏️', text:'상점 메모 남기기',
