@@ -1330,6 +1330,69 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .first-reviewer-desc{font-size:11px;color:var(--text3);margin-top:2px;}
 .first-reviewer-arrow{font-size:18px;color:var(--red);}
 
+
+/* ── 실제 사진 업로드 ── */
+.photo-upload-area{
+  display:flex;flex-direction:column;gap:10px;
+}
+.photo-upload-btns{
+  display:flex;gap:8px;
+}
+.photo-upload-btn{
+  flex:1;padding:12px 8px;border-radius:12px;
+  border:1.5px dashed var(--border);background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;transition:all .15s;font-family:inherit;
+}
+.photo-upload-btn:hover{border-color:var(--red);background:var(--redbg);}
+.photo-upload-btn-icon{font-size:24px;}
+.photo-upload-btn-label{font-size:11px;color:var(--text2);font-weight:500;}
+.photo-preview-row{
+  display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;
+  padding:2px 0 4px;min-height:0;
+}
+.photo-preview-row::-webkit-scrollbar{display:none;}
+.photo-preview-item{
+  position:relative;width:72px;height:72px;
+  border-radius:10px;overflow:hidden;flex-shrink:0;
+  border:1.5px solid var(--border);
+}
+.photo-preview-item img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.photo-preview-item .photo-del{
+  position:absolute;top:2px;right:2px;
+  width:18px;height:18px;border-radius:50%;
+  background:rgba(0,0,0,.6);color:#fff;
+  border:none;cursor:pointer;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+.photo-preview-emoji{
+  width:72px;height:72px;border-radius:10px;
+  background:var(--bg2);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;flex-shrink:0;position:relative;cursor:pointer;
+}
+
+/* 가게 드롭다운 */
+.shop-dropdown{
+  border:1px solid var(--border);border-radius:var(--rsm);
+  background:#fff;max-height:140px;overflow-y:auto;
+  display:none;box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+.shop-dropdown.show{display:block;}
+.shop-dropdown-item{
+  padding:9px 14px;font-size:13px;color:var(--text);
+  cursor:pointer;border-bottom:1px solid var(--bg2);
+  transition:background .1s;
+}
+.shop-dropdown-item:last-child{border-bottom:none;}
+.shop-dropdown-item:hover{background:var(--bg2);}
+.shop-dropdown-empty{
+  padding:10px 14px;font-size:12px;color:var(--text3);text-align:center;
+}
+
 /* TOAST / EMPTY */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -1535,8 +1598,26 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="ubody">
       <div>
-        <div class="pflabel">사진 고르기 (최대 4장)</div>
-        <div class="ppicker" id="ppicker"></div>
+        <div class="pflabel">사진 (최대 4장)</div>
+        <div class="photo-upload-area">
+          <!-- 실제 파일 업로드 버튼 -->
+          <div class="photo-upload-btns">
+            <button class="photo-upload-btn" onclick="triggerPhotoUpload('camera')">
+              <span class="photo-upload-btn-icon">📷</span>
+              <span class="photo-upload-btn-label">카메라 촬영</span>
+            </button>
+            <button class="photo-upload-btn" onclick="triggerPhotoUpload('gallery')">
+              <span class="photo-upload-btn-icon">🖼️</span>
+              <span class="photo-upload-btn-label">갤러리에서 선택</span>
+            </button>
+          </div>
+          <!-- 숨겨진 파일 인풋 -->
+          <input type="file" id="photoFileInput" accept="image/*" multiple style="display:none" onchange="handlePhotoFiles(event)">
+          <input type="file" id="photoCamInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoFiles(event)">
+          <!-- 미리보기 -->
+          <div class="photo-preview-row" id="photoPreviewRow" style="display:none"></div>
+
+        </div>
       </div>
       <div>
         <div class="pflabel">시장 선택</div>
@@ -1546,7 +1627,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       </div>
       <div>
         <div class="pflabel">가게 이름 (선택)</div>
-        <input type="text" id="uShop" placeholder="예: 은성횟집, 순희네 빈대떡">
+        <input type="text" id="uShop" placeholder="직접 입력 또는 아래서 선택"
+          oninput="filterShopDropdown(this.value)" autocomplete="off">
+        <div class="shop-dropdown" id="shopDropdown"></div>
       </div>
       <div>
         <div class="pflabel">별점</div>
@@ -2854,15 +2937,23 @@ function renderFeedCard(p){
 
   // 사진 슬라이더 (여러 장)
   let photoHtml = '';
+  const isRealPhoto = (ph) => typeof ph==='string' && (ph.startsWith('http')||ph.startsWith('data:'));
+
   if(p.photos.length <= 1){
     const ph = p.photos[0]||'🏮';
-    photoHtml = `
+    photoHtml = isRealPhoto(ph) ? `
+      <div class="gi-photo" style="background:#111">
+        <img src="${ph}" style="width:100%;height:100%;object-fit:cover;display:block">
+      </div>` : `
       <div class="gi-photo">
         <div class="gi-photo-bg">${ph}</div>
         <div class="gi-photo-main">${ph}</div>
       </div>`;
   } else {
-    const slides = p.photos.map((ph,i)=>`
+    const slides = p.photos.map((ph,i)=> isRealPhoto(ph) ? `
+      <div class="gi-photo-slide" style="background:#111">
+        <img src="${ph}" style="width:100%;height:100%;object-fit:cover;display:block">
+      </div>` : `
       <div class="gi-photo-slide" style="background:#1a1510">
         <div class="gi-photo-bg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(60vw,380px);opacity:.22;filter:blur(6px);transform:scale(1.2);pointer-events:none">${ph}</div>
         <div class="gi-photo-main" style="position:relative;z-index:1">${ph}</div>
@@ -3270,6 +3361,7 @@ function openUpload(){
   if(ts) ts.className='utype-btn';
   const sf=document.getElementById('saleFields'); if(sf) sf.style.display='none';
   const ss=document.getElementById('saleStock'); if(ss) ss.value='';
+  const sd=document.getElementById('shopDropdown'); if(sd) sd.classList.remove('show');
   const ef=document.getElementById('editorFields'); if(ef) ef.style.display='none';
   ['edShopName','edShopHours','edMenus','edPriceRange','edPhone','edNote'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
@@ -3285,18 +3377,28 @@ function openUpload(){
   document.getElementById('mktDropdown').classList.remove('open');
   document.getElementById('mktSelected').style.display='none';
   document.querySelectorAll('.ustar').forEach(s=>s.classList.add('on'));
-  document.getElementById('ppicker').innerHTML=PLIB.map((e,i)=>`<div class="ppick" data-i="${i}" onclick="togglePic(${i})">${e}</div>`).join('');
 
-  // 기본으로 가장 가까운 시장 자동 선택
-  if(S.userLat){
-    const near = [...ALL_MKTS]
-      .map(m=>({...m,dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
-      .sort((a,b)=>a.dist-b.dist)[0];
-    S.uMarket = near.name;
+
+  // 시장 자동선택 — GPS 있으면 가까운 시장, 없으면 최근 방문 시장
+  const autoMkt = (() => {
+    if(S.userLat){
+      return [...ALL_MKTS]
+        .map(m=>({...m, dist:haversine(S.userLat,S.userLng,m.lat,m.lng)}))
+        .sort((a,b)=>a.dist-b.dist)[0];
+    }
+    // 최근 후기에서 마지막 방문 시장
+    const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+    if(myPosts.length){
+      const lastMkt = myPosts[0].market;
+      return getMktData(lastMkt);
+    }
+    return null;
+  })();
+  if(autoMkt){
+    selectMkt(autoMkt.name);
+    const hint = S.userLat ? '📍 위치 기반 자동 선택' : '🕐 최근 방문 시장';
     const selEl = document.getElementById('mktSelected');
-    selEl.style.display='block';
-    selEl.textContent=`${near.icon} ${near.name}  (📍${distLabel(near.dist)} — 위치 기반 자동 선택)`;
-    document.getElementById('mktSearch').value=near.name;
+    if(selEl) selEl.textContent = `${autoMkt.icon||''} ${autoMkt.name}  (${hint})`;
   }
 
   document.getElementById('uoverlay').classList.add('open');
@@ -3322,6 +3424,7 @@ function searchMkt(q){
 }
 
 function selectMkt(name){
+  updateShopDropdown(name);
   S.uMarket=name;
   const m=getMktData(name);
   const dist=S.userLat&&m?haversine(S.userLat,S.userLng,m.lat,m.lng):null;
@@ -3349,7 +3452,7 @@ function setStar(v){
 function submitPost(){
   const isSalePost   = uType === 'sale';
   const isEditorPost = uType === 'editor';
-  if(!S.uPics.length){toast('사진을 골라주세요 📷');return;}
+  if(!uploadedPhotos.length){toast('사진을 선택해주세요 📷');return;}
   if(!S.uMarket){toast('시장을 선택해주세요');return;}
   const cap=document.getElementById('uCap').value.trim();
   if(!cap){toast('한 줄이라도 써주세요 😊');return;}
@@ -3378,7 +3481,7 @@ function submitPost(){
     id:Date.now(), type: isSalePost ? 'sale' : isEditorPost ? 'editor' : 'review',
     author:P.name||'나', avatar:P.avatar||'😊',
     market:S.uMarket, shop, star: isSalePost ? 0 : S.uStar,
-    photos:[...S.uPics], caption:cap,
+    photos: uploadedPhotos.map(p=>p.data), caption:cap,
     saleItem, saleDiscount, saleEndMs, saleStock, saleVisits:0, saleSoldOut:false, shopInfo,
     tags:[S.uMarket.replace('시장',''),...(shop?[shop]:[]),...(saleItem?[saleItem]:[])],
     likes:0, comments:[], time:'방금 전', hot:false, pick:false
@@ -5381,6 +5484,119 @@ function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ── 사진 업로드 ─────────────────────────────────────────────────
+let uploadedPhotos = []; // {type:'file'|'emoji', data:base64|emoji}
+
+function triggerPhotoUpload(mode){
+  if(uploadedPhotos.length >= 4){ toast('최대 4장까지 선택 가능해요'); return; }
+  if(mode === 'camera'){
+    document.getElementById('photoCamInput').click();
+  } else {
+    document.getElementById('photoFileInput').click();
+  }
+}
+
+function handlePhotoFiles(e){
+  const files = Array.from(e.target.files||[]);
+  const remaining = 4 - uploadedPhotos.length;
+  files.slice(0, remaining).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      uploadedPhotos.push({type:'file', data:ev.target.result, name:file.name});
+      renderPhotoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = ''; // 같은 파일 다시 선택 가능하게
+}
+
+function renderPhotoPreview(){
+  const row = document.getElementById('photoPreviewRow');
+  if(!row) return;
+  if(!uploadedPhotos.length){ row.style.display='none'; return; }
+  row.style.display = 'flex';
+  row.innerHTML = uploadedPhotos.map((p,i)=>{
+    if(p.type === 'file'){
+      return `<div class="photo-preview-item">
+        <img src="${p.data}" alt="사진">
+        <button class="photo-del" onclick="removePhoto(${i})">×</button>
+      </div>`;
+    } else {
+      return `<div class="photo-preview-emoji" onclick="removePhoto(${i})">
+        ${p.data}<div class="photo-del" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;font-size:11px;display:flex;align-items:center;justify-content:center">×</div>
+      </div>`;
+    }
+  }).join('') +
+  (uploadedPhotos.length < 4 ? `<div class="photo-preview-item" style="border-style:dashed;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--bg2)" onclick="triggerPhotoUpload('gallery')"><span style="font-size:24px;color:var(--text3)">+</span></div>` : '');
+}
+
+function removePhoto(idx){
+  uploadedPhotos.splice(idx, 1);
+  renderPhotoPreview();
+}
+
+// 기존 togglePic (이모지) → uploadedPhotos에 추가
+const _origTogglePic = typeof togglePic === 'function' ? togglePic : null;
+
+// ── 가게 드롭다운 ─────────────────────────────────────────────────
+function filterShopDropdown(val){
+  const mktEl = document.getElementById('mktSelected');
+  const mktName = mktEl ? mktEl.getAttribute('data-mkt') : '';
+  const dd = document.getElementById('shopDropdown');
+  if(!dd) return;
+
+  // 현재 시장의 가게 목록 추출
+  const shops = mktName
+    ? [...new Set(S.posts.filter(p=>p.market===mktName&&p.shop).map(p=>p.shop))]
+    : [];
+
+  const filtered = val
+    ? shops.filter(s=>s.toLowerCase().includes(val.toLowerCase()))
+    : shops;
+
+  if(!filtered.length){
+    dd.classList.remove('show');
+    return;
+  }
+  dd.innerHTML = filtered.map(s=>`
+    <div class="shop-dropdown-item" onclick="selectShop('${s}')">${s}</div>
+  `).join('');
+  dd.classList.add('show');
+}
+
+function selectShop(name){
+  const inp = document.getElementById('uShop');
+  if(inp) inp.value = name;
+  const dd = document.getElementById('shopDropdown');
+  if(dd) dd.classList.remove('show');
+}
+
+// 시장 선택 시 가게 드롭다운 업데이트
+function updateShopDropdown(mktName){
+  if(!mktName){ 
+    const dd=document.getElementById('shopDropdown');
+    if(dd) dd.classList.remove('show');
+    return;
+  }
+  // 기존 후기 + 에디터 게시글에서 상점 추출
+  const shops = [...new Set(
+    S.posts
+      .filter(p=>p.market===mktName && p.shop)
+      .map(p=>p.shopInfo?.name || p.shop)
+      .filter(Boolean)
+  )];
+  const dd = document.getElementById('shopDropdown');
+  if(!dd) return;
+  if(!shops.length){
+    dd.innerHTML = `<div class="shop-dropdown-empty">등록된 상점이 없어요<br><span style="font-size:11px">직접 입력해주세요</span></div>`;
+  } else {
+    dd.innerHTML = shops.map(s=>`
+      <div class="shop-dropdown-item" onclick="selectShop('${s}')">${s}</div>
+    `).join('');
+  }
+  dd.classList.add('show');
 }
 
 // ── 빠른 후기 ───────────────────────────────────────────────────
