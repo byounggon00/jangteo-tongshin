@@ -1963,12 +1963,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     box-shadow:0 -4px 20px rgba(0,0,0,.15);
   " onclick="event.stopPropagation()">
     <div style="width:36px;height:4px;background:var(--bg3);border-radius:2px;margin:0 auto 16px"></div>
-    <button id="postMenuEdit" onclick="editPost()" style="
+    <button id="postMenuEdit" onclick="editPostById(menuPostId)" style="
       width:100%;padding:14px 24px;text-align:left;background:none;border:none;
       font-size:15px;font-family:inherit;cursor:pointer;color:var(--text);
       display:flex;align-items:center;gap:12px;
     ">✏️ 글 수정하기</button>
-    <button id="postMenuDelete" onclick="deletePost()" style="
+    <button id="postMenuDelete" onclick="deletePostById(menuPostId)" style="
       width:100%;padding:14px 24px;text-align:left;background:none;border:none;
       font-size:15px;font-family:inherit;cursor:pointer;color:#ef4444;
       display:flex;align-items:center;gap:12px;
@@ -3139,17 +3139,17 @@ function renderFeedCard(p){
       </div>`;
   } else {
     const slides = p.photos.map((ph,i)=> isRealPhoto(ph) ? `
-      <div class="gi-photo-slide" style="background:#111">
+      <div class="gi-photo-slide" style="background:#111;min-width:100%;width:100%;flex-shrink:0">
         <img src="${ph}" style="width:100%;height:100%;object-fit:cover;display:block">
       </div>` : `
-      <div class="gi-photo-slide" style="background:#1a1510">
+      <div class="gi-photo-slide" style="background:#1a1510;min-width:100%;width:100%;flex-shrink:0">
         <div class="gi-photo-bg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(60vw,380px);opacity:.22;filter:blur(6px);transform:scale(1.2);pointer-events:none">${ph}</div>
         <div class="gi-photo-main" style="position:relative;z-index:1">${ph}</div>
       </div>`).join('');
     const dots = p.photos.map((_,i)=>`<div class="gi-pdot${i===0?' on':''}"></div>`).join('');
     photoHtml = `
-      <div class="gi-photo" id="giphoto-${p.id}" style="overflow:hidden">
-        <div class="gi-photos-strip" id="gistrip-${p.id}" style="width:${p.photos.length*100}%;transition:transform .3s ease;flex-shrink:0">
+      <div class="gi-photo" id="giphoto-${p.id}" style="overflow:hidden;width:100%">
+        <div class="gi-photos-strip" id="gistrip-${p.id}" style="display:flex;width:100%;height:100%;overflow:hidden;position:relative">
           ${slides}
         </div>
         <button onclick="feedSlide(${p.id},-1,event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.8);border:none;cursor:pointer;font-size:14px;z-index:2;display:flex;align-items:center;justify-content:center" id="giprev-${p.id}">‹</button>
@@ -4010,9 +4010,11 @@ function closePostMenu(){
   menuPostId = null;
 }
 
-function editPost(){
+function editPostById(id){
+  const savedId = id || menuPostId;
   closePostMenu();
-  const p = S.posts.find(x=>x.id===menuPostId);
+  menuPostId = savedId;
+  const p = S.posts.find(x=>x.id===savedId);
   if(!p) return;
   // 수정 모달 열기
   const capEl  = document.getElementById('editCapInput');
@@ -4043,10 +4045,11 @@ function submitEdit(){
   toast('수정됐어요 ✅');
 }
 
-function deletePost(){
+function deletePostById(id){
+  const savedId = id || menuPostId;
   if(!confirm('이 게시글을 삭제할까요?')) return;
   closePostMenu();
-  S.posts = S.posts.filter(x=>x.id!==menuPostId);
+  S.posts = S.posts.filter(x=>x.id!==savedId);
   save();
   renderGrid();
   renderStories();
