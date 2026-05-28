@@ -1473,10 +1473,29 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <span class="quick-review-toggle" id="quickToggleArrow">▼</span>
     </div>
     <div class="quick-panel" id="quickPanel">
-      <div class="quick-photo-row" id="quickPhotos"></div>
+      <!-- 1. 사진 선택 -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;letter-spacing:.3px">📷 사진 선택</div>
+        <div style="display:flex;gap:8px">
+          <button class="photo-upload-btn" style="flex:1;padding:10px 6px" onclick="triggerQuickPhoto('camera')">
+            <span class="photo-upload-btn-icon">📷</span>
+            <span class="photo-upload-btn-label">카메라 촬영</span>
+          </button>
+          <button class="photo-upload-btn" style="flex:1;padding:10px 6px" onclick="triggerQuickPhoto('gallery')">
+            <span class="photo-upload-btn-icon">🖼️</span>
+            <span class="photo-upload-btn-label">갤러리 선택</span>
+          </button>
+        </div>
+        <input type="file" id="quickCamInput" accept="image/*" capture="environment" style="display:none" onchange="handleQuickPhoto(event)">
+        <input type="file" id="quickGalInput" accept="image/*" multiple style="display:none" onchange="handleQuickPhoto(event)">
+        <!-- 미리보기 -->
+        <div class="quick-photo-row" id="quickPreview" style="min-height:0;margin-top:6px"></div>
+      </div>
+      <!-- 2. 시장 선택 -->
       <div class="quick-mkt-row" id="quickMkts"></div>
+      <!-- 3. 한 줄 입력 -->
       <div class="quick-input-row">
-        <input class="quick-text" id="quickText" placeholder="한 줄 후기... 예: 빈대떡 바삭함 최고 🧆" maxlength="80" onkeydown="if(event.key==='Enter')quickSubmit()">
+        <input class="quick-text" id="quickText" placeholder="한 줄 후기... 예: 빈대떡 바삭함 최고" maxlength="80" onkeydown="if(event.key==='Enter')quickSubmit()">
         <button class="quick-submit" onclick="quickSubmit()">올리기</button>
       </div>
     </div>
@@ -5603,14 +5622,52 @@ function updateShopDropdown(mktName){
 let quickSelPhotos = [];
 let quickSelMkt    = '';
 
+let quickPhotos = []; // 빠른 후기 전용 사진
+
+function triggerQuickPhoto(mode){
+  if(quickPhotos.length >= 4){ toast('최대 4장까지 선택 가능해요'); return; }
+  document.getElementById(mode==='camera' ? 'quickCamInput' : 'quickGalInput').click();
+}
+
+function handleQuickPhoto(e){
+  const files = Array.from(e.target.files||[]);
+  const remaining = 4 - quickPhotos.length;
+  files.slice(0, remaining).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ev => {
+      quickPhotos.push(ev.target.result);
+      renderQuickPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function renderQuickPreview(){
+  const row = document.getElementById('quickPreview');
+  if(!row) return;
+  if(!quickPhotos.length){ row.innerHTML=''; return; }
+  row.innerHTML = quickPhotos.map((src,i)=>`
+    <div class="photo-preview-item" style="width:64px;height:64px;flex-shrink:0">
+      <img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block">
+      <button class="photo-del" onclick="removeQuickPhoto(${i})">×</button>
+    </div>`).join('');
+}
+
+function removeQuickPhoto(idx){
+  quickPhotos.splice(idx,1);
+  renderQuickPreview();
+}
+
 function toggleQuickPanel(){
   const panel = document.getElementById('quickPanel');
   const arrow = document.getElementById('quickToggleArrow');
   const isOpen = panel.classList.contains('show');
   panel.classList.toggle('show', !isOpen);
   if(arrow) arrow.textContent = isOpen ? '▼' : '▲';
-  // 열 때마다 초기화
   if(!isOpen){
+    quickPhotos = [];
+    renderQuickPreview();
     initQuickPanel();
   }
 }
@@ -5619,13 +5676,7 @@ function initQuickPanel(){
   quickSelPhotos = [];
   quickSelMkt    = S.market !== 'all' ? S.market : '';
 
-  // 사진 칩 — PLIB_META에서
-  const photoPicker = document.getElementById('quickPhotos');
-  if(photoPicker && typeof PLIB_META !== 'undefined'){
-    photoPicker.innerHTML = PLIB_META.slice(0,12).map((item,i)=>`
-      <div class="quick-photo-thumb" id="qph-${i}" onclick="toggleQuickPhoto('${item.e}',${i})"
-        style="background:${item.g}">${item.e}</div>`).join('');
-  }
+  // 사진은 카메라/갤러리 버튼으로만
 
   // 시장 칩 — 최근 방문 + GPS 근처
   const myMkts = [...new Set(S.posts.filter(p=>p.author===P.name||p.author==='나').map(p=>p.market))].slice(0,5);
@@ -5664,9 +5715,9 @@ function selectQuickMkt(name, btn){
 
 function quickSubmit(){
   const text = document.getElementById('quickText')?.value.trim();
+  if(!quickPhotos.length){ toast('사진을 먼저 선택해주세요 📷'); return; }
   if(!text){ toast('한 줄 후기를 입력해주세요!'); return; }
   if(!quickSelMkt){ toast('시장을 선택해주세요!'); return; }
-  if(!quickSelPhotos.length){ toast('사진(이모지)을 한 개 이상 선택해주세요!'); return; }
 
   const prevVisited = [...new Set(S.posts.filter(p=>p.author===(P.name||'나')).map(p=>p.market))].length;
 
@@ -5678,7 +5729,7 @@ function quickSubmit(){
     market: quickSelMkt,
     shop: '',
     star: 5,
-    photos: quickSelPhotos,
+    photos: quickPhotos,
     caption: text,
     tags: [quickSelMkt],
     likes: 0, liked: false,
@@ -5701,7 +5752,8 @@ function quickSubmit(){
   document.getElementById('quickPanel').classList.remove('show');
   document.getElementById('quickToggleArrow').textContent = '▼';
   document.getElementById('quickText').value = '';
-  quickSelPhotos = [];
+  quickPhotos = [];
+  renderQuickPreview();
   checkBadge('post');
   toast('올라갔어요! 🎉');
 }
