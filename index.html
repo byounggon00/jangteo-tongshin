@@ -1214,7 +1214,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 }
 .game-region-chip.conquered{background:rgba(193,53,32,.3);border-color:rgba(193,53,32,.6);color:#f87171;}
 .game-region-chip.partial{background:rgba(240,176,48,.15);border-color:rgba(240,176,48,.4);color:#f0b030;}
-.game-region-chip.locked{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.3);}
+.game-region-chip.locked{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.4);}
 
 /* 미션 카드 */
 .game-missions{padding:0 16px 16px;position:relative;z-index:1;}
@@ -1650,6 +1650,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
           oninput="filterShopDropdown(this.value)" autocomplete="off">
         <div class="shop-dropdown" id="shopDropdown"></div>
       </div>
+      <!-- 자동 위치 힌트 -->
+      <div id="locationHintWrap" style="display:none">
+        <div class="pflabel">📍 위치 힌트 <span style="font-size:10px;color:var(--text3);font-weight:400">(GPS 자동 감지)</span></div>
+        <div id="locationHintBox" style="
+          padding:10px 14px;border-radius:var(--rsm);
+          background:var(--greenbg);border:1px solid var(--greenbdr);
+          font-size:13px;color:var(--green);font-weight:500;
+          display:flex;align-items:center;gap:8px;
+        ">
+          <span style="font-size:16px">📍</span>
+          <span id="locationHintText">감지 중...</span>
+        </div>
+      </div>
       <div>
         <div class="pflabel">별점</div>
         <div class="ustars" id="ustars">
@@ -2029,6 +2042,85 @@ const REGIONS = ['서울','경기','인천','부산','대구','광주','대전',
 // ── PHOTO / SEED DATA ─────────────────────────────────────────────
 const PLIB = ['🐟','🥩','🍲','🥟','🍢','🥬','🦑','🍣','🥐','🧆','🍺','🦐','🍊','🌶️','🧅','🍱','🫙','🌊','🏮','🛒','🦀','🥚','🍜','🥘','🫓','🍵','🧁','🍋','🐙','🦞'];
 
+// ── 시장 내부 기준점 데이터 ────────────────────────────────────
+const MKT_LANDMARKS = {
+  '광장시장': [
+    {name:'정문 (종로4가 입구)',    lat:37.5700, lng:126.9994},
+    {name:'후문 (청계천 방향)',     lat:37.5694, lng:126.9995},
+    {name:'육회·빈대떡 골목',      lat:37.5698, lng:126.9990},
+    {name:'마약김밥 골목',         lat:37.5697, lng:126.9988},
+    {name:'원단·포목 구역',        lat:37.5699, lng:127.0000},
+    {name:'중앙 통로',             lat:37.5697, lng:126.9993},
+    {name:'2층 식당가',            lat:37.5698, lng:126.9992},
+    {name:'청과·건어물 구역',      lat:37.5695, lng:126.9997},
+  ],
+  '망원시장': [
+    {name:'정문 (망원역 방향)',     lat:37.5553, lng:126.9027},
+    {name:'동문 (월드컵로 방향)',   lat:37.5550, lng:126.9041},
+    {name:'고추·양념 골목',        lat:37.5552, lng:126.9031},
+    {name:'채소·청과 골목',        lat:37.5551, lng:126.9033},
+    {name:'분식·간식 골목',        lat:37.5553, lng:126.9035},
+    {name:'정육·수산 구역',        lat:37.5550, lng:126.9029},
+    {name:'중앙 통로',             lat:37.5552, lng:126.9034},
+    {name:'베이커리 골목',         lat:37.5554, lng:126.9037},
+  ],
+  '통인시장': [
+    {name:'정문 (효자로 입구)',     lat:37.5795, lng:126.9692},
+    {name:'후문 (누하동 방향)',     lat:37.5788, lng:126.9693},
+    {name:'기름떡볶이 골목',       lat:37.5792, lng:126.9692},
+    {name:'엽전도시락 매표소',     lat:37.5793, lng:126.9691},
+    {name:'청과·채소 구역',        lat:37.5790, lng:126.9693},
+    {name:'분식·간식 구역',        lat:37.5791, lng:126.9692},
+    {name:'중앙 통로',             lat:37.5791, lng:126.9692},
+  ],
+  '노량진수산시장': [
+    {name:'1층 활어 경매장',        lat:37.5131, lng:126.9428},
+    {name:'1층 선어 구역',          lat:37.5130, lng:126.9430},
+    {name:'1층 중앙 통로',          lat:37.5131, lng:126.9431},
+    {name:'2층 식당가',             lat:37.5132, lng:126.9429},
+    {name:'정문 (노량진역 방향)',    lat:37.5133, lng:126.9427},
+    {name:'패류·갑각류 구역',       lat:37.5130, lng:126.9433},
+  ],
+  '자갈치시장': [
+    {name:'정문 (1층 입구)',        lat:35.0963, lng:129.0301},
+    {name:'1층 활어 좌판',          lat:35.0962, lng:129.0302},
+    {name:'2층 식당가',             lat:35.0963, lng:129.0303},
+    {name:'야외 좌판 (바다 방향)',  lat:37.0961, lng:129.0299},
+    {name:'중앙 통로',              lat:35.0962, lng:129.0301},
+  ],
+};
+
+// GPS 기반 자동 위치 힌트
+function getLocationHint(mktName, lat, lng){
+  const landmarks = MKT_LANDMARKS[mktName];
+  if(!landmarks || !lat || !lng) return null;
+
+  // 가장 가까운 기준점 찾기
+  let nearest = null;
+  let minDist = Infinity;
+  landmarks.forEach(lm=>{
+    const d = haversine(lat, lng, lm.lat, lm.lng) * 1000; // m 단위
+    if(d < minDist){ minDist=d; nearest=lm; }
+  });
+
+  if(!nearest) return null;
+  const distStr = minDist < 10 ? '바로 앞' : minDist < 30 ? '약 ' + Math.round(minDist/10)*10 + 'm' : minDist < 100 ? '약 ' + Math.round(minDist/10)*10 + 'm' : null;
+  if(!distStr) return null; // 100m 이상이면 힌트 없음
+  return `${nearest.name} ${distStr}`;
+}
+
+// 현재 GPS로 위치 힌트 가져오기 (Promise)
+function fetchLocationHint(mktName){
+  return new Promise((resolve)=>{
+    if(!navigator.geolocation){ resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve(getLocationHint(mktName, pos.coords.latitude, pos.coords.longitude)),
+      ()  => resolve(null),
+      {timeout:5000, maximumAge:30000}
+    );
+  });
+}
+
 // ── 숫자 포맷 유틸 ──────────────────────────────────────────────
 function fmtNum(n){ return Number(n||0).toLocaleString('ko-KR'); }
 function fmtWon(n){ return Number(n||0).toLocaleString('ko-KR')+'원'; }
@@ -2252,6 +2344,7 @@ let S = {
   pidx: 0,
   uStar: 5,
   uPics: [],
+  uLocationHint: null,
   uMarket: null,
   sortBy: 'latest', // 'latest' | 'likes' | 'near'
   sideTab: 'likes',
@@ -2712,7 +2805,14 @@ function getShopsForMarket(name){
         price:       (p.shopInfo&&p.shopInfo.price)  || '',
         phone:       (p.shopInfo&&p.shopInfo.phone)  || '',
         note:        (p.shopInfo&&p.shopInfo.note)   || '',
-        icon:        p.photos[0] || '🏮',
+        icon: (() => {
+          const ph = p.photos[0]||'🏮';
+          return (ph.startsWith&&(ph.startsWith('data:')||ph.startsWith('http'))) ? '🏮' : ph;
+        })(),
+        thumb: (() => {
+          const ph = p.photos[0]||'';
+          return (ph.startsWith&&(ph.startsWith('data:')||ph.startsWith('http'))) ? ph : null;
+        })(),
         reviewCount: 0,
         hasSale:     false,
         isEditor:    p.type === 'editor',
@@ -3074,7 +3174,7 @@ function renderFeedCard(p){
       <div class="gi-av">${p.avatar||'😊'}</div>
       <div>
         <div class="gi-author">${p.author}</div>
-        <div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${dist!==null?' · 📍'+distLabel(dist):''}</div>
+        <div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${p.locationHint?' · 📍'+p.locationHint:''}${dist!==null?' · '+distLabel(dist):''}</div>
       </div>
       ${badges.length ? `<div style="margin-left:auto;display:flex;gap:4px">${badges.join('')}</div>` : ''}
     </div>
@@ -3381,6 +3481,8 @@ function openUpload(){
   const sf=document.getElementById('saleFields'); if(sf) sf.style.display='none';
   const ss=document.getElementById('saleStock'); if(ss) ss.value='';
   const sd=document.getElementById('shopDropdown'); if(sd) sd.classList.remove('show');
+  const hw=document.getElementById('locationHintWrap'); if(hw) hw.style.display='none';
+  S.uLocationHint = null;
   const ef=document.getElementById('editorFields'); if(ef) ef.style.display='none';
   ['edShopName','edShopHours','edMenus','edPriceRange','edPhone','edNote'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
@@ -3452,6 +3554,26 @@ function selectMkt(name){
   selEl.textContent=`${m?m.icon:''} ${name}${dist!==null?' · 📍'+distLabel(dist):''}`;
   document.getElementById('mktSearch').value=name;
   document.getElementById('mktDropdown').classList.remove('open');
+
+  // 위치 힌트 자동 감지
+  const hintWrap = document.getElementById('locationHintWrap');
+  const hintText = document.getElementById('locationHintText');
+  if(hintWrap && MKT_LANDMARKS[name]){
+    hintWrap.style.display = 'block';
+    hintText.textContent = '위치 감지 중...';
+    fetchLocationHint(name).then(hint=>{
+      if(hint){
+        hintText.textContent = hint;
+        S.uLocationHint = hint;
+      } else {
+        hintWrap.style.display = 'none';
+        S.uLocationHint = null;
+      }
+    });
+  } else {
+    if(hintWrap) hintWrap.style.display = 'none';
+    S.uLocationHint = null;
+  }
 }
 
 function togglePic(i){
@@ -3499,6 +3621,7 @@ function submitPost(){
   S.posts.unshift({
     id:Date.now(), type: isSalePost ? 'sale' : isEditorPost ? 'editor' : 'review',
     author:P.name||'나', avatar:P.avatar||'😊',
+    locationHint: S.uLocationHint||null,
     market:S.uMarket, shop, star: isSalePost ? 0 : S.uStar,
     photos: uploadedPhotos.map(p=>p.data), caption:cap,
     saleItem, saleDiscount, saleEndMs, saleStock, saleVisits:0, saleSoldOut:false, shopInfo,
@@ -3894,7 +4017,7 @@ function renderGameMapSVG(visitedMkts){
     return `<path d="${r.path}" fill="${fill}" stroke="${stroke}" stroke-width="${isConquered?1.5:0.5}" style="${glow}"/>
       ${isConquered
         ? `<text x="${r.tx}" y="${r.ty}" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">${r.id} ✓</text>`
-        : `<text x="${r.tx}" y="${r.ty}" fill="rgba(255,255,255,0.15)" font-size="9" text-anchor="middle">?</text>`
+        : `<text x="${r.tx}" y="${r.ty}" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="middle">${r.id}</text>`
       }`;
   }).join('');
 
@@ -4772,7 +4895,13 @@ function renderMapPage(visitedMkts){
     posts.forEach(p=>{
       const sname = (p.shopInfo&&p.shopInfo.name)||p.shop||'';
       if(!sname) return;
-      if(!shopMap[sname]) shopMap[sname]={name:sname, icon:p.photos[0]||'🏮', count:0};
+      if(!shopMap[sname]){
+        // 실제 사진(base64/URL)은 아이콘으로 쓸 수 없으므로 카테고리 이모지 사용
+        const firstPhoto = p.photos[0]||'🏮';
+        const isRealImg = typeof firstPhoto==='string' && (firstPhoto.startsWith('data:')||firstPhoto.startsWith('http'));
+        const icon = isRealImg ? (getMktData(sname)||{}).icon || guessShopCat({name:sname,menus:[]}) && '🏪' || '🏮' : firstPhoto;
+        shopMap[sname]={name:sname, icon:'🏮', thumb: isRealImg ? firstPhoto : null, count:0};
+      }
       shopMap[sname].count++;
     });
     return Object.values(shopMap);
@@ -4789,7 +4918,11 @@ function renderMapPage(visitedMkts){
       const key = `${mName}__${s.name}`;
       const memo = memos[key]||'';
       return `<div class="map-shop-item" id="shopitem-${key.replace(/[^a-z0-9]/gi,'_')}">
-        <div class="map-shop-emoji">${s.icon}</div>
+        <div class="map-shop-emoji">
+          ${s.thumb
+            ? `<img src="${s.thumb}" style="width:28px;height:28px;object-fit:cover;border-radius:6px">`
+            : s.icon}
+        </div>
         <div class="map-shop-info">
           <div class="map-shop-name">${s.name}</div>
           ${memo
@@ -4854,7 +4987,7 @@ function renderMapPage(visitedMkts){
     const total_r = ALL_MKTS.filter(m=>m.region===r).length;
     const visited_r = visitedMkts.filter(n=>{ const m=getMktData(n); return m&&m.region===r; }).length;
     const cls = visited_r===total_r&&total_r>0 ? 'conquered' : visited_r>0 ? 'partial' : 'locked';
-    const label = cls==='conquered' ? `${r} ✓` : cls==='partial' ? `${r} ${visited_r}/${total_r}` : `${r} ?`;
+    const label = cls==='conquered' ? `${r} ✓` : cls==='partial' ? `${r} ${visited_r}/${total_r}` : r;
     return `<span class="game-region-chip ${cls}">${label}</span>`;
   }).join('');
 
