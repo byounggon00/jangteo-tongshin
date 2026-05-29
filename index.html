@@ -1213,22 +1213,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   width:100%;height:auto;display:block;
   transform-origin:center center;
   will-change:transform;
-  pointer-events:none;
 }
 /* 헥사곤 탭 오버레이 */
-.hex-btn-layer{
-  position:absolute;top:4px;left:16px;right:16px;bottom:0;
-  pointer-events:none;
-}
-.hex-btn{
-  position:absolute;transform:translate(-50%,-50%);
-  width:80px;height:80px;border-radius:50%;
-  background:transparent;border:none;cursor:pointer;
-  pointer-events:auto;
-  -webkit-tap-highlight-color:transparent;
-  touch-action:manipulation;
-  z-index:5;
-}
+
 /* 줌 버튼 */
 .game-map-zoom-btns{
   display:flex;flex-direction:row;justify-content:center;
@@ -4608,25 +4595,22 @@ function renderGameMapSVG(visitedMkts){
     }).join('');
 
   const conquered=HEXES.filter(h=>isC(h.id)).length;
-  // 헥사곤 중심 좌표를 % 단위로 계산해서 버튼 레이어에 전달
-  const SVG_W=280, SVG_H=360;
-  const hexBtns = HEXES.map(h=>{
+  // SVG 위에 투명 클릭 영역 직접 추가
+  const hexClickAreas = HEXES.map(h=>{
     const {x,y}=hexCenter(h);
-    return `<button class="hex-btn"
-      style="left:${(x/SVG_W*100).toFixed(1)}%;top:${(y/SVG_H*100).toFixed(1)}%"
-      onclick="drillDownMap('${h.id}')"
-      aria-label="${h.label}"></button>`;
+    const pts=hexPoints(x,y,R+4);
+    return `<polygon points="${pts}" fill="transparent" style="cursor:pointer"
+      onclick="drillDownMap('${h.id}')"/>`;
   }).join('');
-  return `<div style="position:relative">
-    <svg viewBox="0 0 280 360" xmlns="http://www.w3.org/2000/svg" style="max-height:260px;width:100%;display:block">
-      <rect width="280" height="360" fill="transparent"/>
-      ${connLines}${hexSVG}${visitedPins}
-      <text x="140" y="354" fill="rgba(255,255,255,0.2)" font-size="7.5" text-anchor="middle">
-        ${conquered}/${HEXES.length} 권역 정복 · 전국 1,393개 전통시장
-      </text>
-    </svg>
-    <div class="hex-btn-layer">${hexBtns}</div>
-  </div>`;
+  return `<svg viewBox="0 0 280 360" xmlns="http://www.w3.org/2000/svg"
+    style="max-height:260px;width:100%;display:block;pointer-events:auto">
+    <rect width="280" height="360" fill="transparent"/>
+    ${connLines}${hexSVG}${visitedPins}
+    ${hexClickAreas}
+    <text x="140" y="354" fill="rgba(255,255,255,0.2)" font-size="7.5" text-anchor="middle">
+      ${conquered}/${HEXES.length} 권역 정복 · 전국 1,393개 전통시장
+    </text>
+  </svg>`;
 }
 
 // ── 드릴다운 ─────────────────────────────────────────────────────
@@ -4736,10 +4720,11 @@ function renderSidoMap(regionId, visitedMkts, visitedRegions){
       return `
         <polygon points="${pts}" fill="rgba(10,12,22,0.82)"
           stroke="rgba(255,255,255,${(0.1+ratio*0.25).toFixed(2)})" stroke-width="0.8"
-          onclick="drillDownMap('${regionId}','${sido}')" style="cursor:pointer"/>
+          style="cursor:pointer"/>
         <text x="${x}" y="${y-5}" fill="rgba(255,255,255,${(0.35+ratio*0.4).toFixed(2)})"
-          font-size="9" text-anchor="middle" font-weight="500"
-          onclick="drillDownMap('${regionId}','${sido}')" style="cursor:pointer">${sido}</text>
+          font-size="9" text-anchor="middle" font-weight="500">${sido}</text>
+        <polygon points="${hexPts(x,y,R+4)}" fill="transparent" style="cursor:pointer"
+          onclick="drillDownMap('${regionId}','${sido}')"/>
         <text x="${x}" y="${y+7}" fill="rgba(255,255,255,${(0.2+ratio*0.3).toFixed(2)})"
           font-size="7.5" text-anchor="middle">${info.total}개</text>
         <text x="${x}" y="${y+18}" fill="rgba(255,255,255,0.2)"
