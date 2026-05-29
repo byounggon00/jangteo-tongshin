@@ -2132,8 +2132,11 @@ function renderSigunguMap(regionId, sidoId, visitedMkts){
 }
 function openSaleTab(){
  saleOnly = true;
- setSort('latest');
- window.scrollTo({top:0,behavior:'smooth'});
+ renderGrid();
+ window.scrollTo({top:0,behavior:'instant'});
+ const bar = document.getElementById('saleFeedBar');
+ if(bar){ bar.classList.add('show'); }
+ toast('⚡ 마감세일 모아보기');
 }
 function updateSaleBadge(){
  const cnt = getActiveSales ? getActiveSales().length : 0;
