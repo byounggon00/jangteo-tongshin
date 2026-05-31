@@ -1934,6 +1934,18 @@ function drillUpMap(){
  }
  refreshMapWrap();
 }
+function getRegionFromCoords(lat, lng){
+ if(!lat || !lng) return null;
+ let closest = null;
+ let minDist = Infinity;
+ for(const mkt of ALL_MKTS){
+  if(!mkt.lat || !mkt.lng) continue;
+  const d = Math.pow(lat-mkt.lat,2) + Math.pow(lng-mkt.lng,2);
+  if(d < minDist){ minDist=d; closest=mkt.region; }
+ }
+ return closest;
+}
+
 function renderGameMapSVG(visitedMkts){
  const visitedRegions = new Set(visitedMkts.map(name=>{
  const m=getMktData(name); return m?m.region:'';
