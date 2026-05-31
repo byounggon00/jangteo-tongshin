@@ -3455,6 +3455,9 @@ function initMapPage(){
   const el = document.getElementById('mapPageContent');
   if(el) renderMapPage(visitedMkts);
   mapScale=1; mapX=0; mapY=0;
+  // 강제 reflow로 스크롤 활성화
+  const pg = document.getElementById('page-map');
+  if(pg){ pg.style.overflow='hidden'; void pg.offsetHeight; pg.style.overflow=''; pg.style.overflowY='auto'; }
   setTimeout(initMapGestures, 300);
  } catch(e){
   console.error('initMapPage error:', e);
@@ -3470,7 +3473,9 @@ function initSalePage(){
  if(!sales.length){
   el.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--text3)"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:700;margin-bottom:8px">진행 중인 마감세일이 없어요</div><div style="font-size:13px">시장 상인분들이 마감세일을 올리면 여기에 표시돼요</div></div>';
   return;
- }
+   const pg2 = document.getElementById('page-sale');
+  if(pg2){ pg2.style.overflow='hidden'; void pg2.offsetHeight; pg2.style.overflow=''; pg2.style.overflowY='auto'; }
+}
  try {
   el.innerHTML = sales.map(p=>renderFeedCard(p)).join('');
  } catch(e) {
