@@ -3468,6 +3468,8 @@ function initMapPage(){
   setTimeout(initMapGestures, 300);
  } catch(e){
   console.error('initMapPage error:', e);
+  const el2 = document.getElementById('mapPageContent');
+  if(el2) el2.innerHTML = '<div style="padding:20px;color:red;font-size:14px">오류: '+e.message+'</div>';
  }
 }
 
