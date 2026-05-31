@@ -3428,8 +3428,8 @@ function showPage(id){
  const toEl=document.getElementById('page-'+id);
  if(toEl){ toEl.style.display='block'; toEl.scrollTop=0; }
  currentPage=id;
- if(id==='map') initMapPage();
- if(id==='sale') initSalePage();
+ if(id==='map'){ initMapPage(); const p=document.getElementById('page-map'); if(p){p.scrollTop=0;} }
+ if(id==='sale'){ initSalePage(); const p=document.getElementById('page-sale'); if(p){p.scrollTop=0;} }
  if(id==='checklist') initChecklistPage();
  if(id==='profile') initProfilePage();
 }
@@ -3445,9 +3445,8 @@ function initMapPage(){
   mapScale=1; mapX=0; mapY=0;
   setTimeout(initMapGestures, 300);
  } catch(e){
-  console.error('initMapPage error:', e);
-  const el2 = document.getElementById('mapPageContent');
-  if(el2) el2.innerHTML = '<div style="padding:20px;color:red;font-size:14px">오류: '+e.message+'</div>';
+  const el2=document.getElementById('mapPageContent');
+  if(el2) el2.innerHTML='<div style="padding:20px;color:red">오류:'+e.message+'<br>'+e.stack+'</div>';
  }
 }
 
