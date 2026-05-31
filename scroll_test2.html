@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { overflow-x:hidden; }
+.hdr { background:#111; position:sticky; top:0; height:54px; display:flex; align-items:center; padding:0 16px; color:white; font-size:16px; z-index:200; width:100%; }
+.app-pages { position:fixed; top:54px; left:0; right:0; bottom:56px; overflow:hidden; z-index:100; }
+.app-page { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; background:#faf8f4; -webkit-overflow-scrolling:touch; touch-action:pan-y; }
+.bottom-nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:#fff; border-top:1px solid #ddd; display:flex; z-index:500; }
+.bnav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; }
+/* 작전지도와 동일한 dark card */
+.game-map-card { background:linear-gradient(160deg,#0a0e1a,#131b2e); margin:0; position:relative; }
+</style>
+</head>
+<body>
+<div class="hdr">시장정복단 - 스크롤 테스트</div>
+<div class="app-pages">
+  <div class="app-page" id="page-map">
+    <div style="background:linear-gradient(160deg,#0a0e1a,#131b2e);color:white;padding:16px;text-align:center;font-size:14px">
+      ▼ 아래로 스크롤 해보세요 ▼
+    </div>
+    <div class="game-map-card">
+      <div style="padding:16px;color:white;font-size:13px">통계: 시장 3 | 후기 3 | 포인트 0</div>
+      <div style="height:300px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;color:white;font-size:14px">
+        지도 SVG 영역 (300px)
+      </div>
+    </div>
+    <div style="background:#fff;padding:14px 16px;border-bottom:1px solid #eee;font-size:13px;font-weight:700">🏅 배지 컬렉션</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px">
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지1</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지2</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지3</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지4</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지5</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지6</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지7</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지8</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지9</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지10</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지11</div>
+      <div style="height:80px;background:#f0ece4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">배지12</div>
+    </div>
+    <div style="padding:16px;font-size:13px;font-weight:700">미션 목록</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 1</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 2</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 3</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 4</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 5</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 6</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 7</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 8</div>
+    <div style="padding:14px 16px;border-bottom:1px solid #eee;font-size:13px">미션 아이템 9</div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+<div class="bottom-nav">
+  <div class="bnav-btn">🏠<span>홈</span></div>
+  <div class="bnav-btn" style="color:#c13520">🗺️<span>작전지도</span></div>
+  <div class="bnav-btn">⚡<span>마감세일</span></div>
+  <div class="bnav-btn">📋<span>장보기</span></div>
+  <div class="bnav-btn">😊<span>내페이지</span></div>
+</div>
+</body>
+</html>
