@@ -65,7 +65,16 @@
 
  <!-- 홈 페이지 -->
  <div class="app-page active" id="page-home">
-  <main class="main"><div class="feed-col"><div class="sale-feed-bar" id="saleFeedBar" onclick="bnavClick('sale',document.getElementById('bnav-sale'))"><div class="sale-feed-bar-inner"><span class="sale-feed-bar-label">⚡ 마감세일</span><div class="sale-ticker-wrap"><div class="sale-ticker" id="saleTicker"></div></div><div class="sale-ticker-dots" id="saleTickerDots"></div></div>
+  <main class="main"><div class="feed-col"><div class="sale-feed-bar" id="saleFeedBar" onclick="bnavClick('sale',document.getElementById('bnav-sale'))">
+<div class="sale-feed-bar-inner">
+ <span class="sale-feed-bar-label">⚡ 마감세일</span>
+ <div class="sale-ticker-wrap">
+  <div class="sale-ticker" id="saleTicker">
+   <div class="sale-ticker-item"><strong>마약김밥</strong> <span>30% 할인</span> <span class="sale-ticker-timer">로딩중...</span></div>
+  </div>
+ </div>
+ <div class="sale-ticker-dots" id="saleTickerDots"><div class="sale-ticker-dot on"></div></div>
+</div>
 </div>
 <div class="quick-review-bar" onclick="toggleQuickPanel()"><span class="quick-review-icon">📸</span><span class="quick-review-label">지금 시장에 있어요? 30초 후기</span><span class="quick-review-sub">사진 + 한 줄만</span><span class="quick-review-toggle" id="quickToggleArrow">▼</span></div><div class="quick-panel" id="quickPanel"><div><div class="pflabel" style="margin-bottom:6px">📷 사진 선택</div><div style="display:flex;gap:8px"><label class="photo-upload-btn" style="flex:1;padding:10px 6px;cursor:pointer" for="quickCamInput"><span class="photo-upload-btn-icon">📷</span><span class="photo-upload-btn-label">카메라</span></label><label class="photo-upload-btn" style="flex:1;padding:10px 6px;cursor:pointer" for="quickGalInput"><span class="photo-upload-btn-icon">🖼️</span><span class="photo-upload-btn-label">갤러리</span></label></div><div id="quickPreview" style="display:flex;gap:8px;overflow-x:auto;padding:4px 0;min-height:0;margin-top:6px"></div></div><div><div class="pflabel" style="margin-bottom:6px">🏮 시장 선택</div><input class="mkt-search" id="quickMktSearch" placeholder="시장 이름 검색..." autocomplete="off"><div class="mkt-dropdown" id="quickMktDropdown"></div><div class="mkt-selected" id="quickMktSelected" style="display:none"></div><div class="quick-mkt-row" id="quickMkts" style="margin-top:6px"></div></div><div><div class="pflabel" style="margin-bottom:6px">🏪 상점 (선택)</div><input type="text" id="quickShop" style="width:100%;padding:9px 12px;border-radius:var(--rsm);border:1px solid var(--border);font-size:13px;font-family:inherit;background:var(--bg);outline:none;" placeholder="상점명 입력" autocomplete="off"><div class="shop-dropdown" id="quickShopDropdown"></div></div><div class="quick-input-row"><input class="quick-text" id="quickText" placeholder="한 줄 후기" maxlength="80"><button class="quick-submit" id="qSubmitBtn">올리기</button></div></div><div class="feed-sort-bar"><button class="sort-tab on" id="sortTabLatest" onclick="setSort('latest')"><span class="sort-icon">🕐</span> 최신순
       </button><div class="sort-divider"></div><button class="sort-tab" id="sortTabLikes" onclick="setSort('likes')"><span class="sort-icon">🔥</span> 인기순
@@ -2557,6 +2566,7 @@ function renderMapPage(visitedMkts){
     <div style="font-size:9px;color:rgba(255,200,50,.7);margin-top:3px;font-weight:600">P 포인트</div>
    </div>
   </div>
+  </div></div>
   <div style="background:#fff;border-bottom:1px solid var(--border)">${renderBadgeSection()}</div>
   <div class="game-map-card" style="margin-top:0;border-radius:0">
    <div class="game-map-wrap" id="gameMapWrap">
@@ -3857,6 +3867,22 @@ function closeBdPopup(){
  if(!pop||!inner) return;
  inner.style.transform = 'translateY(100%)';
  setTimeout(()=>{ pop.style.display='none'; }, 280);
+}
+
+function addCLItem(){
+ const input = document.getElementById('clAddInput');
+ if(!input) return;
+ const text = input.value.trim();
+ if(!text) return;
+ CL.push({id:Date.now(), text, done:false});
+ localStorage.setItem('jtt4_cl', JSON.stringify(CL));
+ input.value = '';
+ renderCLBody();
+}
+function clearDoneCL(){
+ CL = CL.filter(i=>!i.done);
+ localStorage.setItem('jtt4_cl', JSON.stringify(CL));
+ renderCLBody();
 }
 setInterval(()=>{ renderSaleFeedBar(); renderGrid(); updateSaleBadge(); updateSaleCounter(); }, 30000);
 </script>
