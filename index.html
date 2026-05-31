@@ -79,7 +79,7 @@
 <div class="quick-review-bar" onclick="toggleQuickPanel()"><span class="quick-review-icon">📸</span><span class="quick-review-label">지금 시장에 있어요? 30초 후기</span><span class="quick-review-sub">사진 + 한 줄만</span><span class="quick-review-toggle" id="quickToggleArrow">▼</span></div><div class="quick-panel" id="quickPanel"><div><div class="pflabel" style="margin-bottom:6px">📷 사진 선택</div><div style="display:flex;gap:8px"><label class="photo-upload-btn" style="flex:1;padding:10px 6px;cursor:pointer" for="quickCamInput"><span class="photo-upload-btn-icon">📷</span><span class="photo-upload-btn-label">카메라</span></label><label class="photo-upload-btn" style="flex:1;padding:10px 6px;cursor:pointer" for="quickGalInput"><span class="photo-upload-btn-icon">🖼️</span><span class="photo-upload-btn-label">갤러리</span></label></div><div id="quickPreview" style="display:flex;gap:8px;overflow-x:auto;padding:4px 0;min-height:0;margin-top:6px"></div></div><div><div class="pflabel" style="margin-bottom:6px">🏮 시장 선택</div><input class="mkt-search" id="quickMktSearch" placeholder="시장 이름 검색..." autocomplete="off"><div class="mkt-dropdown" id="quickMktDropdown"></div><div class="mkt-selected" id="quickMktSelected" style="display:none"></div><div class="quick-mkt-row" id="quickMkts" style="margin-top:6px"></div></div><div><div class="pflabel" style="margin-bottom:6px">🏪 상점 (선택)</div><input type="text" id="quickShop" style="width:100%;padding:9px 12px;border-radius:var(--rsm);border:1px solid var(--border);font-size:13px;font-family:inherit;background:var(--bg);outline:none;" placeholder="상점명 입력" autocomplete="off"><div class="shop-dropdown" id="quickShopDropdown"></div></div><div class="quick-input-row"><input class="quick-text" id="quickText" placeholder="한 줄 후기" maxlength="80"><button class="quick-submit" id="qSubmitBtn">올리기</button></div></div><div class="feed-sort-bar"><button class="sort-tab on" id="sortTabLatest" onclick="setSort('latest')"><span class="sort-icon">🕐</span> 최신순
       </button><div class="sort-divider"></div><button class="sort-tab" id="sortTabLikes" onclick="setSort('likes')"><span class="sort-icon">🔥</span> 인기순
       </button><div class="sort-divider"></div><button class="sort-tab" id="sortTabNear" onclick="setSort('near')"><span class="sort-icon">📍</span> 거리순
-      </button></div><div id="nearSection" style="display:none"><div class="section-hdr"><span class="section-hdr-title">📍 근처 시장 후기</span><span class="section-hdr-sub" id="nearSubtitle"></span></div></div><div class="grid" id="grid"></div></div></main><aside class="sidebar" id="sidebar"></aside>
+      </button></div><div id="nearSection" style="display:none"><div class="section-hdr"><span class="section-hdr-title">📍 근처 시장 후기</span><span class="section-hdr-sub" id="nearSubtitle"></span></div></div><div class="grid" id="grid"></div></div></div></main><aside class="sidebar" id="sidebar"></aside>
  </div>
 
  <!-- 작전지도 페이지 -->
@@ -296,16 +296,6 @@ function getLocationHint(mktName, lat, lng){
  const distStr = minDist < 10 ? '바로 앞' : minDist < 30 ? '약 ' + Math.round(minDist/10)*10 + 'm' : minDist < 100 ? '약 ' + Math.round(minDist/10)*10 + 'm' : null;
  if(!distStr) return null; 
  return `${nearest.name} ${distStr}`;
-}
-function fetchLocationHint(mktName){
- return new Promise((resolve)=>{
- if(!navigator.geolocation){ resolve(null); return; }
- navigator.geolocation.getCurrentPosition(
- pos => resolve(getLocationHint(mktName, pos.coords.latitude, pos.coords.longitude)),
- () => resolve(null),
- {timeout:5000, maximumAge:30000}
- );
- });
 }
 function fmtNum(n){ return Number(n||0).toLocaleString('ko-KR'); }
 function fmtWon(n){ return Number(n||0).toLocaleString('ko-KR')+'원'; }
@@ -553,6 +543,28 @@ const SEEDS = [
    caption:'속초 하면 닭강정, 닭강정 하면 여기 🍗\n새벽 2시까지 해요. 양념이 달달하고 중독적. 500g에 9,000원인데 두 명이서 먹어도 배불러요.',
    tags:['속초','닭강정','관광수산시장','강원도'],likes:103,
    time:'1개월 전',comments:[{author:'속초단골',avatar:'🍗',text:'아바이순대도 꼭 드세요!'}]},
+
+ {id:901, type:'sale', author:'광장시장', avatar:'🥟',
+  market:'광장시장', shop:'마약김밥 원조',
+  saleItem:'마약김밥', saleDiscount:'30% 할인',
+  saleEndMs: Date.now() + 6*60*60*1000,
+  saleStock:20, photos:['🍙'],
+  caption:'오늘 마감 30분 전까지 마약김밥 30% 할인!',
+  tags:['광장시장','마감세일'], likes:12, comments:[], time:'방금 전'},
+ {id:902, type:'sale', author:'망원시장', avatar:'🍗',
+  market:'망원시장', shop:'큐스닭강정',
+  saleItem:'닭강정 1kg', saleDiscount:'20% 할인',
+  saleEndMs: Date.now() + 4*60*60*1000,
+  saleStock:5, photos:['🍗'],
+  caption:'마감 2시간 전! 닭강정 1kg 20% 할인 😱',
+  tags:['망원시장','마감세일'], likes:28, comments:[], time:'30분 전'},
+ {id:903, type:'sale', author:'통인시장', avatar:'🍢',
+  market:'통인시장', shop:'기름떡볶이 골목',
+  saleItem:'도시락 세트', saleDiscount:'엽전 5개→3개',
+  saleEndMs: Date.now() + 2*60*60*1000,
+  saleStock:8, photos:['🍢'],
+  caption:'오늘 영업 마감 1시간 전! 엽전 도시락 세트 특가 🔥',
+  tags:['통인시장','마감세일'], likes:19, comments:[], time:'1시간 전'},
 ];
 let S = {
  posts: (() => {
@@ -591,8 +603,6 @@ function save(){
 }
 let saleOnly = false;
 let FW = JSON.parse(localStorage.getItem('jtt4_fw')||'{}');
-function saveFW(){ localStorage.setItem('jtt4_fw', JSON.stringify(FW)); }
-function saveCL(){ localStorage.setItem('jtt4_cl', JSON.stringify(clItems)); }
 function haversine(lat1,lng1,lat2,lng2){
  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
@@ -863,7 +873,6 @@ function closeMktPage(){
  document.getElementById('mktoverlay').classList.remove('open');
  document.body.style.overflow = '';
 }
-function closeMktOut(e){ if(e.target===document.getElementById('mktoverlay')) closeMktPage(); }
 function switchMktTab(btn, tab){
  document.querySelectorAll('.mkt-tab').forEach(b=>b.classList.remove('on'));
  btn.classList.add('on');
@@ -1380,7 +1389,6 @@ function addDCmt(){
  inp.value='';save();renderDCmts(p);renderGrid();renderSidebar();
  checkBadge('comment');
 }
-function closeDetail(){ hideOverlay('doverlay');document.body.style.overflow='';S.cur=null; }
 function closeDOut(e){ if(e.target===document.getElementById('doverlay')) closeDetail(); }
 function openUpload(){
  S.uStar=5;S.uPics=[];S.uMarket=null;
@@ -1430,8 +1438,6 @@ function openUpload(){
  showOverlay('uoverlay');
  document.body.style.overflow='hidden';
 }
-function closeUpload(){ hideOverlay('uoverlay');document.body.style.overflow=''; }
-function closeUOut(e){ if(e.target===document.getElementById('uoverlay')) closeUpload(); }
 function searchMkt(q){
  const dd = document.getElementById('mktDropdown');
  S.uMarket = null;
@@ -1547,11 +1553,6 @@ function openProfile(){
  renderProfileModal();
  showOverlay('poverlay');
  document.body.style.overflow = 'hidden';
-}
-function closeProfile(){
- hideOverlay('poverlay');
- document.body.style.overflow = '';
- P.editing = false;
 }
 function closePOut(e){ if(e.target===document.getElementById('poverlay')) closeProfile(); }
 function renderProfileModal(){
@@ -1997,24 +1998,6 @@ const DRILL_DATA = {"서울": {"서울": {"total": 195, "sigungu": {"종로구":
 let mapDrillRegion = null; 
 let mapDrillSido = null; 
 let mapDrillSigungu= null; 
-function refreshMapWrap(){
- const visitedMkts = [...new Set(
- S.posts.filter(p=>p.author===P.name||p.author==='나').map(p=>p.market)
- )];
- const wrap = document.getElementById('gameMapWrap');
- if(!wrap) return;
- const svg = wrap.querySelector('svg');
- if(svg){ svg.style.opacity='0'; svg.style.transition='opacity .15s'; }
- setTimeout(()=>{
- wrap.innerHTML = renderGameMapSVG(visitedMkts);
- addZoomButtons(wrap);
- const s2=wrap.querySelector('svg');
- if(s2){ s2.style.opacity='0'; s2.style.transition='opacity .2s';
- setTimeout(()=>{ s2.style.opacity='1'; },30); }
- mapScale=1; mapX=0; mapY=0;
- setTimeout(initMapGestures, 150);
- }, 150);
-}
 function drillDownMap(regionId, sidoId){
  if(sidoId){
  mapDrillRegion = regionId;
@@ -2032,14 +2015,6 @@ function drillUpMap(){
  mapDrillRegion = null;
  }
  refreshMapWrap();
-}
-function addZoomButtons(wrap){
- const div = document.createElement('div');
- div.className = 'game-map-zoom-btns';
- div.innerHTML = `
- ${mapDrillRegion ? `<button class="game-map-zoom-btn" onclick="drillUpMap()" title="전체보기" style="font-size:10px">◀</button>` : ''}
- <button class="game-map-zoom-btn" onclick="mapZoom(0.3)" title="확대">+</button><button class="game-map-zoom-btn" onclick="mapZoom(-0.3)" title="축소">−</button><button class="game-map-zoom-btn" onclick="mapZoomReset()" title="초기화" style="font-size:11px">↺</button>`;
- wrap.appendChild(div);
 }
 function renderGameMapSVG(visitedMkts){
  const visitedRegions = new Set(visitedMkts.map(name=>{
@@ -2422,7 +2397,6 @@ function toggleCL(id){
  saveCL(); renderCLBody();
 }
 function deleteCL(id){ CL=CL.filter(x=>x.id!==id); saveCL(); renderCLBody(); }
-function clearDoneCL(){ CL=CL.filter(i=>!i.done); saveCL(); renderCLBody(); }
 function openMapTab(){ bnavClick('map', document.getElementById('bnav-map')); }
 function closeMapPage(){ bnavClick('home', document.getElementById('bnav-home')); }
 function renderMapPage(visitedMkts){
@@ -2738,11 +2712,6 @@ function toggleMktSection(id){
  const isOpen=el.style.display!=='none';
  el.style.display=isOpen?'none':'block';
  if(tog) tog.textContent=isOpen?'▶':'▼';
-}
-function toggleMktDetail(id){
- const el=document.getElementById(id);
- if(!el) return;
- el.style.display = el.style.display==='none'||!el.style.display ? 'block' : 'none';
 }
 function toggleRegion(id){
  const el=document.getElementById(id);
@@ -3371,29 +3340,7 @@ function addComment(postId){
  if(!text) return;
  const post = S.posts.find(p=>p.id===postId);
  if(!post) return;
- if(!post.comments) post.comments = [
- {id:901, type:'sale', author:'광장시장', avatar:'🥟',
-  market:'광장시장', shop:'마약김밥 원조',
-  saleItem:'마약김밥', saleDiscount:'30% 할인',
-  saleEndMs: Date.now() + 3*60*60*1000,
-  saleStock: 20,
-  photos:['🍙'], caption:'오늘 마감 30분 전까지 마약김밥 30% 할인!',
-  tags:['광장시장','마감세일'], likes:12, comments:[], time:'방금 전'},
- {id:902, type:'sale', author:'망원시장', avatar:'🍗',
-  market:'망원시장', shop:'큐스닭강정',
-  saleItem:'닭강정 1kg', saleDiscount:'20% 할인',
-  saleEndMs: Date.now() + 2*60*60*1000,
-  saleStock: 5,
-  photos:['🍗'], caption:'마감 2시간 전! 닭강정 1kg 20% 할인 😱',
-  tags:['망원시장','마감세일'], likes:28, comments:[], time:'30분 전'},
- {id:903, type:'sale', author:'통인시장', avatar:'🍢',
-  market:'통인시장', shop:'기름떡볶이 골목',
-  saleItem:'도시락 세트', saleDiscount:'엽전 5개→3개',
-  saleEndMs: Date.now() + 1*60*60*1000,
-  saleStock: 8,
-  photos:['🍢'], caption:'오늘 영업 마감 1시간 전! 엽전 도시락 세트 특가 🔥',
-  tags:['통인시장','마감세일'], likes:19, comments:[], time:'1시간 전'},
-];
+ if(!post.comments) post.comments = [];
  post.comments.push({
   author: P.name||'나',
   avatar: P.avatar||'😊',
@@ -3402,7 +3349,6 @@ function addComment(postId){
  });
  save();
  input.value = '';
- // 댓글 목록 갱신
  const el = document.getElementById('dComments');
  if(el) el.innerHTML = post.comments.map(cm=>`
   <div class="dcmt">
@@ -3414,10 +3360,6 @@ function addComment(postId){
    </div>
   </div>`).join('');
 }
-
-
-
-
 
 function closeBD(){ hideOverlay('bdoverlay'); document.body.style.overflow=''; }
 function closeBDOut(e){ if(e.target===document.getElementById('bdoverlay')) closeBD(); }
@@ -3679,45 +3621,86 @@ function renderProfile(){ renderProfileModal(); }
 function initProfilePage(){
  const el = document.getElementById('profilePageContent');
  if(!el) return;
+ const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
+ const visitedMkts = [...new Set(myPosts.map(p=>p.market))];
+ const totalLikes = myPosts.reduce((s,p)=>s+(p.likes||0),0);
+ const streak = parseInt(localStorage.getItem('jtt4_streak')||'0');
+ const point = parseInt(localStorage.getItem('jtt4_point')||'0');
+ const badges = calcBadges();
+ const unlockedBadges = badges.filter(b=>b.unlocked);
+
  el.innerHTML = `
-  <div class="pm-hdr-bar" style="display:flex;align-items:center;padding:14px 18px;
-   border-bottom:1px solid var(--border);position:sticky;top:0;
-   background:var(--bg);z-index:10;">
-   <span style="font-size:17px;font-weight:800;flex:1">내 페이지</span>
-   <button onclick="showBadges()" style="background:none;border:none;font-size:20px;cursor:pointer">🏅</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;
+   padding:14px 18px;border-bottom:1px solid var(--border);
+   position:sticky;top:0;background:var(--bg);z-index:10">
+   <span style="font-size:17px;font-weight:800">내 페이지</span>
+   <button onclick="showBadges()" style="background:none;border:none;
+    font-size:20px;cursor:pointer">🏅</button>
   </div>
-  <div style="padding:20px 18px;display:flex;align-items:center;gap:14px;">
-   <div id="pmAv" onclick="toggleAvPicker()"
-    style="width:64px;height:64px;border-radius:50%;background:var(--goldbg);
-    display:flex;align-items:center;justify-content:center;font-size:36px;
-    cursor:pointer;border:2px solid var(--goldbdr);">${P.avatar}</div>
-   <div style="flex:1">
-    <div id="pmNameWrap"><div class="pm-name">${P.name}</div></div>
-    <div id="pmBio" style="font-size:12px;color:var(--text3);margin-top:2px">${P.bio||''}</div>
+
+  <div style="padding:20px 18px;display:flex;align-items:center;gap:16px;
+   border-bottom:1px solid var(--border)">
+   <div onclick="toggleAvPicker()"
+    style="width:68px;height:68px;border-radius:50%;background:var(--goldbg);
+    display:flex;align-items:center;justify-content:center;font-size:40px;
+    cursor:pointer;border:2px solid var(--goldbdr);flex-shrink:0">
+    ${P.avatar||'😊'}
    </div>
-   <button id="pmEditBtn" onclick="toggleEdit()"
-    style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);
-    background:var(--bg2);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">수정</button>
+   <div style="flex:1">
+    <div style="font-size:18px;font-weight:800;color:var(--text)">${P.name||'시장 탐험가'}</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:3px">
+     ${P.bio||'전통시장을 사랑합니다 🏮'}
+    </div>
+   </div>
+   <button onclick="toggleEdit()"
+    style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);
+    background:var(--bg2);font-size:13px;font-weight:700;cursor:pointer;
+    font-family:inherit;flex-shrink:0">수정</button>
   </div>
-  <div id="avPicker" style="display:none;flex-wrap:wrap;gap:8px;padding:0 18px 12px;"></div>
-  <div id="pmStats" style="display:flex;gap:0;border-top:1px solid var(--border);
-   border-bottom:1px solid var(--border);padding:12px 0;margin:0 18px;"></div>
-  <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-top:12px;">
+  <div id="avPicker" style="display:none;flex-wrap:wrap;gap:8px;padding:12px 18px;
+   border-bottom:1px solid var(--border)"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);
+   border-bottom:1px solid var(--border)">
+   <div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)">
+    <div style="font-size:20px;font-weight:800;color:var(--red)">${myPosts.length}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:2px">후기</div>
+   </div>
+   <div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)">
+    <div style="font-size:20px;font-weight:800;color:var(--text)">${visitedMkts.length}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:2px">시장</div>
+   </div>
+   <div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)">
+    <div style="font-size:20px;font-weight:800;color:#f0b030">${point.toLocaleString()}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:2px">포인트</div>
+   </div>
+   <div style="padding:14px 0;text-align:center">
+    <div style="font-size:20px;font-weight:800;color:#b71c1c">${streak}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:2px">🔥연속</div>
+   </div>
+  </div>
+
+  <div style="display:flex;border-bottom:1px solid var(--border)">
    <button class="pm-tab on" id="pmTabPosts" onclick="switchPTab(this,'posts')"
-    style="flex:1;padding:10px;background:none;border:none;font-size:12px;
-    font-weight:700;cursor:pointer;font-family:inherit;border-bottom:2px solid var(--red);">게시물</button>
+    style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;
+    font-weight:700;cursor:pointer;font-family:inherit;
+    border-bottom:2px solid var(--red);color:var(--text)">게시물</button>
    <button class="pm-tab" id="pmTabLiked" onclick="switchPTab(this,'liked')"
-    style="flex:1;padding:10px;background:none;border:none;font-size:12px;
-    font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);">좋아요</button>
+    style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;
+    font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);
+    border-bottom:2px solid transparent">좋아요</button>
    <button class="pm-tab" id="pmTabVisited" onclick="switchPTab(this,'visited')"
-    style="flex:1;padding:10px;background:none;border:none;font-size:12px;
-    font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);">방문 시장</button>
+    style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;
+    font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);
+    border-bottom:2px solid transparent">방문시장</button>
    <button class="pm-tab" id="pmTabFav" onclick="switchPTab(this,'follow')"
-    style="flex:1;padding:10px;background:none;border:none;font-size:12px;
-    font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);">즐겨찾기</button>
+    style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;
+    font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);
+    border-bottom:2px solid transparent">즐겨찾기</button>
   </div>
-  <div id="pmContent" style="flex:1;padding:4px 0;"></div>`;
- setTimeout(renderProfileModal, 30);
+  <div id="pmContent" style="padding:4px 0;flex:1"></div>`;
+
+ setTimeout(()=>{ renderPTab('posts'); }, 30);
 }
 
 function bindFeedEvents(container){
