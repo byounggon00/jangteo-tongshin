@@ -1764,42 +1764,42 @@ function deletePostById(id){
  toast('삭제됐어요');
 }
 const BADGES = [
- {id:'b1', emoji:'🏮', name:'첫 발걸음',    cat:'탐험',
-  desc:'첫 후기 올리기',
-  benefit:'피드에 🏮 배지 표시',
+ {id:'t1', emoji:'👣', name:'첫 발걸음',  cat:'탐험', point:50,
+  desc:'첫 번째 시장 후기 올리기',
   check:(v,p)=>p.length>=1},
- {id:'b2', emoji:'🗺️', name:'시장 단골',    cat:'탐험',
-  desc:'3개 시장 방문',
-  benefit:'작전지도 방문 구역 강조',
+ {id:'t2', emoji:'🏮', name:'시장 단골',  cat:'탐험', point:100,
+  desc:'서로 다른 시장 3곳 방문',
   check:(v,p)=>new Set(p.map(x=>x.market)).size>=3},
- {id:'b3', emoji:'🧭', name:'탐험가',       cat:'탐험',
-  desc:'10개 시장 방문',
-  benefit:'칭호: 시장 탐험가',
+ {id:'t3', emoji:'🧭', name:'탐험가',     cat:'탐험', point:300,
+  desc:'서로 다른 시장 10곳 방문',
   check:(v,p)=>new Set(p.map(x=>x.market)).size>=10},
- {id:'b4', emoji:'⚡', name:'마감 헌터',    cat:'마감',
-  desc:'마감세일 첫 참여',
-  benefit:'마감세일 ⚡ 배지',
+ {id:'t4', emoji:'🏆', name:'전국 정복자',cat:'탐험', point:1000,
+  desc:'서로 다른 시장 25곳 방문',
+  check:(v,p)=>new Set(p.map(x=>x.market)).size>=25},
+ {id:'s1', emoji:'⚡', name:'마감 입문',  cat:'마감', point:50,
+  desc:'마감세일 첫 후기',
   check:(v,p)=>p.filter(x=>x.type==='sale').length>=1},
- {id:'b5', emoji:'🔥', name:'3일 연속',     cat:'연속',
-  desc:'3일 연속 앱 접속',
-  benefit:'홈 화면 불꽃 표시',
+ {id:'s2', emoji:'🔥', name:'마감 고수',  cat:'마감', point:200,
+  desc:'마감세일 후기 5개',
+  check:(v,p)=>p.filter(x=>x.type==='sale').length>=5},
+ {id:'c1', emoji:'📅', name:'3일 연속',   cat:'연속', point:50,
+  desc:'3일 연속 앱 방문',
   check:(v,p)=>v.streak>=3},
- {id:'b6', emoji:'💎', name:'7일 개근',     cat:'연속',
-  desc:'7일 연속 앱 접속',
-  benefit:'칭호: 시장 단골손님',
+ {id:'c2', emoji:'💎', name:'7일 개근',   cat:'연속', point:150,
+  desc:'7일 연속 앱 방문',
   check:(v,p)=>v.streak>=7},
- {id:'b7', emoji:'👑', name:'한달 마스터',  cat:'연속',
-  desc:'30일 연속 앱 접속',
-  benefit:'칭호: 시장 마스터',
+ {id:'c3', emoji:'👑', name:'한달 마스터',cat:'연속', point:500,
+  desc:'30일 연속 앱 방문',
   check:(v,p)=>v.streak>=30},
- {id:'b8', emoji:'✍️', name:'기록가',       cat:'기록',
+ {id:'r1', emoji:'✍️', name:'기록가',     cat:'기록', point:100,
   desc:'후기 5개 작성',
-  benefit:'프로필 기록가 마크',
   check:(v,p)=>p.length>=5},
- {id:'b9', emoji:'❤️', name:'인기인',       cat:'기록',
-  desc:'내 게시물 좋아요 10개',
-  benefit:'프로필 ❤️ 표시',
-  check:(v,p)=>p.reduce((s,x)=>s+(x.likes||0),0)>=10},
+ {id:'r2', emoji:'📖', name:'시장 작가',  cat:'기록', point:300,
+  desc:'후기 20개 작성',
+  check:(v,p)=>p.length>=20},
+ {id:'r3', emoji:'❤️', name:'인기 게시자',cat:'기록', point:200,
+  desc:'좋아요 합계 20개',
+  check:(v,p)=>p.reduce((s,x)=>s+(x.likes||0),0)>=20},
 ];
 function calcBadges(){
  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
@@ -1810,29 +1810,78 @@ function calcBadges(){
 function renderBadgeSection(){
  const badges = calcBadges();
  const unlocked = badges.filter(b=>b.unlocked).length;
+ const totalPoint = parseInt(localStorage.getItem('jtt4_point')||'0');
+
+ const CAT = {
+  '탐험': {icon:'🗺️', color:'#1a6b3c', bg:'#e8f5ed', border:'#7bc99a'},
+  '마감': {icon:'⚡',  color:'#c05a00', bg:'#fff3e0', border:'#ffb74d'},
+  '연속': {icon:'🔥',  color:'#b71c1c', bg:'#fdecea', border:'#ef9a9a'},
+  '기록': {icon:'✍️', color:'#1565c0', bg:'#e3f2fd', border:'#90caf9'},
+ };
+
+ const grid = ['탐험','마감','연속','기록'].map(cat=>{
+  const meta = CAT[cat];
+  const list = badges.filter(b=>b.cat===cat);
+  return list.map(b=>`
+   <div onclick="showBadges()" style="
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:10px 4px;border-radius:12px;cursor:pointer;
+    border:1.5px solid ${b.unlocked?meta.border:'var(--border)'};
+    background:${b.unlocked?meta.bg:'var(--bg2)'};
+    opacity:${b.unlocked?1:0.45}">
+    <div style="font-size:22px">${b.unlocked?b.emoji:'🔒'}</div>
+    <div style="font-size:8.5px;font-weight:700;text-align:center;line-height:1.2;
+     color:${b.unlocked?meta.color:'var(--text3)'}">${b.name}</div>
+    <div style="font-size:8px;font-weight:700;
+     color:${b.unlocked?'#b8860b':'var(--text3)'};
+     background:${b.unlocked?'#fff8dc':'transparent'};
+     padding:1px 4px;border-radius:4px">
+     ${b.unlocked?'+':''}${b.point}P</div>
+   </div>`).join('');
+ }).join('');
+
  return `
- <div style="padding:14px 16px 6px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:var(--text2)">🏅 배지 컬렉션</span><span style="font-size:11px;color:var(--text3)">${unlocked}/${badges.length} 달성</span></div><div class="badge-grid">
- ${badges.map(b=>`
- <div class="badge-item ${b.unlocked?'unlocked':'locked'}" title="${b.desc}"><div class="badge-emoji">${b.unlocked?b.emoji:'🔒'}</div><div class="badge-name">${b.name}</div>
- ${!b.unlocked?`<div style="font-size:9px;color:var(--text3);line-height:1.3;margin-top:1px">${b.desc}</div>`:''}
- </div>`).join('')}
- </div>
- ${unlocked<badges.length?`<div style="padding:0 16px 14px;font-size:11px;color:var(--text3);text-align:center">
- 🔒 잠긴 배지 ${badges.length-unlocked}개 — 탭해서 달성 조건 확인
- </div>`:''}`;
+  <div style="padding:12px 16px 6px;display:flex;align-items:center;justify-content:space-between">
+   <span style="font-size:13px;font-weight:800;color:var(--text)">🏅 배지 컬렉션</span>
+   <span style="font-size:11px;font-weight:700;color:#b8860b;
+    background:#fff8dc;border:1px solid #e6c84a;border-radius:8px;padding:2px 8px;cursor:pointer"
+    onclick="showBadges()">
+    ${totalPoint.toLocaleString()}P · ${unlocked}/${badges.length}달성</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:8px 16px 14px">
+   ${grid}
+  </div>
+  ${unlocked<badges.length?`
+  <div onclick="showBadges()" style="margin:0 16px 14px;padding:8px 12px;
+   background:var(--bg2);border-radius:10px;cursor:pointer;
+   font-size:11px;color:var(--text3);text-align:center">
+   🔒 잠긴 배지 ${badges.length-unlocked}개 — 탭해서 달성 조건 확인
+  </div>`:''}`;
 }
 function checkNewBadges(){
- const earned = JSON.parse(localStorage.getItem('jtt4_earned_badges')||'[]');
  const badges = calcBadges();
- let newBadge = null;
+ const earned = JSON.parse(localStorage.getItem('jtt4_earned_badges')||'[]');
+ let newPoint = 0;
+ const newBadges = [];
  badges.forEach(b=>{
- if(b.unlocked && !earned.includes(b.id)){
- earned.push(b.id);
- localStorage.setItem('jtt4_earned_badges', JSON.stringify(earned));
- if(!newBadge) newBadge = b;
- }
+  if(b.unlocked && !earned.includes(b.id)){
+   earned.push(b.id);
+   newPoint += (b.point||0);
+   newBadges.push(b);
+  }
  });
- if(newBadge) setTimeout(()=>showBadgeUnlock(newBadge), 600);
+ if(newBadges.length){
+  localStorage.setItem('jtt4_earned_badges', JSON.stringify(earned));
+  // 포인트 적립
+  const cur = parseInt(localStorage.getItem('jtt4_point')||'0');
+  localStorage.setItem('jtt4_point', cur + newPoint);
+  // 토스트
+  newBadges.forEach((b,i)=>{
+   setTimeout(()=>{
+    toast(`🏅 ${b.emoji} ${b.name} 달성! +${b.point.toLocaleString()}P`, 3000);
+   }, i*1200);
+  });
+ }
 }
 
 let _currentBadge = null;
@@ -2489,14 +2538,33 @@ function renderMapPage(visitedMkts){
  }).join('')}
  </div>`:'';
  el.innerHTML = `
- <div class="game-map-card"><div class="game-title-bar" style="padding:16px 18px 8px;flex-direction:column;align-items:stretch;gap:10px"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)">🚩 시장정복단</div><button class="game-share-btn" onclick="openShareCard()">📸 공유</button></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 8px;text-align:center"><div style="font-size:30px;font-weight:700;color:#f87171;line-height:1">${visitedMkts.length}</div><div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">시장 / ${total}</div></div><div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 8px;text-align:center"><div style="font-size:30px;font-weight:700;color:#f0b030;line-height:1">${myPosts.length}</div><div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">후기</div></div><div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 8px;text-align:center"><div style="font-size:30px;font-weight:700;color:#4ade80;line-height:1">${xp}</div><div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">XP</div></div></div>
- ${nextRank?`<div style="background:rgba(240,176,48,.1);border:1px solid rgba(240,176,48,.2);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px"><div style="flex:1"><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:3px">${nextRank.emoji} ${nextRank.title} 승급까지</div><div style="height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden"><div style="height:100%;width:${xpPct}%;background:linear-gradient(90deg,#f0b030,#e87020);border-radius:2px"></div></div></div><div style="font-size:11px;font-weight:700;color:#f0b030;flex-shrink:0">${visitedMkts.length}/${nextRank.min}</div></div>`:`<div style="text-align:center;font-size:12px;color:#f0b030;font-weight:700">🏴‍☠️ 최고 등급!</div>`}
- </div><div class="game-map-wrap" id="gameMapWrap">
+  <div class="game-map-card">
+   <div class="game-title-bar" style="padding:16px 18px 8px;flex-direction:column;align-items:stretch;gap:10px"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)">🚩 시장정복단</div><button class="game-share-btn" onclick="openShareCard()">📸 공유</button></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+   <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 4px;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:#f87171;line-height:1">${visitedMkts.length}</div>
+    <div style="font-size:9px;color:rgba(255,255,255,.45);margin-top:3px">시장</div>
+   </div>
+   <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 4px;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:#f0b030;line-height:1">${myPosts.length}</div>
+    <div style="font-size:9px;color:rgba(255,255,255,.45);margin-top:3px">후기</div>
+   </div>
+   <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 4px;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:#4ade80;line-height:1">${xp}</div>
+    <div style="font-size:9px;color:rgba(255,255,255,.45);margin-top:3px">XP</div>
+   </div>
+   <div style="background:rgba(255,200,50,.12);border:1.5px solid rgba(255,200,50,.35);border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer" onclick="showBadges()">
+    <div style="font-size:24px;font-weight:700;color:#fbbf24;line-height:1">${parseInt(localStorage.getItem('jtt4_point')||'0').toLocaleString()}</div>
+    <div style="font-size:9px;color:rgba(255,200,50,.7);margin-top:3px;font-weight:600">P 포인트</div>
+   </div>
+  </div>
+  <div style="background:#fff;border-bottom:1px solid var(--border)">${renderBadgeSection()}</div>
+  <div class="game-map-card" style="margin-top:0;border-radius:0">
+   <div class="game-map-wrap" id="gameMapWrap">
  ${renderGameMapSVG(visitedMkts)}
- <div class="game-map-zoom-btns"><button class="game-map-zoom-btn" onclick="mapZoom(0.3)">+</button><button class="game-map-zoom-btn" onclick="mapZoom(-0.3)">−</button><button class="game-map-zoom-btn" onclick="mapZoomReset()" style="font-size:11px">↺</button></div></div><div style="padding:0 16px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:1px">정복 현황</div><div class="game-regions">${regionChips}</div><div class="game-missions"><div class="game-missions-title">📜 오늘의 정복 미션</div>
- ${missionItems}
- </div></div><div style="background:#fff;border-bottom:1px solid var(--border)">${renderBadgeSection()}</div>
- ${nextTargetHtml}
+ <div class="game-map-zoom-btns"><button class="game-map-zoom-btn" onclick="mapZoom(0.3)">+</button><button class="game-map-zoom-btn" onclick="mapZoom(-0.3)">−</button><button class="game-map-zoom-btn" onclick="mapZoomReset()" style="font-size:11px">↺</button></div></div>
+   <div class="game-map-zoom-btns"><button class="game-map-zoom-btn" onclick="mapZoom(0.3)">+</button><button class="game-map-zoom-btn" onclick="mapZoom(-0.3)">−</button><button class="game-map-zoom-btn" onclick="mapZoomReset()" style="font-size:11px">↺</button></div>
+  </div>
+  ${nextTargetHtml}
  <div style="padding:12px 16px 6px"><div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px">📊 지역별 방문 현황</div><div style="font-size:10px;color:var(--text3);margin-bottom:8px">전국 1,393개 전통시장 · 소상공인시장진흥공단 2025</div><div style="background:#fff;border-radius:var(--r);border:1px solid var(--border);overflow:hidden">${regionRows}</div></div><div style="height:20px"></div>
  `;
  setTimeout(initMapGestures, 100);
@@ -2531,14 +2599,32 @@ function getActiveSales(){
  return S.posts.filter(p=>p.type==='sale' && isSaleActive(p));
 }
 function renderSaleFeedBar(){
+ // sale SEEDS 즉시 갱신 (미리보기/첫 로드 대비)
+ const saleSEEDS = SEEDS.filter(s=>s.type==='sale');
+ saleSEEDS.forEach(ss=>{
+  const ex = S.posts.find(p=>p.id===ss.id);
+  if(ex){ ex.saleEndMs = Date.now()+6*60*60*1000; ex.type='sale'; }
+  else { S.posts.unshift(Object.assign({},ss,{saleEndMs:Date.now()+6*60*60*1000})); }
+ });
  const sales = getActiveSales();
  const bar = document.getElementById('saleFeedBar');
  if(!bar) return;
  if(!sales.length){ bar.style.display='none'; return; }
  bar.style.display='flex';
- const ticker = bar.querySelector('.sale-ticker-text');
+ // 티커 텍스트 업데이트
+ const ticker = document.getElementById('saleTicker');
+ const dots = document.getElementById('saleTickerDots');
  if(ticker){
- ticker.textContent = sales.map(p=>`📍 ${p.market} · ${p.shop||''} ${p.caption||''}`).join(' ● ');
+  ticker.innerHTML = sales.map(p=>`
+   <div class="sale-ticker-item">
+    <strong>${p.saleItem||p.caption||''}</strong>
+    <span>${p.saleDiscount||''}</span>
+    <span class="sale-ticker-timer">${saleRemaining(p.saleEndMs)||''}</span>
+   </div>`).join('');
+ }
+ if(dots){
+  dots.innerHTML = sales.map((_,i)=>
+   `<div class="sale-ticker-dot${i===0?' on':''}"></div>`).join('');
  }
 }
 function updateSaleCounter(){
@@ -3644,63 +3730,88 @@ function renderBadgePage(){
  const unlocked = badges.filter(b=>b.unlocked).length;
  const streak = parseInt(localStorage.getItem('jtt4_streak')||'0');
  const rank = getExplorerRank();
+ const totalPoint = parseInt(localStorage.getItem('jtt4_point')||'0');
+ const maxPoint = badges.reduce((s,b)=>s+b.point,0);
 
- const CAT_META = {
-  '탐험': {icon:'🗺️', color:'#1a6b3c', bg:'#e8f5ed', border:'#7bc99a', label:'탐험'},
-  '마감': {icon:'⚡', color:'#c05a00', bg:'#fff3e0', border:'#ffb74d', label:'마감세일'},
-  '연속': {icon:'🔥', color:'#b71c1c', bg:'#fdecea', border:'#ef9a9a', label:'연속접속'},
-  '기록': {icon:'✍️', color:'#1565c0', bg:'#e3f2fd', border:'#90caf9', label:'기록'},
+ const CAT = {
+  '탐험': {icon:'🗺️', color:'#1a6b3c', bg:'#e8f5ed', border:'#7bc99a'},
+  '마감': {icon:'⚡',  color:'#c05a00', bg:'#fff3e0', border:'#ffb74d'},
+  '연속': {icon:'🔥',  color:'#b71c1c', bg:'#fdecea', border:'#ef9a9a'},
+  '기록': {icon:'✍️', color:'#1565c0', bg:'#e3f2fd', border:'#90caf9'},
  };
 
- const catSections = ['탐험','마감','연속','기록'].map(cat=>{
-  const meta = CAT_META[cat];
+ const sections = ['탐험','마감','연속','기록'].map(cat=>{
+  const meta = CAT[cat];
   const list = badges.filter(b=>b.cat===cat);
-  const catUnlocked = list.filter(b=>b.unlocked).length;
+  const cu = list.filter(b=>b.unlocked).length;
   const items = list.map(b=>{
-   const bi = badges.indexOf(b);
-   return `<div data-bdidx="${bi}" style="display:flex;flex-direction:column;
-    align-items:center;gap:6px;padding:14px 8px;border-radius:14px;cursor:pointer;
-    border:1.5px solid ${b.unlocked ? meta.border : 'var(--border)'};
-    background:${b.unlocked ? meta.bg : 'var(--bg2)'};
-    opacity:${b.unlocked ? 1 : 0.45};transition:transform .12s;
-    -webkit-tap-highlight-color:transparent">
-    <div style="font-size:28px">${b.unlocked ? b.emoji : '🔒'}</div>
-    <div style="font-size:9.5px;font-weight:700;text-align:center;line-height:1.3;
-     color:${b.unlocked ? meta.color : 'var(--text3)'}">${b.name}</div>
-    ${b.unlocked ? `<div style="font-size:8px;color:${meta.color};font-weight:700;
-     padding:2px 6px;border-radius:8px;background:${meta.bg};
-     border:1px solid ${meta.border}">달성✓</div>` : ''}
+   const i = badges.indexOf(b);
+   return `<div data-bdidx="${i}" style="
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    padding:12px 6px;border-radius:14px;cursor:pointer;
+    border:1.5px solid ${b.unlocked?meta.border:'var(--border)'};
+    background:${b.unlocked?meta.bg:'var(--bg2)'};
+    opacity:${b.unlocked?1:0.45};
+    transition:transform .12s;-webkit-tap-highlight-color:transparent">
+    <div style="font-size:26px">${b.unlocked?b.emoji:'🔒'}</div>
+    <div style="font-size:9px;font-weight:700;text-align:center;line-height:1.3;
+     color:${b.unlocked?meta.color:'var(--text3)'}">${b.name}</div>
+    <div style="font-size:9px;font-weight:700;
+     color:${b.unlocked?'#b8860b':'var(--text3)'};
+     background:${b.unlocked?'#fff8dc':'transparent'};
+     padding:1px 5px;border-radius:6px;">
+     ${b.unlocked?'+':''}${b.point.toLocaleString()}P</div>
    </div>`;
   }).join('');
-  return `<div style="margin-bottom:18px">
-   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;
-    padding:8px 12px;border-radius:10px;
+  return `<div style="margin-bottom:16px">
+   <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;
+    padding:7px 12px;border-radius:10px;
     background:${meta.bg};border:1px solid ${meta.border}">
-    <span style="font-size:18px">${meta.icon}</span>
-    <span style="font-size:12px;font-weight:800;color:${meta.color}">${meta.label}</span>
-    <span style="margin-left:auto;font-size:11px;color:${meta.color};opacity:.8">
-     ${catUnlocked}/${list.length}개</span>
+    <span style="font-size:16px">${meta.icon}</span>
+    <span style="font-size:12px;font-weight:800;color:${meta.color}">${cat}</span>
+    <span style="margin-left:auto;font-size:10px;color:${meta.color};opacity:.8">
+     ${cu}/${list.length}</span>
    </div>
-   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${items}</div>
+   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">${items}</div>
   </div>`;
  }).join('');
 
  el.innerHTML = `
-  <div style="padding:14px 16px 12px;border-bottom:1px solid var(--border);
-   display:flex;align-items:center;gap:12px">
-   <div style="font-size:36px">${rank.icon}</div>
-   <div style="flex:1">
-    <div style="font-size:15px;font-weight:800">${rank.name}</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:2px">
-     배지 ${unlocked}/${badges.length}개
-     ${streak>=1 ? ' · 🔥 '+streak+'일 연속' : ''}</div>
-    <div style="margin-top:6px;height:5px;background:var(--bg2);border-radius:3px">
-     <div style="height:100%;background:var(--red);border-radius:3px;
-      width:${Math.round(unlocked/badges.length*100)}%"></div>
+  <div style="padding:14px 16px 12px;border-bottom:1px solid var(--border)">
+   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div style="font-size:32px">${rank.icon}</div>
+    <div style="flex:1">
+     <div style="font-size:14px;font-weight:800">${rank.name}</div>
+     <div style="font-size:10px;color:var(--text3);margin-top:1px">
+      배지 ${unlocked}/${badges.length}
+      ${streak>=1?' · 🔥 '+streak+'일 연속':''}</div>
+     <div style="margin-top:5px;height:4px;background:var(--bg2);border-radius:2px">
+      <div style="height:100%;background:var(--red);border-radius:2px;
+       width:${Math.round(unlocked/badges.length*100)}%"></div>
+     </div>
+    </div>
+   </div>
+   <div style="background:linear-gradient(135deg,#fffbeb,#fff3c0);
+    border:1.5px solid #e6c84a;border-radius:14px;padding:14px 16px;
+    display:flex;align-items:center;gap:12px">
+    <div style="text-align:center">
+     <div style="font-size:28px;font-weight:900;color:#b8860b;line-height:1">
+      ${totalPoint.toLocaleString()}</div>
+     <div style="font-size:10px;font-weight:700;color:#8b6914;margin-top:2px">포인트</div>
+    </div>
+    <div style="flex:1;border-left:1px solid #e6c84a;padding-left:12px">
+     <div style="font-size:11px;font-weight:700;color:#8b6914;margin-bottom:4px">
+      내 시장 포인트</div>
+     <div style="height:6px;background:#fde68a;border-radius:3px;margin-bottom:4px">
+      <div style="height:100%;background:#d97706;border-radius:3px;
+       width:${Math.min(100,Math.round(totalPoint/maxPoint*100))}%"></div>
+     </div>
+     <div style="font-size:9px;color:#8b6914">
+      최대 ${maxPoint.toLocaleString()}P · 배지 달성 시 자동 적립</div>
     </div>
    </div>
   </div>
-  <div style="padding:14px 16px">${catSections}</div>`;
+  <div style="padding:12px 16px">${sections}</div>`;
 
  el.onclick = (e)=>{
   const item = e.target.closest('[data-bdidx]');
@@ -3716,19 +3827,28 @@ function showBadgeDetail(i){
  const pop = document.getElementById('bdPopup');
  const inner = document.getElementById('bdPopupInner');
  if(!pop||!inner) return;
- document.getElementById('bdPopupEmoji').textContent = b.unlocked ? b.emoji : '🔒';
+ document.getElementById('bdPopupEmoji').textContent = b.unlocked?b.emoji:'🔒';
  document.getElementById('bdPopupCat').textContent = b.cat;
  document.getElementById('bdPopupName').textContent = b.name;
  document.getElementById('bdPopupDesc').textContent = b.desc;
- document.getElementById('bdPopupBenefit').innerHTML = b.unlocked
-  ? `<div style="background:#fff8e6;border:1px solid #d4a017;border-radius:12px;
-     padding:12px;font-size:13px;color:var(--text)">
-     🎁 혜택: ${b.benefit}</div>
-     <div style="margin-top:10px;font-size:12px;color:#b8860b;font-weight:700">✅ 달성 완료!</div>`
-  : `<div style="background:var(--bg2);border-radius:12px;padding:12px;
-     font-size:13px;color:var(--text3)">🔒 아직 달성 전이에요</div>`;
+ document.getElementById('bdPopupBenefit').innerHTML = `
+  <div style="background:${b.unlocked?'linear-gradient(135deg,#fffbeb,#fff3c0)':'var(--bg2)'};
+   border:1.5px solid ${b.unlocked?'#e6c84a':'var(--border)'};
+   border-radius:14px;padding:16px;margin-bottom:16px;text-align:center">
+   <div style="font-size:32px;font-weight:900;
+    color:${b.unlocked?'#b8860b':'var(--text3)'};line-height:1;margin-bottom:4px">
+    ${b.unlocked?'+':''}${b.point.toLocaleString()}</div>
+   <div style="font-size:12px;font-weight:700;
+    color:${b.unlocked?'#8b6914':'var(--text3)'}">포인트</div>
+   ${b.unlocked?`<div style="font-size:10px;color:#8b6914;margin-top:6px">
+    내 포인트에 적립됐어요</div>`:''}
+  </div>
+  ${b.unlocked
+   ?'<div style="font-size:12px;color:#b8860b;font-weight:700;margin-bottom:16px">✅ 달성 완료!</div>'
+   :`<div style="font-size:11px;color:var(--text3);margin-bottom:16px;line-height:1.6">
+     달성하면 <b style="color:var(--text)">${b.point.toLocaleString()}P</b>가 적립돼요</div>`}`;
  pop.style.display = 'flex';
- requestAnimationFrame(()=> inner.style.transform = 'translateY(0)');
+ requestAnimationFrame(()=>{ inner.style.transform='translateY(0)'; });
  pop.onclick = (e)=>{ if(e.target===pop) closeBdPopup(); };
 }
 function closeBdPopup(){
