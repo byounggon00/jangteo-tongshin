@@ -1110,9 +1110,12 @@ function renderFeedCard(p){
  <div class="gi-photo-slide" style="background:#1a1510;min-width:100%;width:100%;flex-shrink:0"><div class="gi-photo-bg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(60vw,380px);opacity:.22;filter:blur(6px);transform:scale(1.2);pointer-events:none">${ph}</div><div class="gi-photo-main" style="position:relative;z-index:1">${ph}</div></div>`).join('');
  const dots = p.photos.map((_,i)=>`<div class="gi-pdot${i===0?' on':''}"></div>`).join('');
  photoHtml = `
- <div class="gi-photo" id="giphoto-${p.id}" style="overflow:hidden;width:100%"><div class="gi-photos-strip" id="gistrip-${p.id}" style="position:relative;width:100%;height:100%;overflow:hidden">
- ${slides}
- </div><button onclick="feedSlide(${p.id},-1,event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.8);border:none;cursor:pointer;font-size:14px;z-index:2;display:flex;align-items:center;justify-content:center" id="giprev-${p.id}">‹</button><button onclick="feedSlide(${p.id},1,event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.8);border:none;cursor:pointer;font-size:14px;z-index:2;display:flex;align-items:center;justify-content:center" id="ginext-${p.id}">›</button><div class="gi-photo-dots" id="gidots-${p.id}">${dots}</div></div>`;
+ <div class="gi-photo" id="giphoto-${p.id}" style="overflow:hidden;width:100%;position:relative">
+  <div class="gi-photos-strip" id="gistrip-${p.id}" style="display:flex;flex-wrap:nowrap;width:100%;height:100%;transition:transform .3s ease">
+   ${slides}
+  </div>
+  <div id="gidots-${p.id}" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:2">${dots}</div>
+ </div>`;
  }
  const lines = (p.caption||'').split('\n');
  const capFirst = `<strong>${lines[0]}</strong>`;
@@ -1181,21 +1184,34 @@ function renderFeedCard(p){
  </div>`;
 }
 const feedSlideIdx = {};
-function feedSlide(id, dir, e){
- e.stopPropagation();
- const p = S.posts.find(x=>x.id===id); if(!p) return;
+function feedSlide(id, dir){
+ const p = S.posts.find(x=>x.id===id); if(!p||!p.photos||p.photos.length<=1) return;
  if(!feedSlideIdx[id]) feedSlideIdx[id]=0;
  feedSlideIdx[id] = Math.max(0, Math.min(p.photos.length-1, feedSlideIdx[id]+dir));
  const i = feedSlideIdx[id];
- const total = p.photos.length;
  const strip = document.getElementById('gistrip-'+id);
- if(strip){ strip.style.transform=`translateX(-${i*100}%)`; }
- const dots = document.querySelectorAll(`#gidots-${id} .gi-pdot`);
- dots.forEach((d,di)=>d.classList.toggle('on',di===i));
- const prev = document.getElementById('giprev-'+id);
- const next = document.getElementById('ginext-'+id);
- if(prev) prev.style.display = i>0?'flex':'none';
- if(next) next.style.display = i<p.photos.length-1?'flex':'none';
+ if(strip) strip.style.transform='translateX(-'+i*100+'%)';
+ const dots = document.querySelectorAll('#gidots-'+id+' .gi-pdot');
+ dots.forEach(function(d,di){ d.classList.toggle('on',di===i); });
+}
+function initFeedSwipe(el, postId){
+ let startX=0, startY=0, moved=false;
+ el.addEventListener('touchstart',function(e){
+  startX=e.touches[0].clientX;
+  startY=e.touches[0].clientY;
+  moved=false;
+ },{passive:true});
+ el.addEventListener('touchmove',function(e){
+  moved=true;
+ },{passive:true});
+ el.addEventListener('touchend',function(e){
+  if(!moved) return;
+  const dx=e.changedTouches[0].clientX-startX;
+  const dy=e.changedTouches[0].clientY-startY;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
+   feedSlide(postId, dx<0?1:-1);
+  }
+ },{passive:true});
 }
 function expandCap(el){
  el.previousSibling && (el.previousSibling.textContent='');
@@ -1271,6 +1287,15 @@ function renderGrid(){
  }
  });
  setTimeout(initAllSliders, 50);
+ // 스와이프 초기화
+ setTimeout(function(){
+  S.posts.forEach(function(p){
+   if(p.photos && p.photos.length>1){
+    const el=document.getElementById('giphoto-'+p.id);
+    if(el&&!el._swipeInit){ el._swipeInit=true; initFeedSwipe(el,p.id); }
+   }
+  });
+ },100);
 }
 function initAllSliders(){
  document.querySelectorAll('.gi-photos-strip').forEach(strip=>{
