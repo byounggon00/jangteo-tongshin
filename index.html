@@ -1169,7 +1169,7 @@ function renderFeedCard(p){
  ? `<div class="gi-comment-preview"><span class="cname">${lastCmt.author}</span>${lastCmt.text}</div>` : '';
  const cmtCount = (p.comments||[]).length;
  return `
- <div class="gitem${isSale?' sale-item':''}" id="gcard-${p.id}"><div class="gi-head"><div class="gi-av">${p.avatar||'😊'}</div><div><div class="gi-author">${p.author}</div><div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${p.locationHint?' · 📍'+p.locationHint:''}${dist!==null?' · '+distLabel(dist):''}</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0">
+ <div class="gitem${isSale?' sale-item':''}" id="gcard-${p.id}"><div class="gi-head"><div class="gi-av" onclick="openUserProfile('${p.author}',event)" style="cursor:pointer">${p.avatar||'😊'}</div><div><div class="gi-author" onclick="openUserProfile('${p.author}',event)" style="cursor:pointer;text-decoration:underline dotted">${p.author}</div><div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${p.locationHint?' · 📍'+p.locationHint:''}${dist!==null?' · '+distLabel(dist):''}</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0">
  ${badges.join('')}
  <button class="gi-more" onclick="openPostMenu(${p.id},event)">···</button></div></div>
  ${saleBanner}
@@ -1637,6 +1637,51 @@ function openPostMenu(id, e){
  overlay.style.display = 'block';
  document.body.style.overflow = 'hidden';
 }
+function openUserProfile(author, e){
+ if(e) e.stopPropagation();
+ // 내 프로필이면 내 페이지로
+ if(author===P.name||author==='나'){
+  bnavClick('profile', document.getElementById('bnav-profile'));
+  return;
+ }
+ // 다른 사람 프로필 팝업
+ const posts = S.posts.filter(p=>p.author===author);
+ const mkts = [...new Set(posts.map(p=>p.market))];
+ const likes = posts.reduce((s,p)=>s+(p.likes||0),0);
+ const av = posts[0]?.avatar || '😊';
+
+ let html = '<div style="position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center" id="userProfileOverlay" onclick="if(event.target===this)document.getElementById(\'userProfileOverlay\').remove()">'
+  +'<div style="background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 40px">'
+  +'<div style="text-align:center;margin-bottom:16px">'
+  +'<div style="font-size:52px;margin-bottom:8px">'+av+'</div>'
+  +'<div style="font-size:18px;font-weight:700;margin-bottom:4px">'+author+'</div>'
+  +'<div style="font-size:12px;color:var(--text3)">후기 '+posts.length+'개 · ❤️ '+likes+'개 · 시장 '+mkts.length+'곳</div>'
+  +'</div>'
+  +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">'
+  +mkts.slice(0,5).map(function(m){ return '<span style="padding:5px 12px;border-radius:20px;background:var(--bg2);font-size:12px;color:var(--text2)">📍'+m+'</span>'; }).join('')
+  +'</div>'
+  +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-height:300px;overflow-y:auto">'
+  +posts.slice(0,9).map(function(p){
+   const ph = p.photos&&p.photos[0];
+   const isReal = ph&&(ph.startsWith('data:')||ph.startsWith('http'));
+   return '<div style="aspect-ratio:1;background:#1a1510;overflow:hidden;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="closeUserProfile();openDetail('+p.id+')">'
+    +(isReal?'<img src="'+ph+'" style="width:100%;height:100%;object-fit:cover">':'<div style="font-size:32px">'+ph+'</div>')
+    +'</div>';
+  }).join('')
+  +'</div>'
+  +'<button onclick="document.getElementById(\'userProfileOverlay\').remove()" style="width:100%;margin-top:16px;padding:12px;border:none;background:var(--bg2);border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit">닫기</button>'
+  +'</div></div>';
+
+ const existing = document.getElementById('userProfileOverlay');
+ if(existing) existing.remove();
+ document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeUserProfile(){
+ const el = document.getElementById('userProfileOverlay');
+ if(el) el.remove();
+}
+
 function closePostMenu(){
  const overlay = document.getElementById('postMenuOverlay');
  if(overlay) overlay.style.display = 'none';
