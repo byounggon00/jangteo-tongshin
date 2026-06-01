@@ -3438,7 +3438,23 @@ function showPage(id){
  const fromEl=document.getElementById('page-'+currentPage);
  if(fromEl) fromEl.style.display='none';
  const toEl=document.getElementById('page-'+id);
- if(toEl){ toEl.style.display='block'; toEl.scrollTop=0; }
+ if(toEl){
+  toEl.style.display='block';
+  toEl.scrollTop=0;
+  // 모바일 터치 스크롤 강제 활성화
+  if(!toEl._touchScroll){
+   toEl._touchScroll=true;
+   let startY=0, startScroll=0;
+   toEl.addEventListener('touchstart',function(e){
+    startY=e.touches[0].clientY;
+    startScroll=toEl.scrollTop;
+   },{passive:true});
+   toEl.addEventListener('touchmove',function(e){
+    const dy=startY-e.touches[0].clientY;
+    toEl.scrollTop=startScroll+dy;
+   },{passive:true});
+  }
+ }
  currentPage=id;
  if(id==='map') initMapPage();
  if(id==='sale') initSalePage();
