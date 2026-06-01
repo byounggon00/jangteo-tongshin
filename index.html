@@ -1724,53 +1724,27 @@ function renderBadgeSection(){
  const badges = calcBadges();
  const unlocked = badges.filter(b=>b.unlocked).length;
  const totalPoint = parseInt(localStorage.getItem('jtt4_point')||'0');
-
- const CAT = {
-  '탐험': {icon:'🗺️', color:'#1a6b3c', bg:'#e8f5ed', border:'#7bc99a'},
-  '마감': {icon:'⚡',  color:'#c05a00', bg:'#fff3e0', border:'#ffb74d'},
-  '연속': {icon:'🔥',  color:'#b71c1c', bg:'#fdecea', border:'#ef9a9a'},
-  '기록': {icon:'✍️', color:'#1565c0', bg:'#e3f2fd', border:'#90caf9'},
- };
-
- const grid = ['탐험','마감','연속','기록'].map(cat=>{
-  const meta = CAT[cat];
-  const list = badges.filter(b=>b.cat===cat);
-  return list.map(b=>`
-   <div onclick="showBadges()" style="
-    display:flex;flex-direction:column;align-items:center;gap:4px;
-    padding:10px 4px;border-radius:12px;cursor:pointer;
-    border:1.5px solid ${b.unlocked?meta.border:'var(--border)'};
-    background:${b.unlocked?meta.bg:'var(--bg2)'};
-    opacity:${b.unlocked?1:0.45}">
-    <div style="font-size:22px">${b.unlocked?b.emoji:'🔒'}</div>
-    <div style="font-size:8.5px;font-weight:700;text-align:center;line-height:1.2;
-     color:${b.unlocked?meta.color:'var(--text3)'}">${b.name}</div>
-    <div style="font-size:8px;font-weight:700;
-     color:${b.unlocked?'#b8860b':'var(--text3)'};
-     background:${b.unlocked?'#fff8dc':'transparent'};
-     padding:1px 4px;border-radius:4px">
-     ${b.unlocked?'+':''}${b.point}P</div>
-   </div>`).join('');
- }).join('');
-
- return `
-  <div style="padding:12px 16px 6px;display:flex;align-items:center;justify-content:space-between">
-   <span style="font-size:13px;font-weight:800;color:var(--text)">🏅 배지 컬렉션</span>
-   <span style="font-size:11px;font-weight:700;color:#b8860b;
-    background:#fff8dc;border:1px solid #e6c84a;border-radius:8px;padding:2px 8px;cursor:pointer"
-    onclick="showBadges()">
-    ${totalPoint.toLocaleString()}P · ${unlocked}/${badges.length}달성</span>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:8px 16px 14px">
-   ${grid}
-  </div>
-  ${unlocked<badges.length?`
-  <div onclick="showBadges()" style="margin:0 16px 14px;padding:8px 12px;
-   background:var(--bg2);border-radius:10px;cursor:pointer;
-   font-size:11px;color:var(--text3);text-align:center">
-   🔒 잠긴 배지 ${badges.length-unlocked}개 — 탭해서 달성 조건 확인
-  </div>`:''}`;
+ const cats = [
+  {id:'연속방문', icon:'🔥', color:'#b71c1c', bg:'#fdecea', border:'#ef9a9a'},
+  {id:'인기',     icon:'❤️', color:'#880e4f', bg:'#fce4ec', border:'#f48fb1'},
+  {id:'활동',     icon:'📸', color:'#1565c0', bg:'#e3f2fd', border:'#90caf9'},
+  {id:'탐험',     icon:'🗺️', color:'#1a6b3c', bg:'#e8f5ed', border:'#7bc99a'},
+ ];
+ const parts = [];
+ parts.push('<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:16px">🏅</span><span style="font-size:14px;font-weight:700">배지 컬렉션</span></div><div style="font-size:12px;color:var(--gold);font-weight:700;background:var(--goldbg);border:1px solid var(--goldbdr);border-radius:20px;padding:3px 10px">'+totalPoint.toLocaleString()+'P · '+unlocked+'/'+badges.length+'달성</div></div>');
+ cats.forEach(function(cat){
+  const group = badges.filter(function(b){ return b.cat===cat.id; });
+  const earnedCount = group.filter(function(b){ return b.unlocked; }).length;
+  const badgeParts = [];
+  group.forEach(function(b){
+   const isOn = b.unlocked;
+   badgeParts.push('<div data-bid="'+b.id+'" onclick="showBadgeDetail(this.dataset.bid)" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:10px;border:1px solid '+(isOn?'var(--goldbdr)':'var(--border)')+';background:'+(isOn?'var(--goldbg)':'#fff')+';cursor:pointer;text-align:center;'+(isOn?'':'opacity:.5;filter:grayscale(.5)')+'"><div style="font-size:20px;line-height:1">'+b.emoji+'</div><div style="font-size:9px;font-weight:700;color:'+(isOn?'var(--gold)':'var(--text2)')+'">'+b.name+'</div><div style="font-size:9px;color:'+(isOn?'var(--gold)':'var(--text3)')+'">+'+b.point+'P</div></div>');
+  });
+  parts.push('<div style="margin-bottom:8px"><div style="display:flex;align-items:center;gap:6px;padding:5px 16px 4px;font-size:11px;font-weight:700;color:'+cat.color+';background:'+cat.bg+'">'+cat.icon+' '+cat.id+'<span style="margin-left:auto">'+earnedCount+'/'+group.length+'</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px;background:#fff">'+badgeParts.join('')+'</div></div>');
+ });
+ return parts.join('');
 }
+
 function checkNewBadges(){
  const badges = calcBadges();
  const earned = JSON.parse(localStorage.getItem('jtt4_earned_badges')||'[]');
