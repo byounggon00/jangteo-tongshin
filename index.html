@@ -1184,6 +1184,7 @@ function renderFeedCard(p){
  </div>`;
 }
 const feedSlideIdx = {};
+let uploadedPhotos = [];
 function feedSlide(id, dir){
  const p = S.posts.find(x=>x.id===id); if(!p||!p.photos||p.photos.length<=1) return;
  if(!feedSlideIdx[id]) feedSlideIdx[id]=0;
@@ -1412,6 +1413,7 @@ function addDCmt(){
 }
 function closeDOut(e){ if(e.target===document.getElementById('doverlay')) closeDetail(); }
 function openUpload(){
+ uploadedPhotos=[];
  S.uStar=5;S.uPics=[];S.uMarket=null;
  uType='review';
  const tr=document.getElementById('uTypeReview'), ts=document.getElementById('uTypeSale');
