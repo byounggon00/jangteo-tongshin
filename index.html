@@ -1169,7 +1169,7 @@ function renderFeedCard(p){
  ? `<div class="gi-comment-preview"><span class="cname">${lastCmt.author}</span>${lastCmt.text}</div>` : '';
  const cmtCount = (p.comments||[]).length;
  return `
- <div class="gitem${isSale?' sale-item':''}" id="gcard-${p.id}"><div class="gi-head"><div class="gi-av" onclick="openUserProfile('${p.author}',event)" style="cursor:pointer">${p.avatar||'😊'}</div><div><div class="gi-author" onclick="openUserProfile('${p.author}',event)" style="cursor:pointer;text-decoration:underline dotted">${p.author}</div><div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${p.locationHint?' · 📍'+p.locationHint:''}${dist!==null?' · '+distLabel(dist):''}</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0">
+ <div class="gitem${isSale?' sale-item':''}" id="gcard-${p.id}"><div class="gi-head"><div class="gi-av" onclick="openUserProfile('${p.author}',event)" style="cursor:pointer">${p.avatar||'😊'}</div><div><div class="gi-author" onclick="openUserProfile('${p.author}',event)" style="cursor:pointer;text-decoration:underline dotted">${p.author}</div><div class="gi-meta">📍 ${p.market}${p.shop?' · '+p.shop:''}${p.locationHint&&typeof p.locationHint==='string'?' · 📍'+p.locationHint:''}${dist!==null?' · '+distLabel(dist):''}</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0">
  ${badges.join('')}
  <button class="gi-more" onclick="openPostMenu(${p.id},event)">···</button></div></div>
  ${saleBanner}
@@ -1609,7 +1609,12 @@ function renderPTab(tab){
  const likedPosts=S.posts.filter(p=>p.liked);
  const visitedMkts=[...new Set(myPosts.map(p=>p.market))];
  const empty=(icon,txt)=>'<div class="pm-empty"><div class="ei">'+icon+'</div><div class="et">'+txt+'</div></div>';
- const grid=(posts)=>'<div class="pm-grid">'+posts.map(p=>'<div class="pm-grid-item" onclick="openDetail('+p.id+')"><div class="pm-grid-photo">'+(p.photos&&p.photos[0]||'📸')+'</div></div>').join('')+'</div>';
+ const grid=(posts)=>'<div class="pm-grid">'+posts.map(p=>{
+  const ph=p.photos&&p.photos[0];
+  const isReal=ph&&(ph.startsWith('data:')||ph.startsWith('http'));
+  const content=isReal?'<img src="'+ph+'" style="width:100%;height:100%;object-fit:cover;display:block">':'<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:32px">'+(ph||'📸')+'</div>';
+  return '<div class="pm-grid-item" onclick="openDetail('+p.id+')"><div class="pm-grid-photo">'+content+'</div></div>';
+ }).join('')+'</div>';
  if(tab==='posts') el.innerHTML=myPosts.length?grid(myPosts):empty('📷','아직 올린 사진이 없어요');
  else if(tab==='liked') el.innerHTML=likedPosts.length?grid(likedPosts):empty('❤️','좋아요한 게시물이 없어요');
  else if(tab==='visited') el.innerHTML=visitedMkts.length?visitedMkts.map(m=>'<div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border)"><div style="font-size:24px">🏮</div><div style="font-size:14px;font-weight:700">'+m+'</div></div>').join(''):empty('🏮','아직 방문한 시장이 없어요');
