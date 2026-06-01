@@ -80,7 +80,7 @@
 
  <!-- 작전지도 페이지 -->
  <div class="app-page" id="page-map">
-  <div id="mapPageContent" style="min-height:100%"></div>
+  <div id="mapPageContent" style="min-height:100%;position:relative"><div id="mapSigunguPanel" style="display:none;position:absolute;inset:0;background:var(--bg);z-index:50;overflow-y:auto"></div></div>
  </div>
 
  <!-- 마감세일 페이지 -->
@@ -2219,22 +2219,44 @@ function renderSigunguMap(regionId, sidoId, visitedMkts){
   ${hexSVG}
  </svg>`;
 }
-function showSigunguMarkets(sg, sidoId){
- // 구/군 클릭 시 해당 시장 목록 표시
- let mkts = [];
+function showSigunguMarkets(sg){
+ let mkts=[];
  for(const region of Object.values(DRILL_DATA)){
   for(const sido of Object.values(region)){
-   if(sido.sigungu?.[sg]){ mkts = sido.sigungu[sg]; break; }
+   if(sido.sigungu&&sido.sigungu[sg]){mkts=sido.sigungu[sg];break;}
   }
   if(mkts.length) break;
  }
- if(!mkts.length){ toast('시장 정보가 없어요'); return; }
- S.market = sg;
- renderChips();
- renderGrid();
- toast(`📍 ${sg} 시장 ${mkts.length}개`);
+ if(!mkts.length){toast('시장 정보가 없어요');return;}
+ const myPosts=S.posts.filter(p=>p.author===P.name||p.author==='나');
+ const visited=new Set(myPosts.map(p=>p.market));
+ const panel=document.getElementById('mapSigunguPanel');
+ if(!panel) return;
+ const rows=mkts.map(m=>{
+  const v=visited.has(m);
+  const cnt=myPosts.filter(p=>p.market===m).length;
+  return `<div onclick="filterByMarket(this.dataset.mkt)" data-mkt="${m}" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:#fff;cursor:pointer">
+   <div style="font-size:22px">${v?'🏮':'🔒'}</div>
+   <div style="flex:1">
+    <div style="font-size:14px;font-weight:${v?700:400}">${m}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px">${v?'후기 '+cnt+'개':'아직 방문 전'}</div>
+   </div>
+   <div style="font-size:14px;color:var(--red)">›</div>
+  </div>`;
+ }).join('');
+ panel.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10">
+  <button onclick="document.getElementById('mapSigunguPanel').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">←</button>
+  <div style="font-size:15px;font-weight:700">📍 ${sg}</div>
+  <div style="font-size:12px;color:var(--text3);margin-left:auto">시장 ${mkts.length}곳</div>
+ </div>${rows}`;
+ panel.style.display='block';
 }
-
+function filterByMarket(mkt){
+ document.getElementById('mapSigunguPanel').style.display='none';
+ S.market=mkt;
+ showPage('home');
+ setTimeout(()=>{renderChips();renderGrid();toast('📍 '+mkt);},150);
+}
 function openSaleTab(){
  saleOnly = true;
  renderGrid();
