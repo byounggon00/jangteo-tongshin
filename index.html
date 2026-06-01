@@ -1187,6 +1187,7 @@ function feedSlide(id, dir, e){
  if(!feedSlideIdx[id]) feedSlideIdx[id]=0;
  feedSlideIdx[id] = Math.max(0, Math.min(p.photos.length-1, feedSlideIdx[id]+dir));
  const i = feedSlideIdx[id];
+ const total = p.photos.length;
  const strip = document.getElementById('gistrip-'+id);
  if(strip){ strip.style.transform=`translateX(-${i*(100/total)}%)`; }
  const dots = document.querySelectorAll(`#gidots-${id} .gi-pdot`);
