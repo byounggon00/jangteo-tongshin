@@ -1102,7 +1102,7 @@ function renderFeedCard(p){
  if(p.photos.length <= 1){
  const ph = p.photos[0]||'🏮';
  photoHtml = isRealPhoto(ph) ? `
- <div class="gi-photo" style="background:#111"><img src="${ph}" style="width:100%;height:100%;object-fit:cover;display:block"></div>` : `
+ <div class="gi-photo" style="background:#111"><img src="${ph}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></div>` : `
  <div class="gi-photo"><div class="gi-photo-bg">${ph}</div><div class="gi-photo-main">${ph}</div></div>`;
  } else {
  const slides = p.photos.map((ph,i)=> isRealPhoto(ph) ? `
