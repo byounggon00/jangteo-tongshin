@@ -241,7 +241,7 @@
 .cv-qty-stepper{display:flex;align-items:center;gap:0;flex-shrink:0;background:var(--bg2);border-radius:10px;padding:3px}
 .cv-qty-btn{width:28px;height:28px;border-radius:8px;border:none;background:#fff;color:var(--text);font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .cv-qty-btn:active{background:var(--bg3)}
-.cv-qty-num{min-width:34px;text-align:center;font-size:15px;font-weight:700;color:var(--text)}
+.cv-qty-num{min-width:30px;text-align:center;font-size:15px;font-weight:700;color:var(--text)}
 .cv-fab{position:fixed;right:18px;bottom:70px;width:54px;height:54px;border-radius:50%;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(193,53,32,.4);z-index:30;font-family:inherit}
 .cv-fab:active{transform:scale(.92)}
 /* 입력 패널 */
@@ -259,7 +259,7 @@
 .cv-sheet-backdrop.open{opacity:1;pointer-events:auto}
 /* 카테고리 상세 페이지 */
 .cv-detail-list{display:flex;flex-direction:column;padding:12px 14px 90px;gap:8px}
-.cv-drow{display:flex;flex-direction:column;gap:10px;padding:13px 14px;background:#fff;border:1px solid var(--border);border-radius:14px}
+.cv-drow{display:flex;flex-direction:column;gap:11px;padding:14px;background:#fff;border:1px solid var(--border);border-radius:15px;transition:border-color .12s}
 .cv-drow-top{display:flex;align-items:center;gap:11px}
 .cv-drow-check{width:24px;height:24px;border-radius:50%;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;transition:all .12s}
 .cv-drow-check.done{border-color:transparent}
@@ -269,10 +269,10 @@
 .cv-drow-text.done{text-decoration:line-through;color:var(--text3)}
 .cv-drow-qty{font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cv-drow-total{font-size:15px;color:var(--green);font-weight:800;white-space:nowrap;flex-shrink:0}
-.cv-drow-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:2px 2px 0}
-.cv-drow-unit2{font-size:11px;color:var(--text3);white-space:nowrap}
-.cv-drow-spacer{flex:1}
-.cv-drow-act{width:34px;height:34px;border-radius:9px;border:none;background:var(--bg2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.cv-drow-bottom{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;padding:2px 2px 0}
+.cv-drow-unit2{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.cv-drow-spacer{display:none}
+.cv-drow-act{width:36px;height:36px;border-radius:10px;border:none;background:var(--bg2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .12s}
 .cv-drow-act:active{background:var(--bg3)}
 .cv-row1{display:flex;align-items:center;gap:11px;padding:14px;background:#fff;border:1px solid var(--border);border-radius:14px}
 .cv-row1-name{flex:1;font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -2937,6 +2937,13 @@ const CV_SUGGEST = {
 };
 // 품목 사용 빈도 기록 (자주 쓰는 항목 우선 노출용)
 let CV_FREQ = JSON.parse(localStorage.getItem('jtt4_freq')||'{}');
+let CV_USER_ITEMS = JSON.parse(localStorage.getItem('jtt4_useritems')||'{}');
+function cvRememberItem(catId, name){
+ if(!catId||!name) return;
+ if(!CV_USER_ITEMS[catId]) CV_USER_ITEMS[catId]=[];
+ if(!CV_USER_ITEMS[catId].includes(name)) CV_USER_ITEMS[catId].unshift(name);
+ localStorage.setItem('jtt4_useritems', JSON.stringify(CV_USER_ITEMS));
+}
 function cvBumpFreq(name){
  if(!name) return;
  CV_FREQ[name]=(CV_FREQ[name]||0)+1;
@@ -2948,11 +2955,14 @@ function cvSortByFreq(arr){
  return arr.map((n,i)=>({n,i,f:cvFreq(n)})).sort((a,b)=> b.f-a.f || a.i-b.i).map(x=>x.n);
 }
 // 카테고리 이름으로 추천 목록 찾기(자주 쓴 항목 우선)
-function cvSuggestFor(catName){
+function cvSuggestFor(catName, catId){
  let base=[];
  if(CV_SUGGEST[catName]) base=CV_SUGGEST[catName];
  else { for(const k in CV_SUGGEST){ if(catName.includes(k)||k.includes(catName)){ base=CV_SUGGEST[k]; break; } } }
- return cvSortByFreq(base);
+ let user=[];
+ if(catId && CV_USER_ITEMS[catId]) user=CV_USER_ITEMS[catId];
+ const merged=[...user, ...base.filter(n=>!user.includes(n))];
+ return cvSortByFreq(merged);
 }
 // 전체 상품 풀(자동완성용) — {name, cat}
 function cvAllSuggestions(){
@@ -4831,7 +4841,7 @@ function cvRenderSuggest(){
  const chips=document.getElementById('cvSuggestChips');
  if(!chips||!wrap) return;
  const cat=cvCat(cvInputCat);
- const list=cvSuggestFor(cat.name);
+ const list=cvSuggestFor(cat.name, cat.id);
  if(!list.length){ wrap.style.display='none'; return; }
  wrap.style.display='block';
  const existing=new Set(CV.items.filter(i=>(i.date||'')===CV.activeDate && i.catId===cvInputCat).map(i=>i.text));
@@ -4912,6 +4922,7 @@ function cvAddItem(){
  const catId=cvInputCat||CV.cats[0].id;
  CV.items.unshift({id:cvNewId(), listId:CV.activeList, date:CV.activeDate, catId, text, qty:'', done:false});
  cvBumpFreq(text);
+ cvRememberItem(catId, text);
  cvExpandedCat=catId; // 추가한 카테고리 펼쳐서 보이게
  inp.value='';
  saveCV();
