@@ -377,6 +377,36 @@
 .nt-more-btn{display:block;width:100%;margin-top:10px;padding:13px;border-radius:13px;border:1px solid var(--border);background:#fff;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .12s}
 .nt-more-btn:active{background:var(--bg2)}
 .nt-more-wrap{margin-top:8px}
+
+.cv-selday-mkt{padding:6px 13px;border-radius:16px;border:1px solid var(--red);background:var(--redbg);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap}
+.cvmkt-back{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:600;display:none;align-items:flex-end;justify-content:center}
+.cvmkt-back.open{display:flex}
+.cvmkt-sheet{width:100%;max-width:520px;max-height:82vh;background:#fff;border-radius:20px 20px 0 0;display:flex;flex-direction:column;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.cvmkt-head{display:flex;align-items:center;justify-content:space-between;font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px}
+.cvmkt-x{width:32px;height:32px;border:none;background:var(--bg2);border-radius:50%;font-size:15px;cursor:pointer;color:var(--text2)}
+.cvmkt-date{font-size:12px;color:var(--text3);font-weight:600;margin-bottom:10px}
+.cvmkt-search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);font-size:14px;font-family:inherit;margin-bottom:10px;box-sizing:border-box}
+.cvmkt-locrow{margin-bottom:8px}
+.cvmkt-loc-on{font-size:11px;color:var(--green);font-weight:700}
+.cvmkt-loc-btn{width:100%;padding:10px;border-radius:10px;border:1px dashed var(--red);background:var(--redbg);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.cvmkt-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.cvmkt-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;text-align:left;width:100%}
+.cvmkt-item.on,.cvmkt-item.sel{border-color:var(--red);background:var(--redbg)}
+.cvmkt-ic{font-size:20px;flex-shrink:0}
+.cvmkt-nm{flex:1;font-size:14px;font-weight:700;color:var(--text);display:flex;flex-direction:column;gap:2px;min-width:0}
+.cvmkt-addr{font-size:11px;font-weight:500;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cvmkt-dist{font-size:12px;font-weight:800;color:var(--red);flex-shrink:0}
+.cvmkt-cur{font-size:10px;color:var(--red);font-weight:700;margin-left:6px}
+.cvmkt-custom{border-style:dashed;color:var(--text2);font-weight:700;justify-content:center}
+.cvmkt-clear{padding:11px;border:none;background:none;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline;margin-top:4px}
+.cvmkt-empty{text-align:center;color:var(--text3);font-size:13px;padding:24px}
+
+.cv-sum-card.budget{background:linear-gradient(160deg,#fff7ea,#fdeccb);border-color:#f0d9a8}
+.cv-sum-card.budget .cv-sum-k{color:#c8870a}
+.cv-sum-card.budget .cv-sum-v{color:#b8780a}
+.cv-spend-box.budget{background:#fff6e8;border-color:#f0d9a8}
+.cv-spend-box.budget .cv-spend-k{color:#c8870a}
+.cv-spend-box.budget .cv-spend-v{color:#b8780a}
 </style>
 </head>
 <body><header class="hdr"><div class="hdr-inner"><div class="logo"><div class="logo-kr">시장정복단</div><div class="logo-en">market hunter</div>
@@ -2410,6 +2440,12 @@ function drillDownMap(regionId, sidoId){
  mapDrillSido = null;
  }
  refreshMapWrap();
+ if(sidoId){
+  setTimeout(()=>{
+   const anchor=document.querySelector('.region-mkt-list')||document.querySelector('.nt-section')||document.getElementById('gameMapWrap');
+   if(anchor) anchor.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 220);
+ }
 }
 function drillUpMap(){
  if(mapDrillSido){
@@ -2959,6 +2995,94 @@ const CV_UNITS = {
 function cvUnit(item){ return CV_UNITS[item.text] || ''; }
 // 품목별 구매처(시장) — 짧은 목록, 사용자가 품목마다 선택
 const CV_MARKETS = ['광장시장','망원시장','통인시장','경동시장','남대문시장','동대문시장','노량진수산','가락시장','마트','온라인'];
+function cvDateMarket(date){
+ if(CV.dateMarkets && CV.dateMarkets[date]) return CV.dateMarkets[date];
+ return cvAutoMarket();
+}
+function cvDateMarketRaw(date){ return (CV.dateMarkets && CV.dateMarkets[date]) || ''; }
+function cvAutoMarket(){
+ const near=cvNearbyMarkets(1);
+ if(near.length && near[0].dist<9999) return near[0].name;
+ return cvRecentMarket();
+}
+function cvRecentMarket(){
+ try{
+  if(!CV.dateMarkets) return '';
+  const keys=Object.keys(CV.dateMarkets).filter(k=>CV.dateMarkets[k]).sort((a,b)=>b.localeCompare(a));
+  return keys.length?CV.dateMarkets[keys[0]]:'';
+ }catch(e){ return ''; }
+}
+function cvSetDateMarket(date, mkt){
+ if(!CV.dateMarkets) CV.dateMarkets={};
+ if(mkt) CV.dateMarkets[date]=mkt; else delete CV.dateMarkets[date];
+ saveCV();
+}
+function cvNearbyMarkets(limit){
+ try{
+  if(typeof ALL_MKTS==='undefined') return [];
+  let list=ALL_MKTS.map(m=>({name:m.name, icon:m.icon||'🏪', addr:m.addr||'', region:m.region||'',
+    dist:(typeof S!=='undefined'&&S.userLat)?haversine(S.userLat,S.userLng,m.lat,m.lng):9999}));
+  list.sort((a,b)=>a.dist-b.dist);
+  return (limit?list.slice(0,limit):list);
+ }catch(e){ return []; }
+}
+
+// 시장 선택 다이얼로그 (위치기반 가까운 순 + 검색)
+function cvOpenMarketPick(){
+ let back=document.getElementById('cvMktPickBack');
+ if(!back){
+  back=document.createElement('div');
+  back.id='cvMktPickBack';
+  back.className='cvmkt-back';
+  back.innerHTML='<div class="cvmkt-sheet">'
+   +'<div class="cvmkt-head"><span>🏪 시장 선택</span><button class="cvmkt-x" onclick="cvCloseMarketPick()">✕</button></div>'
+   +'<div class="cvmkt-date" id="cvMktDate"></div>'
+   +'<input class="cvmkt-search" id="cvMktSearch" placeholder="시장 이름 검색" oninput="cvRenderMarketPick()">'
+   +'<div class="cvmkt-locrow" id="cvMktLocRow"></div>'
+   +'<div class="cvmkt-list" id="cvMktList"></div>'
+   +'</div>';
+  document.body.appendChild(back);
+  back.onclick=function(e){ if(e.target===back) cvCloseMarketPick(); };
+ }
+ document.getElementById('cvMktDate').textContent=cvDateLabel(CV.activeDate)+' 에 갈 시장';
+ const sb=document.getElementById('cvMktSearch'); if(sb) sb.value='';
+ back.classList.add('open');
+ cvRenderMarketPick();
+}
+function cvCloseMarketPick(){ const b=document.getElementById('cvMktPickBack'); if(b) b.classList.remove('open'); }
+function cvRenderMarketPick(){
+ const listEl=document.getElementById('cvMktList');
+ const locRow=document.getElementById('cvMktLocRow');
+ if(!listEl) return;
+ const q=(document.getElementById('cvMktSearch')||{}).value||'';
+ const hasLoc=(typeof S!=='undefined' && S.userLat);
+ // 위치 없으면 켜기 유도
+ locRow.innerHTML = hasLoc ? '<span class="cvmkt-loc-on">📍 내 위치 기준 가까운 순</span>'
+   : '<button class="cvmkt-loc-btn" onclick="getLocation&&getLocation();setTimeout(cvRenderMarketPick,800)">📍 내 위치 켜고 가까운 순 보기</button>';
+ let mkts=cvNearbyMarkets(0);
+ if(q.trim()){ mkts=mkts.filter(m=>m.name.includes(q.trim())); }
+ else { mkts=mkts.slice(0, hasLoc?12:20); }
+ const cur=cvDateMarket(CV.activeDate);
+ // 현재 선택 + 직접입력 옵션
+ let html='';
+ if(cur){ html+='<button class="cvmkt-item sel" onclick="cvChooseDateMarket(\''+cur.replace(/'/g,"")+'\')">✓ '+cur+' <span class="cvmkt-cur">현재 선택</span></button>'; }
+ html+=mkts.map(m=>{
+   const d = (m.dist<9999) ? (m.dist<1?Math.round(m.dist*1000)+'m':m.dist.toFixed(1)+'km') : '';
+   const on = (m.name===cur)?' on':'';
+   return '<button class="cvmkt-item'+on+'" onclick="cvChooseDateMarket(\''+m.name.replace(/'/g,"")+'\')"><span class="cvmkt-ic">'+(m.icon||'🏪')+'</span><span class="cvmkt-nm">'+m.name+'<span class="cvmkt-addr">'+(m.addr||m.region||'')+'</span></span>'+(d?'<span class="cvmkt-dist">'+d+'</span>':'')+'</button>';
+ }).join('');
+ if(q.trim()){ html+='<button class="cvmkt-item custom" onclick="cvChooseDateMarket(\''+q.trim().replace(/'/g,"")+'\')">+ \"'+q.trim()+'\" 직접 추가</button>'; }
+ if(cur){ html+='<button class="cvmkt-clear" onclick="cvChooseDateMarket(\'\')">시장 선택 해제</button>'; }
+ listEl.innerHTML=html||'<div class="cvmkt-empty">검색 결과가 없어요</div>';
+}
+function cvChooseDateMarket(mkt){
+ cvSetDateMarket(CV.activeDate, mkt);
+ // 그날 모든 품목의 시장을 이 시장으로 동기화
+ CV.items.forEach(it=>{ if((it.date||'')===CV.activeDate){ it.market=mkt; } });
+ saveCV();
+ cvCloseMarketPick();
+ cvRenderMain(document.getElementById('clPageContent'));
+}
 function cvItemMarket(item){ return item.market || ''; }
 // 품목 수량 (기본 1)
 function cvQty(item){ const q=parseInt(item.qtyNum); return (q&&q>0)?q:1; }
@@ -3260,6 +3384,7 @@ function deleteCL(id){ CL=CL.filter(x=>x.id!==id); saveCL(); renderCLBody(); }
 function openMapTab(){ bnavClick('map', document.getElementById('bnav-map')); }
 function closeMapPage(){ bnavClick('home', document.getElementById('bnav-home')); }
 function renderMapPage(visitedMkts){
+ if(!visitedMkts){ try{ const _mp=S.posts.filter(p=>p.author===P.name||p.author==='나'); visitedMkts=[...new Set(_mp.map(p=>p.market))]; }catch(e){ visitedMkts=[]; } }
  const total = ALL_MKTS.length;
  const el = document.getElementById('mapPageContent');
  const myPosts = S.posts.filter(p=>p.author===P.name||p.author==='나');
@@ -3387,11 +3512,11 @@ function renderMapPage(visitedMkts){
     </div>
     <div class="nt-list">${sample.map((m,i)=>ntCardHtml(m,i,regionStats,false)).join('')}</div>`;
   } else {
-   const _first=allUnvisited.slice(0,10);
-   const _rest=allUnvisited.slice(10);
-   body = `<div class="nt-list">${_first.map((m,i)=>ntCardHtml(m,i,regionStats,true)).join('')}</div>`
-    + (_rest.length?`<div class="nt-more-wrap" id="ntRestWrap" style="display:none"><div class="nt-list">${_rest.map((m,i)=>ntCardHtml(m,i+10,regionStats,true)).join('')}</div></div>
-       <button class="nt-more-btn" id="ntMoreBtn" onclick="document.getElementById('ntRestWrap').style.display='block';this.style.display='none';">+ ${_rest.length}곳 더보기</button>`:'');
+   const _show=(typeof ntShowCount!=='undefined'?ntShowCount:10);
+   const _vis=allUnvisited.slice(0,_show);
+   const _left=allUnvisited.length-_vis.length;
+   body = `<div class="nt-list">${_vis.map((m,i)=>ntCardHtml(m,i,regionStats,true)).join('')}</div>`
+    + (_left>0?`<button class="nt-more-btn" onclick="ntShowMore()">+ ${Math.min(10,_left)}곳 더보기 · ${_left}곳 남음</button>`:'');
   }
   nextTargetHtml = `<div class="nt-section">
     <div class="nt-hdr"><span class="nt-hdr-icon">🎯</span><span class="nt-hdr-title">지금 가기 좋은 미방문 시장</span><span class="nt-hdr-cnt">${allUnvisited.length}곳 남음</span></div>
@@ -3628,6 +3753,8 @@ function onNextTargetClick(name){
  closeMapPage();
  S.market=name; renderChips(); renderGrid();
 }
+let ntShowCount=10;
+function ntShowMore(){ ntShowCount+=10; try{ renderMapPage(); }catch(e){} }
 function ntCardHtml(m, idx, regionStats, hasLoc){
  const rStat = (regionStats&&regionStats[m.region]) || {};
  const isTop = hasLoc && idx===0;
@@ -4647,6 +4774,7 @@ function cvRenderMain(el){
   ${cvUpcomingHTML()}
   <div class="cv-selday">
    <div class="cv-selday-label">${cvDateLabel(CV.activeDate)}</div>
+   <button class="cv-selday-mkt" onclick="cvOpenMarketPick()">🏪 ${cvDateMarket(CV.activeDate) || "가까운 시장 찾는 중"}${cvDateMarketRaw(CV.activeDate)?"":" ·자동"}</button>
    ${!isToday?`<button class="cv-today-btn" onclick="cvGoToday()">오늘로</button>`:''}
   </div>
   <div class="cv-viewtoggle">
@@ -4665,7 +4793,7 @@ function cvRenderMain(el){
   <div class="cv-suggest-wrap" id="cvSuggestWrap"><div class="cv-suggest-label">🛒 자주 사는 상품 — 탭하면 바로 추가</div><div class="cv-suggest-chips" id="cvSuggestChips"></div></div>
   <div class="cv-input-row" style="position:relative">
    <div class="cv-autocomplete" id="cvAutocomplete"></div>
-   <input class="cv-input" id="cvInput" placeholder="구매 목록 입력" autocomplete="off" oninput="cvOnInput(this.value)" onkeydown="if(event.key==='Enter')cvAddItem()">
+   <input class="cv-input" id="cvInput" placeholder="기타 구매 목록 입력하세요" autocomplete="off" oninput="cvOnInput(this.value)" onkeydown="if(event.key==='Enter')cvAddItem()">
    <button class="cv-input-add" onclick="cvAddItem()">추가</button>
   </div>
  </div>`;
@@ -4678,7 +4806,7 @@ function cvOpenInput(){
  cvHideAutocomplete();
  document.getElementById('cvBackdrop')?.classList.add('open');
  const sheet=document.getElementById('cvInputSheet');
- if(sheet){ sheet.classList.add('open'); setTimeout(()=>document.getElementById('cvInput')?.focus(),250); }
+ if(sheet){ sheet.classList.add('open'); }
 }
 function cvCloseInput(){
  document.getElementById('cvBackdrop')?.classList.remove('open');
@@ -4746,9 +4874,8 @@ function cvProgBudgetHTML(){
   +`<div class="cv-prog-label"><span>완료 ${doneCnt} / ${items.length}</span><span>${pct}%</span></div>`;
  if(total>0){
   html+=`<div class="cv-spend">
-    <div class="cv-spend-box done"><span class="cv-spend-k">🛒 사용액</span><span class="cv-spend-v">${spent.toLocaleString()}원</span></div>
-    <div class="cv-spend-box remain"><span class="cv-spend-k">🛍️ 남은 예상</span><span class="cv-spend-v">${remain.toLocaleString()}원</span></div>
-    <div class="cv-spend-box total"><span class="cv-spend-k">합계</span><span class="cv-spend-v">${total.toLocaleString()}원</span></div>
+    <div class="cv-spend-box budget"><span class="cv-spend-k">💰 예산</span><span class="cv-spend-v">${total.toLocaleString()}원</span></div>
+    <div class="cv-spend-box done"><span class="cv-spend-k">🛒 구매액</span><span class="cv-spend-v">${spent.toLocaleString()}원</span></div>
    </div>`;
  }
  return html;
@@ -4915,7 +5042,7 @@ function cvDetailRowHTML(i, cat){
    </div>
    <div class="cv-drow-bottom">
     <div class="cv-qty-stepper"><button class="cv-qty-btn" onclick="cvChangeQty('${i.id}',-1)">−</button><span class="cv-qty-num">${qty}</span><button class="cv-qty-btn" onclick="cvChangeQty('${i.id}',1)">＋</button></div>
-    ${mktChip}
+    
     ${unitTag}
     <div class="cv-drow-spacer"></div>
     <button class="cv-drow-act" onclick="cvEditPrice('${i.id}')">💰</button>
@@ -5119,21 +5246,16 @@ function cvRenderStats(el){
    <button class="cv-stat-nav" onclick="cvStatShift(1)">›</button>
   </div>
   <div class="cv-stat-summary">
+   <div class="cv-sum-card budget">
+    <span class="cv-sum-k">💰 예산</span>
+    <span class="cv-sum-v">${grandTotal.toLocaleString()}<i>원</i></span>
+    <span class="cv-sum-s">${rows.length+remainCnt}개</span>
+   </div>
    <div class="cv-sum-card done">
-    <span class="cv-sum-k">🛒 사용액</span>
+    <span class="cv-sum-k">🛒 구매액</span>
     <span class="cv-sum-v">${total.toLocaleString()}<i>원</i></span>
     <span class="cv-sum-s">${rows.length}개 구매</span>
    </div>
-   ${remainPlan>0?`<div class="cv-sum-card remain">
-    <span class="cv-sum-k">🛍️ 남은 예상</span>
-    <span class="cv-sum-v">${remainPlan.toLocaleString()}<i>원</i></span>
-    <span class="cv-sum-s">${remainCnt}개 예정</span>
-   </div>
-   <div class="cv-sum-card total">
-    <span class="cv-sum-k">합계</span>
-    <span class="cv-sum-v">${grandTotal.toLocaleString()}<i>원</i></span>
-    <span class="cv-sum-s">완료+예정</span>
-   </div>`:''}
   </div>
   ${cats.length?`<div class="cv-stat-section-t">카테고리별</div><div class="cv-stat-cats">${catBars}</div>`:''}
   ${stores.length>1?`<div class="cv-stat-section-t">시장별</div><div class="cv-stat-stores">${stores.map(([n,a])=>`<div class="cv-stat-store"><span>${cvEsc(n)}</span><b>${a.toLocaleString()}원</b></div>`).join('')}</div>`:''}
