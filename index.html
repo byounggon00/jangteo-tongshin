@@ -421,7 +421,8 @@
 .cv-saved-ic{font-size:18px}
 .cv-saved-txt{font-size:13px;color:#c2410c;font-weight:700}
 .cv-saved-txt b{font-size:15px;font-weight:800}
-.cv-drow-mart{color:var(--text3);font-size:10px;text-decoration:line-through;opacity:.7;margin-left:3px}
+.cv-drow-price{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.cv-drow-mart{display:block;color:#c2410c;font-size:10px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .cv-stat-saved{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 14px 0;padding:13px;border-radius:14px;background:linear-gradient(135deg,#fff0e6,#ffe0cc);border:1px solid #f0c8a8;color:#c2410c;font-size:14px;font-weight:700}
 .cv-stat-saved-ic{font-size:18px}
@@ -3298,6 +3299,13 @@ function cvShortLabel(key){
  return `${d.getMonth()+1}/${d.getDate()}(${wd})`;
 }
 // 해당 월 총 지출/품목 집계
+function cvMonthSummaryHTML(){
+ var ms=cvMonthSummary();
+ if(ms.bought>0){
+  return `<div class="cv-cal-sum" onclick="cvGo(\'stats\')"><span class="cv-cal-sum-main">이번 달 <b>${ms.cost.toLocaleString()}원</b></span><span class="cv-cal-sum-sub">${ms.dayCount}일 · ${ms.bought}개 · 통계 ›</span></div>`;
+ }
+ return "";
+}
 function cvMonthSummary(){
  const ref=cvCalRef();
  const ym=`${ref.getFullYear()}-${String(ref.getMonth()+1).padStart(2,'0')}`;
@@ -3348,7 +3356,7 @@ function cvCalendarHTML(){
     <div class="cv-cal-title">${y}년 ${mo+1}월</div>
     <button class="cv-cal-nav" onclick="cvCalShift(1)">›</button>
    </div>
-   ${(()=>{const ms=cvMonthSummary();return ms.bought>0?`<div class="cv-cal-sum" onclick="cvGo('stats')"><span class="cv-cal-sum-main">이번 달 <b>${ms.cost.toLocaleString()}원</b></span><span class="cv-cal-sum-sub">${ms.dayCount}일 · ${ms.bought}개 · 통계 ›</span></div>`:'';})()}
+   ${cvMonthSummaryHTML()}
    <div class="cv-cal-grid">${wdHtml}${cells}</div>
   </div>`;
 }
@@ -5067,10 +5075,11 @@ function cvDetailRowHTML(i, cat){
  if(unit>0){
   const per = unitLabel ? `${unit.toLocaleString()}원/${unitLabel}` : `${unit.toLocaleString()}원`;
   const martU = cvMartUnit(i);
-  const martTag = martU>unit ? ` <span class="cv-drow-mart">마트 ${martU.toLocaleString()}</span>` : "";
-  unitTag = qty>1 ? `<span class="cv-drow-unit2">${per} × ${qty}${martTag}</span>` : `<span class="cv-drow-unit2">${per}${martTag}</span>`;
+  const perTxt = qty>1 ? `${per} × ${qty}` : `${per}`;
+  const martLine = martU>unit ? `<span class="cv-drow-mart">마트 ${(martU*(qty>1?qty:1)).toLocaleString()}원 · 시장이 저렴</span>` : "";
+  unitTag = `<div class="cv-drow-price"><span class="cv-drow-unit2">${perTxt}</span>${martLine}</div>`;
  } else if(unitLabel){
-  unitTag = `<span class="cv-drow-unit2">기준 ${unitLabel}</span>`;
+  unitTag = `<div class="cv-drow-price"><span class="cv-drow-unit2">기준 ${unitLabel}</span></div>`;
  }
  const mkt = cvItemMarket(i);
  const mktChip = `<button class="cv-mkt-chip${mkt?' set':''}" onclick="cvPickMarket('${i.id}')">📍 ${mkt?cvEsc(mkt):'시장'}</button>`;
