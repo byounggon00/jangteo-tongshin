@@ -5199,7 +5199,8 @@ function cvStatShift(dir){
  cvRenderStats(document.getElementById('clPageContent'));
 }
 function cvSetStatPeriod(p){ cvStatPeriod=p; cvStatRef=Date.now(); cvRenderStats(document.getElementById('clPageContent')); }
-function cvRenderStats(el){
+function cvUnitText(r){ var u=r.unit||CV_UNITS[r.text]||''; var qn=r.qty||1; if(u){ return qn>1?(qn+' x '+u):u; } return qn+'개'; }
+function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const {start,end,label}=cvStatRange(cvStatPeriod, cvStatRef);
  const rows=CV_SPEND.filter(s=>s.ts>=start && s.ts<end).sort((a,b)=>b.ts-a.ts);
  const total=rows.reduce((s,r)=>s+(r.amount||0),0);
@@ -5252,7 +5253,7 @@ function cvRenderStats(el){
     const head=`<div class="cv-stat-daygroup-h"><span>${d.getMonth()+1}월 ${d.getDate()}일 (${wd})</span><b>${dayTotal.toLocaleString()}원</b></div>`;
     const rowsHtml=items.map(r=>`<div class="cv-stat-item">
       <span class="cv-card-dot" style="background:${r.catColor};margin-top:6px"></span>
-      <div class="cv-stat-item-main"><div class="cv-stat-item-text">${cvEsc(r.text)} <span class="cv-stat-item-qty">${(()=>{const u=r.unit||CV_UNITS[r.text]||'';const q=r.qty||1;if(u){return q>1?(q+' x '+u):u;}return q+'개';})()}</span></div>
+      <div class="cv-stat-item-main"><div class="cv-stat-item-text">${cvEsc(r.text)} <span class="cv-stat-item-qty">${cvUnitText(r)}</span></div>
        <div class="cv-stat-item-meta">${cvEsc(r.store||'시장 미정')}</div></div>
       <span class="cv-stat-item-amt">${(r.amount||0).toLocaleString()}원</span>
      </div>`).join('');
@@ -5289,7 +5290,7 @@ function cvRenderStats(el){
   <div class="cv-stat-items">${itemRows}</div>
   <button class="cv-stat-back" onclick="cvGo('main')">‹ 장보기로 돌아가기</button>
  </div>`;
-}
+}catch(err){ el.innerHTML=`<div class="cv-page"><div class="cv-hdr"><button class="cv-hdr-backbtn" onclick="cvGo(\'main\')">‹ 장보기</button><div class="cv-hdr-title">📊 지출 통계</div><span style="width:60px"></span></div><div style="padding:30px;text-align:center;color:var(--text3)">통계 표시 중 문제가 생겼어요<br><br>${err.message||err}</div></div>`; }}
 async function cvAddTag(){
  const name=await cvPrompt('새 카테고리 추가', '', '예: 과일, 음료');
  if(!name||!name.trim()) return;
