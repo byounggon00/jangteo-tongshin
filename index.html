@@ -52,7 +52,7 @@
 .cv-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
 .cv-cal-wd{text-align:center;font-size:10px;font-weight:700;color:var(--text3);padding:2px 0 6px}
 .cv-cal-wd.sun{color:#e0533f}.cv-cal-wd.sat{color:#4a90e2}
-.cv-cal-cell{position:relative;aspect-ratio:1;border:none;background:none;cursor:pointer;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;transition:background .12s;padding:2px 1px;overflow:hidden}
+.cv-cal-cell{position:relative;aspect-ratio:1;border:1px solid transparent;background:none;cursor:pointer;border-radius:11px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;transition:background .12s;padding:2px 1px;overflow:hidden}
 .cv-cal-cell.empty{cursor:default}
 .cv-cal-num{font-size:12px;font-weight:600;color:var(--text);line-height:1}
 .cv-cal-cell.today .cv-cal-num{font-weight:800}
@@ -70,7 +70,7 @@
 .cv-cal-amt.sm{font-size:8.5px;letter-spacing:-.5px}
 .cv-cal-amt.done{color:var(--green)}
 .cv-cal-cell.active .cv-cal-amt{color:#fff}
-.cv-cal-cell.has{background:rgba(0,0,0,.015)}
+.cv-cal-cell.has{background:rgba(193,53,32,.07);border:1px solid rgba(193,53,32,.16)}
 .cv-cal-cell.active.has{background:var(--text)}
 .cv-cal-dot.done{background:var(--green)}
 .cv-cal-cell.active .cv-cal-dot{background:#fff}
@@ -486,6 +486,8 @@
 .cv-rem-ic{font-size:18px;flex-shrink:0}
 .cv-rem-txt{flex:1;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;line-height:1.35}
 .cv-rem-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:24px;height:24px;border-radius:50%;font-size:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+
+.share-btn-share{flex:1;padding:12px;border-radius:11px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body><header class="hdr"><div class="hdr-inner"><div class="logo"><div class="logo-kr">시장정복단</div><div class="logo-en">market hunter</div>
@@ -568,7 +570,7 @@
 <button class="login-guest" onclick="cvGuestLogin()">로그인 없이 둘러보기 ›</button>
 <div class="login-terms">시작하면 <b>이용약관</b> 및 <b>개인정보처리방침</b>에<br>동의하는 것으로 간주됩니다</div>
 </div></div><div class="onboard-overlay" id="onboardOverlay"><div class="onboard-modal"><div class="onboard-hdr"><div class="onboard-logo">🏮</div><div class="onboard-title">시장정복단에 오신 것을 환영해요!</div><div class="onboard-sub">어떤 목적으로 방문하셨어요?<br>맞춤 화면으로 안내해드릴게요</div></div><div class="onboard-choices"><button class="onboard-choice" id="ob-explore" onclick="selectOnboard('explore',this)"><div class="onboard-choice-icon">📸</div><div class="onboard-choice-info"><div class="onboard-choice-title">시장 탐방 · 맛집 발견</div><div class="onboard-choice-desc">전국 전통시장 사진 후기 탐색,<br>숨은 맛집 발견, 나들이·데이트 코스</div></div></button><button class="onboard-choice" id="ob-shopping" onclick="selectOnboard('shopping',this)"><div class="onboard-choice-icon">🛒</div><div class="onboard-choice-info"><div class="onboard-choice-title">장보기 · 마감세일 정보</div><div class="onboard-choice-desc">신선식품 마감 할인 실시간 알림,<br>장보기 체크리스트, 절약 기록</div></div></button><button class="onboard-choice" id="ob-both" onclick="selectOnboard('both',this)"><div class="onboard-choice-icon">🏮</div><div class="onboard-choice-info"><div class="onboard-choice-title">둘 다 관심 있어요</div><div class="onboard-choice-desc">탐방도 하고 장보기도 해요.<br>전체 기능을 모두 활용할게요</div></div></button></div><button class="onboard-btn" id="onboardBtn" onclick="completeOnboard()" disabled>시작하기</button><button class="onboard-skip" onclick="completeOnboard('skip')">건너뛰기</button></div>
-</div><div class="share-card-overlay" id="shareCardOverlay" onclick="closeShareCard(event)"><div class="share-card-wrap"><div class="share-card-title">📸 인스타 스토리에 공유하기</div><div class="share-canvas-wrap"><canvas id="shareCanvas" width="360" height="500"></canvas></div><div class="share-btns"><button class="share-btn-copy" onclick="saveShareCard()">📥 이미지 저장</button><button class="share-btn-close" onclick="closeShareCardBtn()">닫기</button></div></div>
+</div><div class="share-card-overlay" id="shareCardOverlay" onclick="closeShareCard(event)"><div class="share-card-wrap"><div class="share-card-title">📋 장보기 결산서 미리보기</div><div class="share-canvas-wrap"><canvas id="shareCanvas" width="380" height="660"></canvas></div><div class="share-btns"><button class="share-btn-share" onclick="cvDoStatShare()">공유하기</button><button class="share-btn-copy" onclick="saveShareCard()">이미지 저장</button><button class="share-btn-close" onclick="closeShareCardBtn()">닫기</button></div></div>
 </div><div class="levelup-overlay" id="levelupOverlay" onclick="closeLevelUp()"><div class="levelup-card" onclick="event.stopPropagation()"><div style="font-size:14px;font-weight:700;color:#f0b030;letter-spacing:2px;margin-bottom:8px">🚩 시장정복단</div><span class="levelup-emoji" id="levelupEmoji">🏴‍☠️</span><div class="levelup-title">등급 승급!</div><div class="levelup-rank" id="levelupRank"></div><div class="levelup-desc" id="levelupDesc"></div><button class="levelup-btn" onclick="closeLevelUp()">계속 정복하기 🚩</button></div>
 </div><div id="postMenuOverlay" style="position:fixed;inset:0;z-index:450;display:none" onclick="closePostMenu()"><div id="postMenuSheet" style="
     position:fixed;bottom:0;left:0;right:0;
@@ -5487,10 +5489,13 @@ function cvStatShare(){
  var d = window._cvStatShare || {total:0,saved:0,count:0,period:'month',cats:[]};
  var periodTxt = d.period==='week'?'이번 주':(d.period==='year'?'올해':'이번 달');
  var cats = d.cats||[];
- var shareText = periodTxt+' 전통시장 장보기\n구매액 '+(d.total||0).toLocaleString()+'원';
- if(cats.length){ shareText += '\n'; cats.slice(0,4).forEach(function(ct){ shareText += '\n· '+ct.name+' '+(ct.amount||0).toLocaleString()+'원'; }); }
- if(d.saved>0) shareText += '\n\n마트보다 '+(d.saved||0).toLocaleString()+'원 절약!';
- shareText += '\n\n#시장정복단 #전통시장';
+ var comp0 = d.compareItems || [];
+ var tMart=0, tMkt=0; comp0.forEach(function(it){ tMart+=(it.mart||0); tMkt+=(it.market||0); });
+ var savedTxt = Math.max(0, tMart-tMkt);
+ var rateTxt = tMart>0 ? Math.round(savedTxt/tMart*100) : 0;
+ var shareText = '[전통시장 장보기 결산서]\n'+periodTxt+' 기준\n\n마트 대비 절감액: '+savedTxt.toLocaleString()+'원 (절감율 '+rateTxt+'%)';
+ if(comp0.length){ shareText += '\n'; comp0.slice(0,3).forEach(function(it){ shareText += '\n· '+it.name+': 마트 '+(it.mart||0).toLocaleString()+'원 → 시장 '+(it.market||0).toLocaleString()+'원'; }); }
+ shareText += '\n\n* 마트가 기준: KAMIS 농수산물 유통정보\n시장정복단 앱에서 자동 생성';
  function shareTextOnly(){
   if(navigator.share){ navigator.share({text:shareText}).catch(function(){}); }
   else if(navigator.clipboard){ navigator.clipboard.writeText(shareText).then(function(){ toast('공유 내용을 복사했어요'); }); }
@@ -5500,53 +5505,109 @@ function cvStatShare(){
   var canvas = document.getElementById('shareCanvas');
   if(!canvas){ shareTextOnly(); return; }
   var ctx = canvas.getContext('2d');
-  var W=360, H=560; canvas.width=W; canvas.height=H;
-  ctx.fillStyle='#FAF8F4'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#C13520'; ctx.fillRect(0,0,W,110);
-  ctx.textAlign='center';
-  ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='600 13px Arial';
-  ctx.fillText('\uc2dc\uc7a5\uc815\ubcf5\ub2e8 \u00b7 '+periodTxt, W/2, 44);
-  ctx.fillStyle='#fff'; ctx.font='800 24px Arial';
-  ctx.fillText('\uce74\ud14c\uace0\ub9ac\ubcc4 \uc9c0\ucd9c', W/2, 80);
-  ctx.fillStyle='#888'; ctx.font='600 12px Arial';
-  ctx.fillText('\ucd1d \uad6c\ub9e4\uc561', W/2, 145);
-  ctx.fillStyle='#1a7a45'; ctx.font='800 30px Arial';
-  ctx.fillText((d.total||0).toLocaleString()+'\uc6d0', W/2, 178);
+  var W=380, H=660; canvas.width=W; canvas.height=H;
+  var comp = d.compareItems || [];
+  var tMart=0, tMkt=0;
+  comp.forEach(function(it){ tMart+=(it.mart||0); tMkt+=(it.market||0); });
+  var savedAll=Math.max(0,tMart-tMkt);
+  var rate = tMart>0 ? Math.round(savedAll/tMart*100) : 0;
+  function fmtD(ts){ var dt=new Date(ts); return dt.getFullYear()+'.'+('0'+(dt.getMonth()+1)).slice(-2)+'.'+('0'+dt.getDate()).slice(-2); }
+  var periodStr = (d.rangeStart&&d.rangeEnd) ? (fmtD(d.rangeStart)+' ~ '+fmtD(d.rangeEnd-1)) : periodTxt;
+  var todayStr = fmtD(Date.now());
+  var PAD=28;
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
   ctx.textAlign='left';
-  var maxAmt = cats.length ? cats[0].amount : 1;
-  var top = cats.slice(0,5);
-  var y = 215, barX = 24, barW = W-48;
-  top.forEach(function(ct){
-   var ratio = maxAmt>0 ? (ct.amount/maxAmt) : 0;
-   ctx.fillStyle='#333'; ctx.font='700 13px Arial'; ctx.textAlign='left';
-   ctx.fillText(ct.name, barX, y);
-   ctx.fillStyle='#666'; ctx.font='600 12px Arial'; ctx.textAlign='right';
-   ctx.fillText((ct.amount||0).toLocaleString()+'\uc6d0', barX+barW, y);
-   y += 10;
-   ctx.fillStyle='#eee';
-   if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(barX, y, barW, 12, 6); ctx.fill(); } else { ctx.fillRect(barX, y, barW, 12); }
-   ctx.fillStyle = ct.color || '#C13520';
-   var fillW = Math.max(6, barW*ratio);
-   if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(barX, y, fillW, 12, 6); ctx.fill(); } else { ctx.fillRect(barX, y, fillW, 12); }
-   y += 34;
+  ctx.fillStyle='#1a1a1a'; ctx.font='800 21px Arial';
+  ctx.fillText('\uc804\ud1b5\uc2dc\uc7a5\u0020\uc7a5\ubcf4\uae30\u0020\uacb0\uc0b0\uc11c', PAD, 48);
+  ctx.fillStyle='#999'; ctx.font='400 12px Arial';
+  ctx.fillText('\uc2dc\uc7a5\uc815\ubcf5\ub2e8\u0020\u00b7\u0020\u004d\u0061\u0072\u006b\u0065\u0074\u0020\u0048\u0075\u006e\u0074\u0065\u0072', PAD, 80);
+  ctx.fillStyle='#555'; ctx.font='400 12px Arial';
+  ctx.fillText('\uacb0\uc0b0\u0020\uae30\uac04   '+periodStr, PAD, 110);
+  ctx.fillText('\uc791\uc131\uc77c       '+todayStr, PAD, 132);
+  ctx.strokeStyle='#e5e5e5'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD,160); ctx.lineTo(W-PAD,160); ctx.stroke();
+  var by=180;
+  ctx.fillStyle='#888'; ctx.font='400 12px Arial';
+  ctx.fillText('\ub9c8\ud2b8\u0020\ub300\ube44\u0020\uc808\uac10\uc561', PAD, by+6);
+  ctx.textAlign='right';
+  ctx.fillStyle='#c13520'; ctx.font='800 28px Arial';
+  ctx.fillText(savedAll.toLocaleString()+'\uc6d0', W-PAD, by+8);
+  ctx.fillStyle='#c13520'; ctx.font='400 12px Arial';
+  ctx.fillText('\uc808\uac10\uc728 '+rate+'%', W-PAD, by+34);
+  ctx.textAlign='left';
+  ctx.strokeStyle='#e5e5e5';
+  ctx.beginPath(); ctx.moveTo(PAD,by+56); ctx.lineTo(W-PAD,by+56); ctx.stroke();
+  var ty=by+78;
+  ctx.fillStyle='#999'; ctx.font='700 11px Arial';
+  ctx.fillText('\ud488\ubaa9', PAD, ty);
+  ctx.textAlign='center';
+  ctx.fillText('\ub9c8\ud2b8\uac00', W-PAD-178, ty);
+  ctx.fillText('\uc2dc\uc7a5\uac00', W-PAD-98, ty);
+  ctx.textAlign='right';
+  ctx.fillText('\uc808\uac10', W-PAD, ty);
+  ctx.textAlign='left';
+  ctx.strokeStyle='#1a1a1a';
+  ctx.beginPath(); ctx.moveTo(PAD,ty+18); ctx.lineTo(W-PAD,ty+18); ctx.stroke();
+  var ry=ty+40;
+  comp.forEach(function(it){
+   var sv=Math.max(0,(it.mart||0)-(it.market||0));
+   ctx.fillStyle='#1a1a1a'; ctx.font='400 13px Arial'; ctx.textAlign='left';
+   ctx.fillText(it.name, PAD, ry);
+   // 분류 · 시장
+   var sub='';
+   if(it.cat) sub+=it.cat;
+   if(it.store){ sub += (sub?' \u00b7 ':'')+it.store; }
+   if(sub){ ctx.fillStyle='#aaa'; ctx.font='400 10px Arial'; ctx.fillText(sub, PAD, ry+16); }
+   ctx.fillStyle='#999'; ctx.font='400 12px Arial'; ctx.textAlign='center';
+   ctx.fillText((it.mart||0).toLocaleString(), W-PAD-178, ry+2);
+   ctx.fillStyle='#1a1a1a';
+   ctx.fillText((it.market||0).toLocaleString(), W-PAD-98, ry+2);
+   ctx.fillStyle='#c13520'; ctx.font='700 12px Arial'; ctx.textAlign='right';
+   ctx.fillText('-'+sv.toLocaleString(), W-PAD, ry+2);
+   ry+=42;
   });
-  if(d.saved>0){
-   ctx.textAlign='center';
-   ctx.fillStyle='#C13520'; ctx.font='700 14px Arial';
-   ctx.fillText('\ub9c8\ud2b8\ubcf4\ub2e4 '+(d.saved||0).toLocaleString()+'\uc6d0 \uc808\uc57d!', W/2, H-46);
-  }
-  ctx.textAlign='center';
-  ctx.fillStyle='#bbb'; ctx.font='600 11px Arial';
-  ctx.fillText('\uc804\ud1b5\uc2dc\uc7a5\uc5d0\uc11c \uc54c\ub730\ud558\uac8c \uc7a5\ubcf4\uae30', W/2, H-22);
+  ctx.strokeStyle='#1a1a1a'; ctx.textAlign='left';
+  ctx.beginPath(); ctx.moveTo(PAD,ry); ctx.lineTo(W-PAD,ry); ctx.stroke();
+  ry+=22;
+  ctx.fillStyle='#1a1a1a'; ctx.font='800 13px Arial';
+  ctx.fillText('\ud569\uacc4', PAD, ry);
+  ctx.font='400 12px Arial'; ctx.fillStyle='#999'; ctx.textAlign='center';
+  ctx.fillText(tMart.toLocaleString(), W-PAD-178, ry);
+  ctx.fillStyle='#1a1a1a'; ctx.font='800 12px Arial';
+  ctx.fillText(tMkt.toLocaleString(), W-PAD-98, ry);
+  ctx.fillStyle='#c13520'; ctx.font='800 13px Arial'; ctx.textAlign='right';
+  ctx.fillText('-'+savedAll.toLocaleString(), W-PAD, ry);
   ctx.textAlign='left';
-  canvas.toBlob(function(blob){
-   if(!blob){ shareTextOnly(); return; }
-   var file = new File([blob], 'market-stats.png', {type:'image/png'});
-   if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
-    navigator.share({ files:[file], text:shareText }).catch(function(){ shareTextOnly(); });
-   } else { shareTextOnly(); }
-  }, 'image/png');
+  var fy=H-58;
+  ctx.strokeStyle='#e5e5e5';
+  ctx.beginPath(); ctx.moveTo(PAD,fy); ctx.lineTo(W-PAD,fy); ctx.stroke();
+  ctx.fillStyle='#aaa'; ctx.font='400 10px Arial';
+  ctx.fillText('\ub9c8\ud2b8\uac00\u0020\uae30\uc900\u003a\u0020\u004b\u0041\u004d\u0049\u0053\u0020\ub18d\uc218\uc0b0\ubb3c\u0020\uc720\ud1b5\uc815\ubcf4\u0020\uc18c\ub9e4\u0020\ud3c9\uade0\uac00', PAD, fy+18);
+  ctx.fillText('\ubcf8\u0020\uacb0\uc0b0\uc11c\ub294\u0020\uc2dc\uc7a5\uc815\ubcf5\ub2e8\u0020\uc571\uc5d0\uc11c\u0020\uc790\ub3d9\u0020\uc0dd\uc131\ub418\uc5c8\uc2b5\ub2c8\ub2e4\u002e', PAD, fy+34);
+  window._cvShareText = shareText;
+  var ov = document.getElementById('shareCardOverlay');
+  if(ov){ ov.classList.add('open'); document.body.style.overflow='hidden'; }
+  else { shareTextOnly(); }
  }catch(e){ shareTextOnly(); }
+}
+function cvDoStatShare(){
+ var shareText = window._cvShareText || '';
+ function txtOnly(){
+  if(navigator.share){ navigator.share({text:shareText}).catch(function(){}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(shareText).then(function(){ toast('공유 내용을 복사했어요'); }); }
+  else { toast('공유를 지원하지 않는 환경이에요'); }
+ }
+ try{
+  var canvas=document.getElementById('shareCanvas');
+  if(!canvas){ txtOnly(); return; }
+  canvas.toBlob(function(blob){
+   if(!blob){ txtOnly(); return; }
+   var file=new File([blob],'market-stats.png',{type:'image/png'});
+   if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+    navigator.share({ files:[file], text:shareText }).catch(function(){ txtOnly(); });
+   } else { txtOnly(); }
+  }, 'image/png');
+ }catch(e){ txtOnly(); }
 }
 function cvStatRange(period, ref){
  const d = new Date(ref);
@@ -5596,7 +5657,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const total=rows.reduce((s,r)=>s+(r.amount||0),0);
  const martTotal=rows.reduce((s,r)=>s+(r.martAmount||Math.round((r.amount||0)*1.22)),0);
  const savedTotal=Math.max(0, martTotal-total);
- window._cvStatShare={ total:total, saved:savedTotal, count:rows.length, period:cvStatPeriod, cats:[] };
+ window._cvStatShare={ total:total, saved:savedTotal, count:rows.length, period:cvStatPeriod, cats:[], rangeStart:start, rangeEnd:end };
  // 같은 기간 아직 안 산 품목의 예상액 (날짜 기준)
  let remainPlan=0, remainCnt=0;
  CV.items.forEach(it=>{
@@ -5626,8 +5687,16 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  });
  const stores=Object.entries(byStore).sort((a,b)=>b[1]-a[1]);
  const byItem={};
- rows.forEach(r=>{ const k=r.text||"기타"; if(!byItem[k]) byItem[k]={amount:0,qty:0}; byItem[k].amount+=(r.amount||0); byItem[k].qty+=(r.qty||1); });
+ rows.forEach(r=>{ const k=r.text||"기타"; if(!byItem[k]) byItem[k]={amount:0,qty:0,mart:0,cat:r.cat||"",store:r.store||""}; byItem[k].amount+=(r.amount||0); byItem[k].qty+=(r.qty||1); byItem[k].mart+=(r.martAmount||Math.round((r.amount||0)*1.22)); if(!byItem[k].cat && r.cat) byItem[k].cat=r.cat; if(!byItem[k].store && r.store) byItem[k].store=r.store; });
  const items=Object.entries(byItem).sort((a,b)=>b[1].amount-a[1].amount);
+ try{
+  if(window._cvStatShare){
+   window._cvStatShare.compareItems = Object.entries(byItem)
+    .map(function(e){ return {name:e[0], market:e[1].amount, mart:e[1].mart, save:Math.max(0,e[1].mart-e[1].amount), cat:e[1].cat||"", store:e[1].store||""}; })
+    .sort(function(a,b){ return b.save - a.save; })
+    .slice(0,5);
+  }
+ }catch(e){}
 
  const periodTabs=`<div class="cv-stat-tabs">
   ${[['week','주별'],['month','월별'],['year','연도별']].map(([p,t])=>
