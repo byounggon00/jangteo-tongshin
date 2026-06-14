@@ -438,7 +438,7 @@
 .cv-drow-mart{display:block;color:var(--text3);font-size:10px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .cv-stat-saved{display:flex;align-items:center;justify-content:center;margin:12px 14px 0;color:#c2410c;font-size:14px;font-weight:700}
-.cv-stat-saved-mk{color:#1a7a45;font-weight:800;margin-right:5px}
+.cv-stat-saved-mk{color:#c2410c;font-weight:800;font-size:11px;margin-left:2px}
 .cv-stat-saved-ic{font-size:18px}
 .cv-stat-saved b{font-size:16px;font-weight:800}
 
@@ -3169,7 +3169,10 @@ function cvSetBudget(amount){
  saveCV();
 }
 // 사용 예정액(전체 합계), 실사용액(체크한 것만)
-function cvPlannedCost(){ return cvCatSubtotal(cvActiveItems()); }
+function cvPlannedCost(){
+ try{ if(CV.activeDate && CV.activeDate < cvTodayKey()){ return cvCatSubtotal(cvActiveItems().filter(i=>i.done)); } }catch(e){}
+ return cvCatSubtotal(cvActiveItems());
+}
 function cvSpentCost(){ return cvCatSubtotal(cvActiveItems().filter(i=>i.done)); }
 const CV_MART_RATIO = 1.22;
 const CV_FIXED_PRICE = ['종량제','쓰레기봉투','쓰레기 봉투','봉투','담배','우표','복권','신문','상품권','주류','소주','맥주','종량제봉투'];
@@ -4578,6 +4581,52 @@ function toggleAvPicker(){
  if(el) el.style.display = el.style.display==='flex' ? 'none' : 'flex';
 }
 
+function cvApplyAvatarPhoto(){
+ try{
+  const el=document.getElementById('cvProfileAvatar');
+  if(el && P.photo){
+   el.innerHTML='<img src="'+P.photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+   el.style.fontSize='0';
+  }
+ }catch(e){}
+}
+function cvAvatarPick(){
+ let inp=document.getElementById('cvAvatarInput');
+ if(!inp){
+  inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.id='cvAvatarInput'; inp.style.display='none';
+  inp.addEventListener('change', function(e){
+   const file=e.target.files && e.target.files[0];
+   if(!file) return;
+   const reader=new FileReader();
+   reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+     try{
+      const size=240;
+      const canvas=document.createElement('canvas');
+      canvas.width=size; canvas.height=size;
+      const ctx=canvas.getContext('2d');
+      const s=Math.min(img.width, img.height);
+      const sx=(img.width-s)/2, sy=(img.height-s)/2;
+      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      P.photo=canvas.toDataURL('image/jpeg', 0.85);
+     }catch(err){ P.photo=ev.target.result; }
+     saveProfile();
+     try{ initProfilePage(); }catch(e2){}
+     cvApplyAvatarPhoto();
+     if(typeof toast==='function') toast('프로필 사진이 변경됐어요');
+    };
+    img.src=ev.target.result;
+   };
+   reader.readAsDataURL(file);
+   inp.value='';
+  });
+  document.body.appendChild(inp);
+ }
+ inp.click();
+}
+
 function toggleEdit(){
  P.editing = !P.editing;
  const nameEl = document.getElementById('pmNameDisplay');
@@ -5244,10 +5293,12 @@ let cvStatPeriod = 'month'; // week | month | year
 let cvStatBreakdown='cat';
 function cvSetBreakdown(m){ cvStatBreakdown=m; cvRenderStats(document.getElementById('clPageContent')); }
 function cvStatShare(){
- var d = window._cvStatShare || {total:0,saved:0,count:0,period:'month'};
+ var d = window._cvStatShare || {total:0,saved:0,count:0,period:'month',cats:[]};
  var periodTxt = d.period==='week'?'이번 주':(d.period==='year'?'올해':'이번 달');
- var shareText = periodTxt+' 전통시장 장보기\n🛒 구매액 '+(d.total||0).toLocaleString()+'원';
- if(d.saved>0) shareText += '\n✓ 마트보다 '+(d.saved||0).toLocaleString()+'원 절약!';
+ var cats = d.cats||[];
+ var shareText = periodTxt+' 전통시장 장보기\n구매액 '+(d.total||0).toLocaleString()+'원';
+ if(cats.length){ shareText += '\n'; cats.slice(0,4).forEach(function(ct){ shareText += '\n· '+ct.name+' '+(ct.amount||0).toLocaleString()+'원'; }); }
+ if(d.saved>0) shareText += '\n\n마트보다 '+(d.saved||0).toLocaleString()+'원 절약!';
  shareText += '\n\n#시장정복단 #전통시장';
  function shareTextOnly(){
   if(navigator.share){ navigator.share({text:shareText}).catch(function(){}); }
@@ -5258,26 +5309,44 @@ function cvStatShare(){
   var canvas = document.getElementById('shareCanvas');
   if(!canvas){ shareTextOnly(); return; }
   var ctx = canvas.getContext('2d');
-  var W=360, H=480; canvas.width=W; canvas.height=H;
+  var W=360, H=560; canvas.width=W; canvas.height=H;
   ctx.fillStyle='#FAF8F4'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#C13520'; ctx.fillRect(0,0,W,120);
+  ctx.fillStyle='#C13520'; ctx.fillRect(0,0,W,110);
   ctx.textAlign='center';
   ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='600 13px Arial';
-  ctx.fillText('\uc2dc\uc7a5\uc815\ubcf5\ub2e8 \u00b7 '+periodTxt, W/2, 50);
-  ctx.fillStyle='#fff'; ctx.font='800 26px Arial';
-  ctx.fillText('\uc804\ud1b5\uc2dc\uc7a5 \uc7a5\ubcf4\uae30', W/2, 88);
-  ctx.fillStyle='#888'; ctx.font='600 14px Arial';
-  ctx.fillText('\uad6c\ub9e4\uc561', W/2, 180);
-  ctx.fillStyle='#1a7a45'; ctx.font='800 40px Arial';
-  ctx.fillText((d.total||0).toLocaleString()+'\uc6d0', W/2, 225);
+  ctx.fillText('\uc2dc\uc7a5\uc815\ubcf5\ub2e8 \u00b7 '+periodTxt, W/2, 44);
+  ctx.fillStyle='#fff'; ctx.font='800 24px Arial';
+  ctx.fillText('\uce74\ud14c\uace0\ub9ac\ubcc4 \uc9c0\ucd9c', W/2, 80);
+  ctx.fillStyle='#888'; ctx.font='600 12px Arial';
+  ctx.fillText('\ucd1d \uad6c\ub9e4\uc561', W/2, 145);
+  ctx.fillStyle='#1a7a45'; ctx.font='800 30px Arial';
+  ctx.fillText((d.total||0).toLocaleString()+'\uc6d0', W/2, 178);
+  ctx.textAlign='left';
+  var maxAmt = cats.length ? cats[0].amount : 1;
+  var top = cats.slice(0,5);
+  var y = 215, barX = 24, barW = W-48;
+  top.forEach(function(ct){
+   var ratio = maxAmt>0 ? (ct.amount/maxAmt) : 0;
+   ctx.fillStyle='#333'; ctx.font='700 13px Arial'; ctx.textAlign='left';
+   ctx.fillText(ct.name, barX, y);
+   ctx.fillStyle='#666'; ctx.font='600 12px Arial'; ctx.textAlign='right';
+   ctx.fillText((ct.amount||0).toLocaleString()+'\uc6d0', barX+barW, y);
+   y += 10;
+   ctx.fillStyle='#eee';
+   if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(barX, y, barW, 12, 6); ctx.fill(); } else { ctx.fillRect(barX, y, barW, 12); }
+   ctx.fillStyle = ct.color || '#C13520';
+   var fillW = Math.max(6, barW*ratio);
+   if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(barX, y, fillW, 12, 6); ctx.fill(); } else { ctx.fillRect(barX, y, fillW, 12); }
+   y += 34;
+  });
   if(d.saved>0){
-   ctx.fillStyle='#888'; ctx.font='600 14px Arial';
-   ctx.fillText('\ub9c8\ud2b8\ubcf4\ub2e4 \uc808\uc57d\ud55c \uae08\uc561', W/2, 300);
-   ctx.fillStyle='#C13520'; ctx.font='800 36px Arial';
-   ctx.fillText((d.saved||0).toLocaleString()+'\uc6d0', W/2, 342);
+   ctx.textAlign='center';
+   ctx.fillStyle='#C13520'; ctx.font='700 14px Arial';
+   ctx.fillText('\ub9c8\ud2b8\ubcf4\ub2e4 '+(d.saved||0).toLocaleString()+'\uc6d0 \uc808\uc57d!', W/2, H-46);
   }
-  ctx.fillStyle='#bbb'; ctx.font='600 12px Arial';
-  ctx.fillText('\uc804\ud1b5\uc2dc\uc7a5\uc5d0\uc11c \uc54c\ub730\ud558\uac8c \uc7a5\ubcf4\uae30', W/2, H-40);
+  ctx.textAlign='center';
+  ctx.fillStyle='#bbb'; ctx.font='600 11px Arial';
+  ctx.fillText('\uc804\ud1b5\uc2dc\uc7a5\uc5d0\uc11c \uc54c\ub730\ud558\uac8c \uc7a5\ubcf4\uae30', W/2, H-22);
   ctx.textAlign='left';
   canvas.toBlob(function(blob){
    if(!blob){ shareTextOnly(); return; }
@@ -5288,7 +5357,6 @@ function cvStatShare(){
   }, 'image/png');
  }catch(e){ shareTextOnly(); }
 }
-
 function cvStatRange(period, ref){
  const d = new Date(ref);
  let start, end, label;
@@ -5325,7 +5393,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const total=rows.reduce((s,r)=>s+(r.amount||0),0);
  const martTotal=rows.reduce((s,r)=>s+(r.martAmount||Math.round((r.amount||0)*1.22)),0);
  const savedTotal=Math.max(0, martTotal-total);
- window._cvStatShare={ total:total, saved:savedTotal, count:rows.length, period:cvStatPeriod };
+ window._cvStatShare={ total:total, saved:savedTotal, count:rows.length, period:cvStatPeriod, cats:cats.map(x=>({name:x.name,color:x.color,amount:x.amount})) };
  // 같은 기간 아직 안 산 품목의 예상액 (날짜 기준)
  let remainPlan=0, remainCnt=0;
  CV.items.forEach(it=>{
@@ -5347,6 +5415,9 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const byStore={};
  rows.forEach(r=>{ let k=r.store; if(!k && r.ts){ try{ const d=new Date(r.ts); const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(CV.dateMarkets && CV.dateMarkets[ds]) k=CV.dateMarkets[ds]; }catch(e){} } k=k||'시장 미정'; byStore[k]=(byStore[k]||0)+(r.amount||0); });
  const stores=Object.entries(byStore).sort((a,b)=>b[1]-a[1]);
+ const byItem={};
+ rows.forEach(r=>{ const k=r.text||"기타"; if(!byItem[k]) byItem[k]={amount:0,qty:0}; byItem[k].amount+=(r.amount||0); byItem[k].qty+=(r.qty||1); });
+ const items=Object.entries(byItem).sort((a,b)=>b[1].amount-a[1].amount);
 
  const periodTabs=`<div class="cv-stat-tabs">
   ${[['week','주별'],['month','월별'],['year','연도별']].map(([p,t])=>
@@ -5404,11 +5475,12 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
     <span class="cv-sum-s">${rows.length}개 구매</span>
    </div>
   </div>
-  ${savedTotal>0?`<div class="cv-stat-saved"><span class="cv-stat-saved-mk">✓</span><span>시장에 가서 마트보다 <b>${savedTotal.toLocaleString()}원</b> 아꼈어요</span></div>`:''}
-  ${(cats.length||stores.length)?`<div class="cv-bd-tabs"><button class="cv-bd-tab${cvStatBreakdown==='cat'?' on':''}" onclick="cvSetBreakdown('cat')">🏷️ 카테고리별</button><button class="cv-bd-tab${cvStatBreakdown==='market'?' on':''}" onclick="cvSetBreakdown('market')">📍 시장별</button></div>`:''}
+  ${savedTotal>0?`<div class="cv-stat-saved"><span>시장에 가서 마트보다 <b>${savedTotal.toLocaleString()}원</b><span class="cv-stat-saved-mk">▼</span> 아꼈어요</span></div>`:''}
+  ${(cats.length||stores.length)?`<div class="cv-bd-tabs"><button class="cv-bd-tab${cvStatBreakdown==='cat'?' on':''}" onclick="cvSetBreakdown('cat')">🏷️ 카테고리별</button><button class="cv-bd-tab${cvStatBreakdown==='item'?' on':''}" onclick="cvSetBreakdown('item')">🛒 상품별</button><button class="cv-bd-tab${cvStatBreakdown==='market'?' on':''}" onclick="cvSetBreakdown('market')">📍 시장별</button></div>`:''}
   ${(cvStatBreakdown==='cat'&&cats.length)?`<div class="cv-stat-cats">${catBars}</div>`:''}
   ${(cvStatBreakdown==='market'&&stores.length)?`<div class="cv-stat-stores">${stores.map(([n,a])=>`<div class="cv-stat-store"><span>${cvEsc(n)}</span><b>${a.toLocaleString()}원</b></div>`).join('')}</div>`:''}
   ${(cvStatBreakdown==='market'&&!stores.length)?`<div class="gempty" style="padding:20px">시장 정보가 있는 구매가 없어요</div>`:''}
+  ${(cvStatBreakdown==='item'&&items.length)?`<div class="cv-stat-stores">${items.map(([n,o])=>`<div class="cv-stat-store"><span>${cvEsc(n)}${o.qty>1?` <small style="color:var(--text3);font-weight:600">×${o.qty}</small>`:``}</span><b>${o.amount.toLocaleString()}원</b></div>`).join('')}</div>`:''}
   <div class="cv-stat-section-t">구매 내역</div>
   <div class="cv-stat-items">${itemRows}</div>
   <button class="cv-stat-back" onclick="cvGo('main')">‹ 장보기로 돌아가기</button>
@@ -5552,8 +5624,9 @@ function initProfilePage(){
  const unlockedCnt = (function(){ try{ return calcBadges().filter(b=>b.unlocked).length; }catch(e){ return 0; } })();
  // 다음 출석 시 받을 포인트 미리보기
  const nextCheckin = 10 + Math.min(streak*2, 50);
- el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10"><span style="font-size:17px;font-weight:800">내 페이지</span><button onclick="showBadges()" style="background:none;border:none;font-size:20px;cursor:pointer">🏅</button></div><div style="padding:20px 18px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border)"><div onclick="toggleAvPicker()" style="width:68px;height:68px;border-radius:50%;background:var(--goldbg);display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;border:2px solid var(--goldbdr);flex-shrink:0">'+( P.avatar||'😊')+'</div><div style="flex:1"><div id=\"pmNameDisplay\" style="font-size:18px;font-weight:800">'+(P.name||'시장 탐험가')+'</div><input id=\"pmNameInput\" style=\"display:none;font-size:17px;font-weight:800;border:1px solid #ddd;border-radius:8px;padding:5px 9px;width:88%;font-family:inherit\" /><div style="font-size:12px;color:var(--text3);margin-top:3px">'+(P.bio||'전통시장을 사랑합니다 🏮')+'</div></div><button id="pmEditBtn" onclick="toggleEdit()" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">수정</button></div><div id="avPicker" style="display:none;flex-wrap:wrap;gap:8px;padding:12px 18px;border-bottom:1px solid var(--border)"></div><div class="pp-hero" onclick="openMapTab()"><div class="pp-hero-label">⭐ 내 포인트</div><div class="pp-hero-pt">'+point.toLocaleString()+'<span>P</span></div><div class="pp-hero-chips"><span class="pp-chip">🏅 배지 <b>'+unlockedCnt+'</b>개</span><span class="pp-chip">🔥 <b>'+streak+'</b>일 연속</span><span class="pp-chip">📅 내일 출석 <b>+'+nextCheckin+'P</b></span></div></div>'+(nextBadge?'<div class="pp-next" onclick="openMapTab()"><div class="pp-next-emoji">'+nextBadge.emoji+'</div><div class="pp-next-info"><div class="pp-next-tag">🎯 곧 달성!</div><div class="pp-next-name">'+nextBadge.name+'</div><div class="pp-next-bar"><div class="pp-next-bar-fill" style="width:'+nextBadge.pct+'%"></div></div></div><div class="pp-next-right"><div class="pp-next-pct">'+nextBadge.pct+'%</div><div class="pp-next-rwd">+'+nextBadge.point+'P</div></div></div>':'')+'<div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);border-top:1px solid var(--border);margin-top:8px"><div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)"><div style="font-size:20px;font-weight:800;color:var(--red)">'+myPosts.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">후기</div></div><div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)"><div style="font-size:20px;font-weight:800">'+visitedMkts.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">시장</div></div><div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)"><div style="font-size:20px;font-weight:800;color:#c2185b">'+myPosts.reduce((s,p)=>s+(p.likes||0),0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">❤️받은좋아요</div></div><div style="padding:14px 0;text-align:center"><div style="font-size:20px;font-weight:800;color:#b71c1c">'+streak+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">🔥연속</div></div></div><div style="display:flex;border-bottom:1px solid var(--border)"><button class="pm-tab on" id="pmTabPosts" onclick="switchPTab(this,\'posts\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border-bottom:2px solid var(--red);color:var(--text)">게시물</button><button class="pm-tab" id="pmTabLiked" onclick="switchPTab(this,\'liked\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);border-bottom:2px solid transparent">좋아요</button><button class="pm-tab" id="pmTabVisited" onclick="switchPTab(this,\'visited\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);border-bottom:2px solid transparent">방문시장</button><button class="pm-tab" id="pmTabFav" onclick="switchPTab(this,\'follow\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);border-bottom:2px solid transparent">즐겨찾기</button></div><div id="pmContent" style="padding:4px 0"></div>';
+ el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10"><span style="font-size:17px;font-weight:800">내 페이지</span><button onclick="showBadges()" style="background:none;border:none;font-size:20px;cursor:pointer">🏅</button></div><div style="padding:20px 18px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border)"><div onclick="cvAvatarPick()" id="cvProfileAvatar" style="width:68px;height:68px;border-radius:50%;background:var(--goldbg);display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;border:2px solid var(--goldbdr);flex-shrink:0">'+( P.avatar||'😊')+'</div><div style="flex:1"><div id=\"pmNameDisplay\" style="font-size:18px;font-weight:800">'+(P.name||'시장 탐험가')+'</div><input id=\"pmNameInput\" style=\"display:none;font-size:17px;font-weight:800;border:1px solid #ddd;border-radius:8px;padding:5px 9px;width:88%;font-family:inherit\" /><div style="font-size:12px;color:var(--text3);margin-top:3px">'+(P.bio||'전통시장을 사랑합니다 🏮')+'</div></div><button id="pmEditBtn" onclick="toggleEdit()" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">수정</button></div><div id="avPicker" style="display:none;flex-wrap:wrap;gap:8px;padding:12px 18px;border-bottom:1px solid var(--border)"></div><div class="pp-hero" onclick="openMapTab()"><div class="pp-hero-label">⭐ 내 포인트</div><div class="pp-hero-pt">'+point.toLocaleString()+'<span>P</span></div><div class="pp-hero-chips"><span class="pp-chip">🏅 배지 <b>'+unlockedCnt+'</b>개</span><span class="pp-chip">🔥 <b>'+streak+'</b>일 연속</span><span class="pp-chip">📅 내일 출석 <b>+'+nextCheckin+'P</b></span></div></div>'+(nextBadge?'<div class="pp-next" onclick="openMapTab()"><div class="pp-next-emoji">'+nextBadge.emoji+'</div><div class="pp-next-info"><div class="pp-next-tag">🎯 곧 달성!</div><div class="pp-next-name">'+nextBadge.name+'</div><div class="pp-next-bar"><div class="pp-next-bar-fill" style="width:'+nextBadge.pct+'%"></div></div></div><div class="pp-next-right"><div class="pp-next-pct">'+nextBadge.pct+'%</div><div class="pp-next-rwd">+'+nextBadge.point+'P</div></div></div>':'')+'<div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);border-top:1px solid var(--border);margin-top:8px"><div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)"><div style="font-size:20px;font-weight:800;color:var(--red)">'+myPosts.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">후기</div></div><div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)"><div style="font-size:20px;font-weight:800">'+visitedMkts.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">시장</div></div><div style="padding:14px 0;text-align:center;border-right:1px solid var(--border)"><div style="font-size:20px;font-weight:800;color:#c2185b">'+myPosts.reduce((s,p)=>s+(p.likes||0),0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">❤️받은좋아요</div></div><div style="padding:14px 0;text-align:center"><div style="font-size:20px;font-weight:800;color:#b71c1c">'+streak+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">🔥연속</div></div></div><div style="display:flex;border-bottom:1px solid var(--border)"><button class="pm-tab on" id="pmTabPosts" onclick="switchPTab(this,\'posts\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border-bottom:2px solid var(--red);color:var(--text)">게시물</button><button class="pm-tab" id="pmTabLiked" onclick="switchPTab(this,\'liked\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);border-bottom:2px solid transparent">좋아요</button><button class="pm-tab" id="pmTabVisited" onclick="switchPTab(this,\'visited\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);border-bottom:2px solid transparent">방문시장</button><button class="pm-tab" id="pmTabFav" onclick="switchPTab(this,\'follow\')" style="flex:1;padding:11px 0;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text3);border-bottom:2px solid transparent">즐겨찾기</button></div><div id="pmContent" style="padding:4px 0"></div>';
  setTimeout(function(){renderPTab('posts');},30);
+ setTimeout(function(){ if(typeof cvApplyAvatarPhoto==='function') cvApplyAvatarPhoto(); },25);
 }
 
 function bindFeedEvents(container){
