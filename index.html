@@ -5490,7 +5490,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const total=rows.reduce((s,r)=>s+(r.amount||0),0);
  const martTotal=rows.reduce((s,r)=>s+(r.martAmount||Math.round((r.amount||0)*1.22)),0);
  const savedTotal=Math.max(0, martTotal-total);
- window._cvStatShare={ total:total, saved:savedTotal, count:rows.length, period:cvStatPeriod, cats:cats.map(x=>({name:x.name,color:x.color,amount:x.amount})) };
+ window._cvStatShare={ total:total, saved:savedTotal, count:rows.length, period:cvStatPeriod, cats:[] };
  // 같은 기간 아직 안 산 품목의 예상액 (날짜 기준)
  let remainPlan=0, remainCnt=0;
  CV.items.forEach(it=>{
@@ -5508,6 +5508,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
   byCat[r.cat].amount+=r.amount||0; byCat[r.cat].cnt++;
  });
  const cats=Object.values(byCat).sort((a,b)=>b.amount-a.amount);
+ try{ if(window._cvStatShare){ window._cvStatShare.cats=cats.map(function(x){return {name:x.name,color:x.color,amount:x.amount};}); } }catch(e){}
  // 시장별 집계
  const byStore={};
  rows.forEach(r=>{ let k=r.store; if(!k && r.ts){ try{ const d=new Date(r.ts); const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(CV.dateMarkets && CV.dateMarkets[ds]) k=CV.dateMarkets[ds]; }catch(e){} } k=k||'시장 미정'; byStore[k]=(byStore[k]||0)+(r.amount||0); });
@@ -5572,7 +5573,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
     <span class="cv-sum-s">${rows.length}개 구매</span>
    </div>
   </div>
-  ${savedTotal>0?`<div class="cv-stat-saved"><span>시장에 가서 마트보다 <b>${savedTotal.toLocaleString()}원</b><span class="cv-stat-saved-mk">▼</span> 아꼈어요</span></div>`:''}
+  ${savedTotal>0?`<div class="cv-stat-saved"><span>시장에 가서 마트보다 <b>${savedTotal.toLocaleString()}원</b><span class="cv-stat-saved-mk">(▼)</span> 아꼈어요</span></div>`:''}
   ${(cats.length||stores.length)?`<div class="cv-bd-tabs"><button class="cv-bd-tab${cvStatBreakdown==='cat'?' on':''}" onclick="cvSetBreakdown('cat')">🏷️ 카테고리별</button><button class="cv-bd-tab${cvStatBreakdown==='item'?' on':''}" onclick="cvSetBreakdown('item')">🛒 상품별</button><button class="cv-bd-tab${cvStatBreakdown==='market'?' on':''}" onclick="cvSetBreakdown('market')">📍 시장별</button></div>`:''}
   ${(cvStatBreakdown==='cat'&&cats.length)?`<div class="cv-stat-cats">${catBars}</div>`:''}
   ${(cvStatBreakdown==='market'&&stores.length)?`<div class="cv-stat-stores">${stores.map(([n,a])=>`<div class="cv-stat-store"><span>${cvEsc(n)}</span><b>${a.toLocaleString()}원</b></div>`).join('')}</div>`:''}
