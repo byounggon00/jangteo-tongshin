@@ -451,6 +451,35 @@
 .cv-page-stats{padding-top:env(safe-area-inset-top)}
 
 .cv-stat-share-btn{padding:6px 12px;border-radius:18px;border:none;background:var(--red);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+.login-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:28px;background:radial-gradient(ellipse at 50% 28%, #3a2820 0%, #241813 45%, #160d0a 100%)}
+.login-overlay.show{display:flex}
+.login-overlay::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:radial-gradient(rgba(240,200,120,.07) 1px, transparent 1px);background-size:18px 18px}
+.login-overlay::after{content:'';position:absolute;left:50%;top:22%;width:340px;height:340px;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(circle, rgba(224,120,60,.28) 0%, transparent 65%);filter:blur(8px)}
+.login-modal{position:relative;width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.login-flagwrap{width:100px;height:100px;clip-path:polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);display:flex;align-items:center;justify-content:center;margin-bottom:18px;background:radial-gradient(circle at 50% 40%, #2e1f18, #1c120e);border:1px solid rgba(240,200,120,.25);box-shadow:0 8px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);animation:loginPop .6s cubic-bezier(.2,.9,.3,1.3) both}
+.login-flag{width:54px;height:auto;animation:flagWave 3.5s ease-in-out infinite;transform-origin:12px center}
+.login-title{font-size:30px;font-weight:800;color:#f7ede0;letter-spacing:-0.5px;animation:loginUp .5s ease both .15s}
+.login-sub{font-size:14px;color:rgba(247,237,224,.6);margin-top:9px;animation:loginUp .5s ease both .25s}
+.login-divider{display:flex;align-items:center;gap:12px;width:100%;margin:34px 0 20px;animation:loginUp .5s ease both .32s}
+.login-divider span{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(240,200,120,.3),transparent)}
+.login-divider i{font-style:normal;font-size:11px;font-weight:600;color:rgba(240,200,120,.65);letter-spacing:1px}
+.login-btns{width:100%;display:flex;flex-direction:column;gap:11px;animation:loginUp .5s ease both .4s}
+.login-btn{position:relative;width:100%;height:54px;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:transform .12s, box-shadow .2s;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.login-btn:active{transform:translateY(1px) scale(.99);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.login-btn-ic{font-size:18px;font-weight:800;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px;position:absolute;left:16px}
+.login-btn.kakao{background:#FEE500;color:#191600}
+.login-btn.naver{background:#03C75A;color:#fff}
+.login-btn.naver .login-btn-ic{background:#fff;color:#03C75A;font-size:14px}
+.login-btn.google{background:#fff;color:#333}
+.login-btn.google .login-btn-ic{color:#4285F4;font-size:16px}
+.login-guest{margin-top:24px;background:none;border:none;color:rgba(247,237,224,.55);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;animation:loginUp .5s ease both .5s}
+.login-guest:active{color:rgba(247,237,224,.9)}
+.login-terms{margin-top:28px;font-size:11px;line-height:1.7;color:rgba(247,237,224,.35);animation:loginUp .5s ease both .58s}
+.login-terms b{color:rgba(240,200,120,.6);font-weight:700}
+@keyframes loginPop{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
+@keyframes loginUp{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes flagWave{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(2deg)}}
 </style>
 </head>
 <body><header class="hdr"><div class="hdr-inner"><div class="logo"><div class="logo-kr">시장정복단</div><div class="logo-en">market hunter</div>
@@ -511,7 +540,28 @@
 </nav><div class="cvdlg-back" id="cvDlgBack"><div class="cvdlg"><div class="cvdlg-title" id="cvDlgTitle"></div><div class="cvdlg-msg" id="cvDlgMsg" style="display:none"></div><input class="cvdlg-input" id="cvDlgInput" type="text"><div class="cvdlg-btns"><button class="cvdlg-btn cancel" id="cvDlgCancel">취소</button><button class="cvdlg-btn ok" id="cvDlgOk">확인</button></div></div></div><div class="cloverlay" id="cloverlay" onclick="closeCLOut(event)"><div class="clmodal"><div class="cl-hdr"><span style="font-size:18px">📋</span><div class="cl-hdr-title">장보기 체크리스트</div><button class="cl-close" onclick="closeCL()">✕</button></div><div class="cl-budget-bar" id="clBudgetBar"><div class="cl-budget-info"><div class="cl-budget-title">예산</div><div class="cl-budget-nums"><span class="cl-budget-spent" id="clBudgetSpent">0원</span><span class="cl-budget-total" id="clBudgetTotal">/ 설정 안 됨</span></div><div class="cl-budget-prog"><div class="cl-budget-fill" id="clBudgetFill" style="width:0%"></div></div></div><button class="cl-budget-edit" onclick="setBudget()">예산 설정</button></div><div class="cl-toolbar"><button class="cl-tool-btn on" id="clViewAll" onclick="switchCLView('all',this)">전체</button><button class="cl-tool-btn" id="clViewTodo" onclick="switchCLView('todo',this)">미완료</button><button class="cl-tool-btn" id="clViewDone" onclick="switchCLView('done',this)">완료</button><div class="cl-tool-sep"></div><button class="cl-tool-btn" onclick="loadFavoriteList()" title="단골 목록 불러오기">⭐ 단골</button><button class="cl-tool-btn" onclick="shareCL()" title="공유">🔗 공유</button><button class="cl-tool-btn" onclick="clearDoneCL()">완료 지우기</button></div><div class="cl-favorites-list" id="clFavList"><div class="cl-fav-title">⭐ 단골 장보기 — 탭하면 바로 추가</div><div class="cl-fav-items" id="clFavItems"></div></div><div class="cl-progress"><div class="cl-prog-bar"><div class="cl-prog-fill" id="clProgFill" style="width:0%"></div></div><div class="cl-prog-label"><span id="clProgLabel">0 / 0 완료</span><span id="clProgBudget" style="color:var(--green)"></span></div></div><div class="cl-input-panel"><div class="cl-input-row"><input class="cl-input" id="clInput" placeholder="예: 동태, 녹두빈대떡, 꽃게..." onkeydown="clEnter(event)"><button class="cl-add-btn" onclick="addClItem()">추가</button></div><div class="cl-input-detail"><input class="cl-input-sm" id="clQty" placeholder="수량 (예: 2마리)"><input class="cl-input-sm" id="clPrice" placeholder="예산 (예: 12,000)" type="text" inputmode="numeric" oninput="fmtInputNum(this)"><select class="cl-input-sm" id="clMktSel"><option value="">시장 선택</option><option value="광장시장">광장시장</option><option value="통인시장">통인시장</option><option value="노량진수산시장">노량진</option><option value="망원시장">망원시장</option><option value="남대문시장">남대문</option></select></div><div class="cl-cat-chips" id="clCatChips"></div></div><div class="cl-body" id="clBody"></div></div>
 </div><div class="fwoverlay" id="fwoverlay" onclick="closeFWOut(event)"><div class="fwmodal"><div class="fw-hdr"><span style="font-size:18px">🔔</span><div class="fw-hdr-title">시장 팔로우</div><button class="fw-close" onclick="closeFW()">✕</button></div><div class="fw-alert-row"><div class="fw-alert-txt">팔로우한 시장에 새 후기가 올라오면<br><strong>알림</strong>을 받아요.</div><button class="fw-alert-toggle" id="fwAlertToggle" onclick="toggleFwAlert()"></button></div><div class="fw-body" id="fwBody"></div></div>
 </div><div class="bdoverlay" id="bdoverlay" onclick="closeBDOut(event)"><div class="bdmodal"><div class="bd-hdr"><span style="font-size:18px">🏅</span><div class="bd-hdr-title">뱃지 & 레벨</div><button class="bd-close" onclick="closeBD()">✕</button></div><div class="bd-summary" id="bdSummary"></div><div class="bd-body" id="bdBody"></div><div id="bdContent" style="overflow-y:auto;flex:1;"></div></div>
-</div><div class="onboard-overlay" id="onboardOverlay"><div class="onboard-modal"><div class="onboard-hdr"><div class="onboard-logo">🏮</div><div class="onboard-title">시장정복단에 오신 것을 환영해요!</div><div class="onboard-sub">어떤 목적으로 방문하셨어요?<br>맞춤 화면으로 안내해드릴게요</div></div><div class="onboard-choices"><button class="onboard-choice" id="ob-explore" onclick="selectOnboard('explore',this)"><div class="onboard-choice-icon">📸</div><div class="onboard-choice-info"><div class="onboard-choice-title">시장 탐방 · 맛집 발견</div><div class="onboard-choice-desc">전국 전통시장 사진 후기 탐색,<br>숨은 맛집 발견, 나들이·데이트 코스</div></div></button><button class="onboard-choice" id="ob-shopping" onclick="selectOnboard('shopping',this)"><div class="onboard-choice-icon">🛒</div><div class="onboard-choice-info"><div class="onboard-choice-title">장보기 · 마감세일 정보</div><div class="onboard-choice-desc">신선식품 마감 할인 실시간 알림,<br>장보기 체크리스트, 절약 기록</div></div></button><button class="onboard-choice" id="ob-both" onclick="selectOnboard('both',this)"><div class="onboard-choice-icon">🏮</div><div class="onboard-choice-info"><div class="onboard-choice-title">둘 다 관심 있어요</div><div class="onboard-choice-desc">탐방도 하고 장보기도 해요.<br>전체 기능을 모두 활용할게요</div></div></button></div><button class="onboard-btn" id="onboardBtn" onclick="completeOnboard()" disabled>시작하기</button><button class="onboard-skip" onclick="completeOnboard('skip')">건너뛰기</button></div>
+</div><div class="login-overlay" id="loginOverlay"><div class="login-modal">
+<div class="login-flagwrap">
+<svg class="login-flag" viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+ <rect x="11" y="6" width="3.5" height="78" rx="1.75" fill="#e8d5b0"/>
+ <circle cx="12.75" cy="6" r="4" fill="#f0c850"/>
+ <path d="M14.5 9 L70 22 L14.5 35 Z" fill="#c13520"/>
+ <path d="M14.5 9 L70 22 L14.5 35 Z" fill="url(#fg)" opacity="0.22"/>
+ 
+ <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient></defs>
+</svg>
+</div>
+<div class="login-title">시장정복단</div>
+<div class="login-sub">전통시장 장보기, 더 똑똑하게</div>
+<div class="login-divider"><span></span><i>간편 로그인</i><span></span></div>
+<div class="login-btns">
+<button class="login-btn kakao" onclick="cvSocialLogin('kakao')"><span class="login-btn-ic">💬</span>카카오로 시작하기</button>
+<button class="login-btn naver" onclick="cvSocialLogin('naver')"><span class="login-btn-ic">N</span>네이버로 시작하기</button>
+<button class="login-btn google" onclick="cvSocialLogin('google')"><span class="login-btn-ic">G</span>구글로 시작하기</button>
+</div>
+<button class="login-guest" onclick="cvGuestLogin()">로그인 없이 둘러보기 ›</button>
+<div class="login-terms">시작하면 <b>이용약관</b> 및 <b>개인정보처리방침</b>에<br>동의하는 것으로 간주됩니다</div>
+</div></div><div class="onboard-overlay" id="onboardOverlay"><div class="onboard-modal"><div class="onboard-hdr"><div class="onboard-logo">🏮</div><div class="onboard-title">시장정복단에 오신 것을 환영해요!</div><div class="onboard-sub">어떤 목적으로 방문하셨어요?<br>맞춤 화면으로 안내해드릴게요</div></div><div class="onboard-choices"><button class="onboard-choice" id="ob-explore" onclick="selectOnboard('explore',this)"><div class="onboard-choice-icon">📸</div><div class="onboard-choice-info"><div class="onboard-choice-title">시장 탐방 · 맛집 발견</div><div class="onboard-choice-desc">전국 전통시장 사진 후기 탐색,<br>숨은 맛집 발견, 나들이·데이트 코스</div></div></button><button class="onboard-choice" id="ob-shopping" onclick="selectOnboard('shopping',this)"><div class="onboard-choice-icon">🛒</div><div class="onboard-choice-info"><div class="onboard-choice-title">장보기 · 마감세일 정보</div><div class="onboard-choice-desc">신선식품 마감 할인 실시간 알림,<br>장보기 체크리스트, 절약 기록</div></div></button><button class="onboard-choice" id="ob-both" onclick="selectOnboard('both',this)"><div class="onboard-choice-icon">🏮</div><div class="onboard-choice-info"><div class="onboard-choice-title">둘 다 관심 있어요</div><div class="onboard-choice-desc">탐방도 하고 장보기도 해요.<br>전체 기능을 모두 활용할게요</div></div></button></div><button class="onboard-btn" id="onboardBtn" onclick="completeOnboard()" disabled>시작하기</button><button class="onboard-skip" onclick="completeOnboard('skip')">건너뛰기</button></div>
 </div><div class="share-card-overlay" id="shareCardOverlay" onclick="closeShareCard(event)"><div class="share-card-wrap"><div class="share-card-title">📸 인스타 스토리에 공유하기</div><div class="share-canvas-wrap"><canvas id="shareCanvas" width="360" height="500"></canvas></div><div class="share-btns"><button class="share-btn-copy" onclick="saveShareCard()">📥 이미지 저장</button><button class="share-btn-close" onclick="closeShareCardBtn()">닫기</button></div></div>
 </div><div class="levelup-overlay" id="levelupOverlay" onclick="closeLevelUp()"><div class="levelup-card" onclick="event.stopPropagation()"><div style="font-size:14px;font-weight:700;color:#f0b030;letter-spacing:2px;margin-bottom:8px">🚩 시장정복단</div><span class="levelup-emoji" id="levelupEmoji">🏴‍☠️</span><div class="levelup-title">등급 승급!</div><div class="levelup-rank" id="levelupRank"></div><div class="levelup-desc" id="levelupDesc"></div><button class="levelup-btn" onclick="closeLevelUp()">계속 정복하기 🚩</button></div>
 </div><div id="postMenuOverlay" style="position:fixed;inset:0;z-index:450;display:none" onclick="closePostMenu()"><div id="postMenuSheet" style="
@@ -4029,7 +4079,24 @@ function refreshMapWrap(){
  setTimeout(initMapGestures,150);
  },150);
 }
-if(!localStorage.getItem('jtt4_onboard')){
+function cvShowLogin(){ const el=document.getElementById('loginOverlay'); if(el){ el.classList.add('show'); document.body.style.overflow='hidden'; } }
+function cvHideLogin(){ const el=document.getElementById('loginOverlay'); if(el){ el.classList.remove('show'); document.body.style.overflow=''; } }
+function cvSocialLogin(provider){
+ try{ localStorage.setItem('jtt4_login', provider); }catch(e){}
+ const names={kakao:'카카오',naver:'네이버',google:'구글'};
+ cvHideLogin();
+ if(typeof toast==='function') toast((names[provider]||'')+' 로그인 (데모)');
+ if(!localStorage.getItem('jtt4_onboard')){ setTimeout(openOnboard, 400); }
+}
+function cvGuestLogin(){
+ try{ localStorage.setItem('jtt4_login','guest'); }catch(e){}
+ cvHideLogin();
+ if(!localStorage.getItem('jtt4_onboard')){ setTimeout(openOnboard, 400); }
+}
+
+if(!localStorage.getItem('jtt4_login')){
+ setTimeout(cvShowLogin, 300);
+} else if(!localStorage.getItem('jtt4_onboard')){
  setTimeout(openOnboard, 600);
 }
 if(navigator.geolocation){
