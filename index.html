@@ -39,17 +39,29 @@
 .cv-cal-nav{width:34px;height:34px;border-radius:10px;border:none;background:var(--bg);color:var(--text2);font-size:18px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .12s}
 .cv-cal-nav:active{background:var(--bg2)}
 .cv-cal-title{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px;min-width:110px;text-align:center}
-.cv-cal-sum{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 12px;padding:10px 14px;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#1a6e3c,#23925080);background:linear-gradient(135deg,#e8f5ee,#d4ede0);border:1px solid var(--greenbdr)}
+.cv-cal-sum{display:flex;flex-direction:column;gap:5px;margin:0 2px 12px;padding:12px 14px;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#f4f1ec,#ebe6dc);border:1px solid var(--border)}
+.cv-cal-sum-row{display:flex;align-items:center;justify-content:space-between}
+.cv-cal-sum-k{font-size:12px;font-weight:700;color:var(--text2)}
+.cv-cal-sum-v{font-size:15px;font-weight:800}
+.cv-cal-sum-v.done{color:var(--green)}
+.cv-cal-sum-v.budget{color:#c8870a}
+.cv-cal-sum-foot{font-size:11px;color:var(--text3);text-align:right;margin-top:2px;border-top:1px dashed var(--border);padding-top:6px}
 .cv-cal-sum-main{font-size:13px;color:var(--green);font-weight:600}
 .cv-cal-sum-main b{font-size:16px;font-weight:800}
 .cv-cal-sum-sub{font-size:11px;color:var(--green);opacity:.85;font-weight:600;white-space:nowrap}
 .cv-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
 .cv-cal-wd{text-align:center;font-size:10px;font-weight:700;color:var(--text3);padding:2px 0 6px}
-.cv-cal-wd.sun{color:#d2685a}.cv-cal-wd.sat{color:#6a8fd0}
+.cv-cal-wd.sun{color:#e0533f}.cv-cal-wd.sat{color:#4a90e2}
 .cv-cal-cell{position:relative;aspect-ratio:1;border:none;background:none;cursor:pointer;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;transition:background .12s;padding:2px 1px;overflow:hidden}
 .cv-cal-cell.empty{cursor:default}
 .cv-cal-num{font-size:12px;font-weight:600;color:var(--text);line-height:1}
-.cv-cal-cell.today .cv-cal-num{color:var(--red);font-weight:800}
+.cv-cal-cell.today .cv-cal-num{font-weight:800}
+.cv-cal-cell.today .cv-cal-num::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:rgba(193,53,32,.12);z-index:-1}
+.cv-cal-cell .cv-cal-num{position:relative;z-index:1}
+.cv-cal-cell.sun .cv-cal-num{color:#e0533f}
+.cv-cal-cell.sat .cv-cal-num{color:#4a90e2}
+.cv-cal-cell.active .cv-cal-num{color:#fff}
+.cv-cal-cell.active.sun .cv-cal-num,.cv-cal-cell.active.sat .cv-cal-num{color:#fff}
 .cv-cal-cell.active{background:var(--text)}
 .cv-cal-cell.active .cv-cal-num{color:#fff;font-weight:800}
 .cv-cal-cell:not(.active):not(.empty):active{background:var(--bg2)}
@@ -425,7 +437,8 @@
 .cv-drow-price{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;overflow:hidden}
 .cv-drow-mart{display:block;color:var(--text3);font-size:10px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.cv-stat-saved{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 14px 0;padding:13px;border-radius:14px;background:linear-gradient(135deg,#fff0e6,#ffe0cc);border:1px solid #f0c8a8;color:#c2410c;font-size:14px;font-weight:700}
+.cv-stat-saved{display:flex;align-items:center;justify-content:center;margin:12px 14px 0;color:#c2410c;font-size:14px;font-weight:700}
+.cv-stat-saved-mk{color:#1a7a45;font-weight:800;margin-right:5px}
 .cv-stat-saved-ic{font-size:18px}
 .cv-stat-saved b{font-size:16px;font-weight:800}
 
@@ -436,6 +449,8 @@
 .mart-x{text-decoration:line-through}
 
 .cv-page-stats{padding-top:env(safe-area-inset-top)}
+
+.cv-stat-share-btn{padding:6px 12px;border-radius:18px;border:none;background:var(--red);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
 </style>
 </head>
 <body><header class="hdr"><div class="hdr-inner"><div class="logo"><div class="logo-kr">시장정복단</div><div class="logo-en">market hunter</div>
@@ -3116,8 +3131,15 @@ function cvRenderMarketPick(){
 }
 function cvChooseDateMarket(mkt){
  cvSetDateMarket(CV.activeDate, mkt);
- // 그날 모든 품목의 시장을 이 시장으로 동기화
- CV.items.forEach(it=>{ if((it.date||'')===CV.activeDate){ it.market=mkt; } });
+ const todayIds=[];
+ CV.items.forEach(it=>{ if((it.date||'')===CV.activeDate){ it.market=mkt; todayIds.push(it.id); } });
+ try{
+  if(typeof CV_SPEND!=='undefined' && Array.isArray(CV_SPEND)){
+   let changed=false;
+   CV_SPEND.forEach(s=>{ if(todayIds.indexOf(s.itemId)>=0){ s.store=mkt; changed=true; } });
+   if(changed && typeof saveSpend==='function') saveSpend();
+  }
+ }catch(e){}
  saveCV();
  cvCloseMarketPick();
  cvRenderMain(document.getElementById('clPageContent'));
@@ -3314,20 +3336,21 @@ function cvShortLabel(key){
 // 해당 월 총 지출/품목 집계
 function cvMonthSummaryHTML(){
  var ms=cvMonthSummary();
- if(ms.bought>0){
-  return `<div class="cv-cal-sum" onclick="cvGo(\'stats\')"><span class="cv-cal-sum-main">이번 달 <b>${ms.cost.toLocaleString()}원</b></span><span class="cv-cal-sum-sub">${ms.dayCount}일 · ${ms.bought}개 · 통계 ›</span></div>`;
+ if(ms.planned>0 || ms.bought>0){
+  return `<div class="cv-cal-sum" onclick="cvGo(\'stats\')"><div class="cv-cal-sum-row"><span class="cv-cal-sum-k">🛒 구매액</span><span class="cv-cal-sum-v done">${ms.cost.toLocaleString()}원</span></div><div class="cv-cal-sum-row"><span class="cv-cal-sum-k">💰 예산</span><span class="cv-cal-sum-v budget">${ms.planned.toLocaleString()}원</span></div><div class="cv-cal-sum-foot">${ms.dayCount}일 · ${ms.bought}개 · 통계 ›</div></div>`;
  }
  return "";
 }
 function cvMonthSummary(){
  const ref=cvCalRef();
  const ym=`${ref.getFullYear()}-${String(ref.getMonth()+1).padStart(2,'0')}`;
+ const todayKey=cvTodayKey();
  let cost=0, bought=0, planned=0, days=new Set();
  CV.items.forEach(i=>{
   const d=i.date||'';
   if(d.startsWith(ym)){
    const p=cvItemPrice(i);
-   planned+=p;
+   if(d>=todayKey) planned+=p;
    if(i.done){ cost+=p; bought++; days.add(d); }
   }
  });
@@ -3354,11 +3377,14 @@ function cvCalendarHTML(){
   const allDone=has && s.done===s.count;
   let amtTag='';
   if(has){
-   // 다 샀으면 사용액(초록), 아직 살 게 있으면 전체 예상액(주황)
-   const won = allDone ? s.spent : s.planned;
-   if(won>0){ const txt=won.toLocaleString(); amtTag=`<span class="cv-cal-amt${allDone?' done':''}${txt.length<=4?'':' sm'}">${txt}</span>`; }
+   const isPast = key < today;
+   let won, isDoneStyle;
+   if(isPast){ won = s.spent; isDoneStyle = true; }
+   else { won = allDone ? s.spent : s.planned; isDoneStyle = allDone; }
+   if(won>0){ const txt=won.toLocaleString(); amtTag=`<span class="cv-cal-amt${isDoneStyle?' done':''}${txt.length<=4?'':' sm'}">${txt}</span>`; }
   }
-  cells+=`<button class="cv-cal-cell${isActive?' active':''}${isToday?' today':''}${has?' has':''}" onclick="cvPickDay('${key}')">
+  const dow=(startPad+d-1)%7; const dowCls=dow===0?' sun':(dow===6?' sat':'');
+  cells+=`<button class="cv-cal-cell${isActive?' active':''}${isToday?' today':''}${has?' has':''}${dowCls}" onclick="cvPickDay('${key}')">
     <span class="cv-cal-num">${d}</span>${amtTag}
    </button>`;
  }
@@ -5006,7 +5032,7 @@ function cvLogSpend(item){
   text:item.text,
   cat:cat.name,
   catColor:cat.color,
-  store:cvItemMarket(item)||'',
+  store:(cvItemMarket(item)||(item.date?cvDateMarket(item.date):'')||''),
   amount:cvItemPrice(item),
   martAmount:(typeof cvMartItem==='function'?cvMartItem(item):Math.round(cvItemPrice(item)*1.22)),
   qty:cvQty(item),
@@ -5217,6 +5243,52 @@ function cvRenderTags(el){
 let cvStatPeriod = 'month'; // week | month | year
 let cvStatBreakdown='cat';
 function cvSetBreakdown(m){ cvStatBreakdown=m; cvRenderStats(document.getElementById('clPageContent')); }
+function cvStatShare(){
+ var d = window._cvStatShare || {total:0,saved:0,count:0,period:'month'};
+ var periodTxt = d.period==='week'?'이번 주':(d.period==='year'?'올해':'이번 달');
+ var shareText = periodTxt+' 전통시장 장보기\n🛒 구매액 '+(d.total||0).toLocaleString()+'원';
+ if(d.saved>0) shareText += '\n✓ 마트보다 '+(d.saved||0).toLocaleString()+'원 절약!';
+ shareText += '\n\n#시장정복단 #전통시장';
+ function shareTextOnly(){
+  if(navigator.share){ navigator.share({text:shareText}).catch(function(){}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(shareText).then(function(){ toast('공유 내용을 복사했어요'); }); }
+  else { toast('공유를 지원하지 않는 환경이에요'); }
+ }
+ try{
+  var canvas = document.getElementById('shareCanvas');
+  if(!canvas){ shareTextOnly(); return; }
+  var ctx = canvas.getContext('2d');
+  var W=360, H=480; canvas.width=W; canvas.height=H;
+  ctx.fillStyle='#FAF8F4'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#C13520'; ctx.fillRect(0,0,W,120);
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='600 13px Arial';
+  ctx.fillText('\uc2dc\uc7a5\uc815\ubcf5\ub2e8 \u00b7 '+periodTxt, W/2, 50);
+  ctx.fillStyle='#fff'; ctx.font='800 26px Arial';
+  ctx.fillText('\uc804\ud1b5\uc2dc\uc7a5 \uc7a5\ubcf4\uae30', W/2, 88);
+  ctx.fillStyle='#888'; ctx.font='600 14px Arial';
+  ctx.fillText('\uad6c\ub9e4\uc561', W/2, 180);
+  ctx.fillStyle='#1a7a45'; ctx.font='800 40px Arial';
+  ctx.fillText((d.total||0).toLocaleString()+'\uc6d0', W/2, 225);
+  if(d.saved>0){
+   ctx.fillStyle='#888'; ctx.font='600 14px Arial';
+   ctx.fillText('\ub9c8\ud2b8\ubcf4\ub2e4 \uc808\uc57d\ud55c \uae08\uc561', W/2, 300);
+   ctx.fillStyle='#C13520'; ctx.font='800 36px Arial';
+   ctx.fillText((d.saved||0).toLocaleString()+'\uc6d0', W/2, 342);
+  }
+  ctx.fillStyle='#bbb'; ctx.font='600 12px Arial';
+  ctx.fillText('\uc804\ud1b5\uc2dc\uc7a5\uc5d0\uc11c \uc54c\ub730\ud558\uac8c \uc7a5\ubcf4\uae30', W/2, H-40);
+  ctx.textAlign='left';
+  canvas.toBlob(function(blob){
+   if(!blob){ shareTextOnly(); return; }
+   var file = new File([blob], 'market-stats.png', {type:'image/png'});
+   if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+    navigator.share({ files:[file], text:shareText }).catch(function(){ shareTextOnly(); });
+   } else { shareTextOnly(); }
+  }, 'image/png');
+ }catch(e){ shareTextOnly(); }
+}
+
 function cvStatRange(period, ref){
  const d = new Date(ref);
  let start, end, label;
@@ -5253,6 +5325,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const total=rows.reduce((s,r)=>s+(r.amount||0),0);
  const martTotal=rows.reduce((s,r)=>s+(r.martAmount||Math.round((r.amount||0)*1.22)),0);
  const savedTotal=Math.max(0, martTotal-total);
+ window._cvStatShare={ total:total, saved:savedTotal, count:rows.length, period:cvStatPeriod };
  // 같은 기간 아직 안 산 품목의 예상액 (날짜 기준)
  let remainPlan=0, remainCnt=0;
  CV.items.forEach(it=>{
@@ -5272,7 +5345,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const cats=Object.values(byCat).sort((a,b)=>b.amount-a.amount);
  // 시장별 집계
  const byStore={};
- rows.forEach(r=>{ const k=r.store||'기타'; byStore[k]=(byStore[k]||0)+(r.amount||0); });
+ rows.forEach(r=>{ let k=r.store; if(!k && r.ts){ try{ const d=new Date(r.ts); const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(CV.dateMarkets && CV.dateMarkets[ds]) k=CV.dateMarkets[ds]; }catch(e){} } k=k||'시장 미정'; byStore[k]=(byStore[k]||0)+(r.amount||0); });
  const stores=Object.entries(byStore).sort((a,b)=>b[1]-a[1]);
 
  const periodTabs=`<div class="cv-stat-tabs">
@@ -5312,7 +5385,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
   const itemRows = itemGroups || '<div class="gempty">이 기간엔 구매 기록이 없어요</div>';
 
  el.innerHTML=`<div class="cv-page cv-page-stats">
-  <div class="cv-hdr cv-hdr-static"><button class="cv-hdr-backbtn" onclick="cvGo('main')">‹ 장보기</button><div class="cv-hdr-title">📊 지출 통계</div><span style="width:60px"></span></div>
+  <div class="cv-hdr cv-hdr-static"><button class="cv-hdr-backbtn" onclick="cvGo('main')">‹ 장보기</button><div class="cv-hdr-title">📊 지출 통계</div><button class="cv-stat-share-btn" onclick="cvStatShare()">📤 공유</button></div>
   ${periodTabs}
   <div class="cv-stat-navbar">
    <button class="cv-stat-nav" onclick="cvStatShift(-1)">‹</button>
@@ -5331,7 +5404,7 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
     <span class="cv-sum-s">${rows.length}개 구매</span>
    </div>
   </div>
-  ${savedTotal>0?`<div class="cv-stat-saved"><span class="cv-stat-saved-ic">📉</span><span>마트보다 <b>${savedTotal.toLocaleString()}원</b> 아꼈어요</span></div>`:''}
+  ${savedTotal>0?`<div class="cv-stat-saved"><span class="cv-stat-saved-mk">✓</span><span>시장에 가서 마트보다 <b>${savedTotal.toLocaleString()}원</b> 아꼈어요</span></div>`:''}
   ${(cats.length||stores.length)?`<div class="cv-bd-tabs"><button class="cv-bd-tab${cvStatBreakdown==='cat'?' on':''}" onclick="cvSetBreakdown('cat')">🏷️ 카테고리별</button><button class="cv-bd-tab${cvStatBreakdown==='market'?' on':''}" onclick="cvSetBreakdown('market')">📍 시장별</button></div>`:''}
   ${(cvStatBreakdown==='cat'&&cats.length)?`<div class="cv-stat-cats">${catBars}</div>`:''}
   ${(cvStatBreakdown==='market'&&stores.length)?`<div class="cv-stat-stores">${stores.map(([n,a])=>`<div class="cv-stat-store"><span>${cvEsc(n)}</span><b>${a.toLocaleString()}원</b></div>`).join('')}</div>`:''}
@@ -5527,7 +5600,7 @@ function renderBadgePage(){
     opacity:${b.unlocked?1:0.45};
     transition:transform .12s;-webkit-tap-highlight-color:transparent">
     <div style="font-size:26px">${b.unlocked?b.emoji:'🔒'}</div>
-    <div style="font-size:9px;font-weight:700;text-align:center;line-height:1.3;
+    <div style="font-size:9px;font-weight:700;text-align:center;line-height:1.3;min-height:24px;display:flex;align-items:center;justify-content:center;
      color:${b.unlocked?meta.color:'var(--text3)'}">${b.name}</div>
     <div style="font-size:9px;font-weight:700;
      color:${b.unlocked?'#b8860b':'var(--text3)'};
