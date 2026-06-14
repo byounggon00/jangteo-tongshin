@@ -480,6 +480,12 @@
 @keyframes loginPop{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:scale(1)}}
 @keyframes loginUp{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes flagWave{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(2deg)}}
+
+.cv-reminder-bar{position:fixed;left:50%;transform:translateX(-50%) translateY(-120%);top:calc(env(safe-area-inset-top) + 64px);z-index:8000;width:calc(100% - 28px);max-width:440px;display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:14px;background:linear-gradient(135deg,#c13520,#a82c18);box-shadow:0 8px 24px rgba(160,40,20,.35);transition:transform .35s cubic-bezier(.2,.9,.3,1.2);opacity:0}
+.cv-reminder-bar.show{transform:translateX(-50%) translateY(0);opacity:1}
+.cv-rem-ic{font-size:18px;flex-shrink:0}
+.cv-rem-txt{flex:1;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;line-height:1.35}
+.cv-rem-x{background:rgba(255,255,255,.2);border:none;color:#fff;width:24px;height:24px;border-radius:50%;font-size:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body><header class="hdr"><div class="hdr-inner"><div class="logo"><div class="logo-kr">시장정복단</div><div class="logo-en">market hunter</div>
@@ -3317,6 +3323,56 @@ function cvDateLabel(key){
 }
 // 현재 날짜의 품목
 function cvActiveItems(){ return CV.items.filter(i=>(i.date||'')===CV.activeDate); }
+function cvGetShoppingForDate(dateKey){
+ var its = CV.items.filter(function(i){ return (i.date||'')===dateKey; });
+ if(!its.length) return null;
+ var market = (CV.dateMarkets && CV.dateMarkets[dateKey]) ? CV.dateMarkets[dateKey] : '';
+ var undone = its.filter(function(i){ return !i.done; }).length;
+ return { date:dateKey, count:its.length, undone:undone, market:market };
+}
+function cvTomorrowKey(){
+ var d = new Date(); d.setDate(d.getDate()+1); return cvDateKey(d);
+}
+function cvReminderText(info){
+ if(!info) return '';
+ var mk = info.market ? (info.market+' ') : '';
+ return '내일 '+mk+'장보기가 있어요 (품목 '+info.count+'개)';
+}
+function cvShowReminder(){
+ try{
+  var tk = cvTomorrowKey();
+  var info = cvGetShoppingForDate(tk);
+  if(!info) return;
+  var dismissed = localStorage.getItem('jtt4_reminder_dismiss');
+  if(dismissed === cvTodayKey()) return;
+  var bar = document.getElementById('cvReminderBar');
+  if(!bar){
+   bar = document.createElement('div');
+   bar.id = 'cvReminderBar';
+   bar.className = 'cv-reminder-bar';
+   document.body.appendChild(bar);
+  }
+  bar.innerHTML = '<span class="cv-rem-ic">🔔</span>'
+   + '<span class="cv-rem-txt" onclick="cvReminderGo(\''+tk+'\')">'+cvReminderText(info)+'</span>'
+   + '<button class="cv-rem-x" onclick="cvReminderDismiss()">✕</button>';
+  bar.classList.add('show');
+ }catch(e){}
+}
+function cvReminderGo(dateKey){
+ try{
+  CV.activeDate = dateKey; saveCV();
+  cvReminderDismiss();
+  if(typeof cvGo==='function') cvGo('main');
+  if(typeof cvRenderMain==='function'){ var el=document.getElementById('clPageContent'); if(el) cvRenderMain(el); }
+ }catch(e){}
+}
+function cvReminderDismiss(){
+ try{
+  localStorage.setItem('jtt4_reminder_dismiss', cvTodayKey());
+  var bar=document.getElementById('cvReminderBar');
+  if(bar) bar.classList.remove('show');
+ }catch(e){}
+}
 // 날짜 이동
 function cvShiftDate(delta){
  const d=cvParseDate(CV.activeDate); d.setDate(d.getDate()+delta);
@@ -4099,6 +4155,9 @@ if(!localStorage.getItem('jtt4_login')){
  setTimeout(cvShowLogin, 300);
 } else if(!localStorage.getItem('jtt4_onboard')){
  setTimeout(openOnboard, 600);
+}
+if(localStorage.getItem('jtt4_login') && localStorage.getItem('jtt4_onboard')){
+ setTimeout(function(){ try{ if(typeof cvShowReminder==='function') cvShowReminder(); }catch(e){} }, 1200);
 }
 if(navigator.geolocation){
  navigator.geolocation.getCurrentPosition(
@@ -5487,6 +5546,18 @@ function cvUnitText(r){ var u=r.unit||CV_UNITS[r.text]||''; var qn=r.qty||1; if(
 function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  const {start,end,label}=cvStatRange(cvStatPeriod, cvStatRef);
  const rows=CV_SPEND.filter(s=>s.ts>=start && s.ts<end).sort((a,b)=>b.ts-a.ts);
+ try{
+  let _fixed=false;
+  CV_SPEND.forEach(s=>{
+   if(!s.store){
+    let mk='';
+    if(s.itemId){ const it=CV.items.find(i=>i.id===s.itemId); if(it){ if(it.market) mk=it.market; else if(it.date && CV.dateMarkets && CV.dateMarkets[it.date]) mk=CV.dateMarkets[it.date]; } }
+    if(!mk && s.ts){ const d=new Date(s.ts); const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(CV.dateMarkets && CV.dateMarkets[ds]) mk=CV.dateMarkets[ds]; }
+    if(mk){ s.store=mk; _fixed=true; }
+   }
+  });
+  if(_fixed && typeof saveSpend==='function') saveSpend();
+ }catch(e){}
  const total=rows.reduce((s,r)=>s+(r.amount||0),0);
  const martTotal=rows.reduce((s,r)=>s+(r.martAmount||Math.round((r.amount||0)*1.22)),0);
  const savedTotal=Math.max(0, martTotal-total);
@@ -5511,7 +5582,13 @@ function cvRenderStats(el){ /*cvStatsTryWrapped*/ try{
  try{ if(window._cvStatShare){ window._cvStatShare.cats=cats.map(function(x){return {name:x.name,color:x.color,amount:x.amount};}); } }catch(e){}
  // 시장별 집계
  const byStore={};
- rows.forEach(r=>{ let k=r.store; if(!k && r.ts){ try{ const d=new Date(r.ts); const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(CV.dateMarkets && CV.dateMarkets[ds]) k=CV.dateMarkets[ds]; }catch(e){} } k=k||'시장 미정'; byStore[k]=(byStore[k]||0)+(r.amount||0); });
+ rows.forEach(r=>{
+  let k=r.store;
+  if(!k && r.itemId){ try{ const it=CV.items.find(i=>i.id===r.itemId); if(it){ if(it.market) k=it.market; else if(it.date && CV.dateMarkets && CV.dateMarkets[it.date]) k=CV.dateMarkets[it.date]; } }catch(e){} }
+  if(!k && r.ts){ try{ const d=new Date(r.ts); const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(CV.dateMarkets && CV.dateMarkets[ds]) k=CV.dateMarkets[ds]; }catch(e){} }
+  k=k||'시장 미정';
+  byStore[k]=(byStore[k]||0)+(r.amount||0);
+ });
  const stores=Object.entries(byStore).sort((a,b)=>b[1]-a[1]);
  const byItem={};
  rows.forEach(r=>{ const k=r.text||"기타"; if(!byItem[k]) byItem[k]={amount:0,qty:0}; byItem[k].amount+=(r.amount||0); byItem[k].qty+=(r.qty||1); });
